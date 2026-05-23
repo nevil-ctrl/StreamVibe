@@ -1,9 +1,6 @@
 @import "tailwindcss";
 
-@import "tailwindcss";
-
 :root {
-  /* Red Shades */
   --red-45: #E50000;
   --red-50: #FF0000;
   --red-55: #FF1919;
@@ -13,7 +10,6 @@
   --red-95: #FFE5E5;
   --red-99: #FFFAFA;
 
-  /* Black Shades */
   --black-06: #0F0F0F;
   --black-08: #141414;
   --black-10: #1A1A1A;
@@ -23,7 +19,6 @@
   --black-25: #404040;
   --black-30: #4C4C4C;
 
-  /* Grey Shades */
   --grey-60: #999999;
   --grey-65: #A6A6A6;
   --grey-70: #B3B3B3;
@@ -33,15 +28,32 @@
   --grey-97: #F7F7F8;
   --grey-99: #FCFCFD;
 
-  /* Absolute */
   --white: #FFFFFF;
   --black: #000000;
-
-  /* Font */
-  --font-main: var(--font-manrope), sans-serif;
 }
 
+@layer base {
+  body {
+    font-family: var(--font-manrope), sans-serif;
+    background-color: var(--black-08);
+    color: var(--white);
+  }
+}
 
+.container {
+  max-width: 1480px;
+  margin: 0 auto;
+}
+
+@layer components {
+  .nav-link {
+    @apply px-4 py-2 rounded-[8px] text-sm font-medium transition-colors text-[#B3B3B3] hover:text-white;
+  }
+
+  .nav-link-active {
+    @apply bg-[#262628] text-white px-6 py-3;
+  }
+}
 
 /* @theme inline {
   --color-background: var(--background);
@@ -56,8 +68,3 @@
     --foreground: #ededed;
   }
 } */
-
-body {
-  font-family: var(--font-manrope), sans-serif;
-  /* ← вот это важно */
-}
