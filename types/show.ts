@@ -1,18 +1,18 @@
-export interface Movie {
+export interface Show {
   id: number;
-  title: string;
+  name: string;
   overview: string;
   poster_path: string;
   backdrop_path: string;
   vote_average: number;
   vote_count: number;
-  release_date: string;
+  first_air_date: string;
   genre_ids: number[];
 }
 
-export interface MovieResponse {
+export interface ShowResponse {
   page: number;
-  results: Movie[];
+  results: Show[];
   total_pages: number;
   total_results: number;
 }

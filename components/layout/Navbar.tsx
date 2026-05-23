@@ -10,12 +10,12 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="container flex w-full items-center justify-between ">
+    <nav className="flex w-full items-center justify-between">
       <Link href="/">
         <Image src="/logo/Logo.svg" alt="StreamVibe" width={160} height={43} />
       </Link>
 
-      <div className="flex items-center justify-center gap-[30px] bg-[#0F0F0F] border-4 border-[#1F1F1F] rounded-[10px] pl-[10px] pr-[29px] py-[10px]">
+      <div className="flex items-center justify-center gap-7.5 bg-[#0F0F0F] border-4 border-[#1F1F1F] rounded-[16px] pl-2.5 pr-7.25 py-2.5">
         {NAV_LINKS.map(({ href, label }) => (
           <Link
             key={href}
@@ -25,7 +25,7 @@ export default function Navbar() {
           </Link>
         ))}
       </div>
-      <div className="flex items-center gap-[30px]">
+      <div className="flex items-center gap-7.5">
         <button>
           <Search size={23} className="text-white" />
         </button>
