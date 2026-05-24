@@ -3,11 +3,13 @@ import { Manrope } from 'next/font/google';
 
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+
 const manrope = Manrope({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-manrope',
 });
+
 export default function RootLayout({
   children,
 }: {
@@ -15,7 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={manrope.variable}>
+      <body className={manrope.variable} suppressHydrationWarning>
         <Header />
 
         <main>{children}</main>

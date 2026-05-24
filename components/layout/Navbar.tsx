@@ -10,27 +10,33 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex w-full items-center justify-between">
+    <nav className="flex items-center justify-between">
       <Link href="/">
-        <Image src="/logo/Logo.svg" alt="StreamVibe" width={160} height={43} />
+        <Image src="/logo/Logo.svg" alt="StreamVibe" width={200} height={60} />
       </Link>
 
-      <div className="flex items-center justify-center gap-7.5 bg-[#0F0F0F] border-4 border-[#1F1F1F] rounded-[16px] pl-2.5 pr-7.25 py-2.5">
+      <div className="flex items-center rounded-[14px] border border-[#262626] bg-[#0F0F0F]/90 p-[10px] backdrop-blur-xl">
         {NAV_LINKS.map(({ href, label }) => (
           <Link
             key={href}
             href={href}
-            className={`nav-link ${pathname === href ? 'nav-link-active' : ''}`}>
+            className={`rounded-[9px] px-6 py-4 text-[16px] font-medium transition ${
+              pathname === href
+                ? 'bg-[#1A1A1A] text-white'
+                : 'text-[#BFBFBF] hover:text-white'
+            }`}>
             {label}
           </Link>
         ))}
       </div>
-      <div className="flex items-center gap-7.5">
+
+      <div className="flex items-center gap-6">
         <button>
-          <Search size={23} className="text-white" />
+          <Search size={28} className="text-white transition hover:scale-110" />
         </button>
+
         <button>
-          <Bell size={23} className="text-white" />
+          <Bell size={28} className="text-white transition hover:scale-110" />
         </button>
       </div>
     </nav>

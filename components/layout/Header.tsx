@@ -2,8 +2,8 @@ import Navbar from './Navbar';
 
 export default function Header() {
   return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-black/20 border-b border-white/5">
-      <div className="px-[162px] py-5">
+    <header className="sticky top-0 left-0 z-50 w-full">
+      <div className="mx-auto max-w-[1600px] px-18 pt-8">
         <Navbar />
       </div>
     </header>

@@ -35,7 +35,7 @@
 @layer base {
   body {
     font-family: var(--font-manrope), sans-serif;
-    background-color: var(--black-08);
+    background: var(--black-06);
     color: var(--white);
   }
 }
@@ -57,30 +57,39 @@
 
 @keyframes scrollRight {
   from {
-    transform: translateX(0);
+    transform: translateX(0%);
   }
 
   to {
-    transform: translateX(-50%);
+    transform: translateX(-33.333%);
   }
 }
 
 @keyframes scrollLeft {
   from {
-    transform: translateX(-50%);
+    transform: translateX(-33.333%);
   }
 
   to {
-    transform: translateX(0);
+    transform: translateX(0%);
   }
 }
 
 .animate-scroll-right {
-  animation: scrollRight 40s linear infinite;
+  animation: scrollRight 55s linear infinite;
 }
 
 .animate-scroll-left {
-  animation: scrollLeft 40s linear infinite;
+  animation: scrollLeft 55s linear infinite;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* @theme inline {

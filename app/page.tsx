@@ -1,5 +1,5 @@
 import Hero from '@/components/sections/Hero';
-import CategoriesSection from '@/components/sections/CategoriesSection';
+import CategoriesFetcher from '@/components/sections/CategoriesFetcher'; // <- сюда
 import DevicesSection from '@/components/sections/DevicesSection';
 import FAQSection from '@/components/sections/FAQSection';
 import PricingSection from '@/components/sections/PricingSection';
@@ -8,8 +8,8 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <div className="container mx-auto">
-        <CategoriesSection />
+      <div className="container">
+        <CategoriesFetcher />
         <DevicesSection />
         <FAQSection />
         <PricingSection />
