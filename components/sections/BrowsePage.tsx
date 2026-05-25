@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { TMDB_BASE_URL, TMDB_IMAGE_URL, TMDB_ACCESS_TOKEN } from '@/config/env';
+import { TMDB_BASE_URL, TMDB_IMAGE_URL, TMDB_ACCESS_TOKEN } from '@/lib/tmdb';
 
 const SORT_OPTIONS = [
   { value: 'popularity.desc', label: 'Most Popular' },

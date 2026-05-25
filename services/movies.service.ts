@@ -1,29 +1,16 @@
-import { TMDB_ACCESS_TOKEN, TMDB_BASE_URL } from '@/config/env';
-import { Movie, MovieResponse } from '@/types/movie';
+import { fetchTMDB, TMDB_BASE_URL } from '@/lib/tmdb';
 
-const options = {
-  headers: {
-    Authorization: `Bearer ${TMDB_ACCESS_TOKEN}`,
-    'Content-Type': 'application/json',
-  },
-};
+export const getTrendingMovies = () =>
+  fetchTMDB(`${TMDB_BASE_URL}/trending/movie/week`);
 
-export const getPopularMovies = async (): Promise<MovieResponse> => {
-  const res = await fetch(`${TMDB_BASE_URL}/movie/popular`, options);
-  return res.json();
-};
+export const getPopularMovies = () =>
+  fetchTMDB(`${TMDB_BASE_URL}/movie/popular`);
 
-export const getTrendingMovies = async (): Promise<MovieResponse> => {
-  const res = await fetch(`${TMDB_BASE_URL}/trending/movie/week`, options);
-  return res.json();
-};
+export const getTopRatedMovies = () =>
+  fetchTMDB(`${TMDB_BASE_URL}/movie/top_rated`);
 
-export const getTopRatedMovies = async (): Promise<MovieResponse> => {
-  const res = await fetch(`${TMDB_BASE_URL}/movie/top_rated`, options);
-  return res.json();
-};
+export const getUpcomingMovies = () =>
+  fetchTMDB(`${TMDB_BASE_URL}/movie/upcoming`);
 
-export const getMovieById = async (id: number): Promise<Movie> => {
-  const res = await fetch(`${TMDB_BASE_URL}/movie/${id}`, options);
-  return res.json();
-};
+export const getNowPlayingMovies = () =>
+  fetchTMDB(`${TMDB_BASE_URL}/movie/now_playing`);

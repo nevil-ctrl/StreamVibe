@@ -1,5 +1,5 @@
 import Hero from '@/components/sections/Hero';
-import CategoriesFetcher from '@/components/sections/CategoriesFetcher'; // <- сюда
+import CategoriesFetcher from '@/components/sections/CategoriesFetcher';
 import DevicesSection from '@/components/sections/DevicesSection';
 import FAQSection from '@/components/sections/FAQSection';
 import PricingSection from '@/components/sections/PricingSection';

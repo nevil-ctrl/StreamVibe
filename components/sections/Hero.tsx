@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { getPopularMovies } from '@/services/movies.service';
-import { TMDB_IMAGE_URL } from '@/config/env';
+import { TMDB_IMAGE_URL } from '@/lib/tmdb';
 import { Play } from 'lucide-react';
 type Movie = {
   poster_path: string;
@@ -40,13 +40,17 @@ w-[200px] h-[230px]">
 
 export default async function Hero() {
   const data = await getPopularMovies();
-  const movies = data.results;
+
+  const movies = data?.results ?? [];
+
+  if (!movies.length) {
+    return <div className="text-white">No movies loaded</div>;
+  }
 
   const row1 = movies.slice(0, 10);
   const row2 = movies.slice(10, 20);
   const row3 = movies.slice(0, 10);
   const row4 = movies.slice(10, 20);
-
   return (
     <section className="relative min-h-screen pt-[80px] overflow-hidden">
       <div className="absolute inset-0 flex flex-col gap-5 overflow-hidden">
@@ -67,21 +71,23 @@ export default async function Hero() {
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center gap-[131px]">
         <div className="relative flex items-center justify-center mt-40   brightness-150">
-          <Image
-            src="/svg/banner_1/hz.svg"
-            alt="hero-logo"
-            width={470}
-            height={470}
-            className="brightness-150"
-          />
+          <Link href="/browse" className="relative block">
+            <Image
+              src="/svg/banner_1/hz.svg"
+              alt="hero-logo"
+              width={470}
+              height={470}
+              className="brightness-150"
+            />
 
-          <Image
-            src="/svg/banner_1/pluse.svg"
-            alt="plus"
-            width={180}
-            height={180}
-            className="absolute ml-[50px] animate-pulse z-20 opacity-90"
-          />
+            <Image
+              src="/svg/banner_1/pluse.svg"
+              alt="plus"
+              width={180}
+              height={180}
+              className="absolute top-1/2 left-[54%] -translate-x-1/2 -translate-y-1/2 animate-pulse z-20 opacity-90"
+            />
+          </Link>
         </div>
 
         <div className="flex flex-col items-center gap-[24px]">

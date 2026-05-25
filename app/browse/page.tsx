@@ -11,7 +11,7 @@ import {
   ArrowLeft,
   ArrowRight,
 } from 'lucide-react';
-import { TMDB_IMAGE_URL, TMDB_BASE_URL, TMDB_ACCESS_TOKEN } from '@/config/env';
+import { TMDB_IMAGE_URL, TMDB_BASE_URL, TMDB_ACCESS_TOKEN } from '@/lib/tmdb';
 import { Star, Clock } from 'lucide-react';
 interface IMedia {
   id: number;

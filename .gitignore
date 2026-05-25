@@ -28,3 +28,4 @@ next-env.d.ts
 # cache
 .cache/
 .turbo/
+/lib/generated/prisma

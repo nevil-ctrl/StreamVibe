@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { TMDB_IMAGE_URL } from '@/config/env';
+import { TMDB_IMAGE_URL } from '@/lib/tmdb';
 
 type Movie = { id: number; poster_path: string; title: string };
 // ИСПРАВЛЕНО: id теперь может быть и строкой, и числом
