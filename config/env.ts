@@ -10,6 +10,8 @@ export const env = {
   S3_KEY: process.env.S3_ACCESS_KEY!,
   S3_SECRET: process.env.S3_SECRET_KEY!,
   GA_ID: process.env.NEXT_PUBLIC_GA_ID!,
+  TMDB_ACCESS_TOKEN:
+    process.env.TMDB_ACCESS_TOKEN ?? process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN!,
 };
 
 // export const env = {

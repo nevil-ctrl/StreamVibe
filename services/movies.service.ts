@@ -1,16 +1,28 @@
-import { fetchTMDB, TMDB_BASE_URL } from '@/lib/tmdb';
+import { fetchTMDB } from '@/services/tmdb';
+import { MovieResponse, Movie } from '@/types/movie';
 
-export const getTrendingMovies = () =>
-  fetchTMDB(`${TMDB_BASE_URL}/trending/movie/week`);
+export const getPopularMovies = async (): Promise<MovieResponse> => {
+  return fetchTMDB('/movie/popular');
+};
 
-export const getPopularMovies = () =>
-  fetchTMDB(`${TMDB_BASE_URL}/movie/popular`);
+export const getTrendingMovies = async (): Promise<MovieResponse> => {
+  return fetchTMDB('/trending/movie/week');
+};
 
-export const getTopRatedMovies = () =>
-  fetchTMDB(`${TMDB_BASE_URL}/movie/top_rated`);
+export const getTopRatedMovies = async (): Promise<MovieResponse> => {
+  return fetchTMDB('/movie/top_rated');
+};
 
-export const getUpcomingMovies = () =>
-  fetchTMDB(`${TMDB_BASE_URL}/movie/upcoming`);
+export const getMovieById = async (id: number): Promise<Movie> => {
+  return fetchTMDB(`/movie/${id}`);
+};
 
-export const getNowPlayingMovies = () =>
-  fetchTMDB(`${TMDB_BASE_URL}/movie/now_playing`);
+export const getMovieGenres = async (): Promise<{
+  genres: { id: number; name: string }[];
+}> => {
+  return fetchTMDB('/genre/movie/list');
+};
+
+export const searchMovies = async (query: string): Promise<MovieResponse> => {
+  return fetchTMDB(`/search/movie?query=${encodeURIComponent(query)}`);
+};

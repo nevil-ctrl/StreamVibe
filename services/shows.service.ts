@@ -1,18 +1,28 @@
-import { TMDB_BASE_URL, fetchTMDB } from '@/services/tmdb';
+import { fetchTMDB } from '@/services/tmdb';
 import { ShowResponse, Show } from '@/types/show';
 
 export const getPopularShows = async (): Promise<ShowResponse> => {
-  return fetchTMDB(`${TMDB_BASE_URL}/tv/popular`);
+  return fetchTMDB('/tv/popular');
 };
 
 export const getTrendingShows = async (): Promise<ShowResponse> => {
-  return fetchTMDB(`${TMDB_BASE_URL}/trending/tv/week`);
+  return fetchTMDB('/trending/tv/week');
 };
 
 export const getTopRatedShows = async (): Promise<ShowResponse> => {
-  return fetchTMDB(`${TMDB_BASE_URL}/tv/top_rated`);
+  return fetchTMDB('/tv/top_rated');
 };
 
 export const getShowById = async (id: number): Promise<Show> => {
-  return fetchTMDB(`${TMDB_BASE_URL}/tv/${id}`);
+  return fetchTMDB(`/tv/${id}`);
+};
+
+export const getShowGenres = async (): Promise<{
+  genres: { id: number; name: string }[];
+}> => {
+  return fetchTMDB('/genre/tv/list');
+};
+
+export const searchShows = async (query: string): Promise<ShowResponse> => {
+  return fetchTMDB(`/search/tv?query=${encodeURIComponent(query)}`);
 };
