@@ -10,9 +10,11 @@ import {
   Volume2,
   ArrowLeft,
   ArrowRight,
+  Star,
+  Clock,
 } from 'lucide-react';
 import { TMDB_IMAGE_URL, TMDB_BASE_URL, TMDB_ACCESS_TOKEN } from '@/lib/tmdb';
-import { Star, Clock } from 'lucide-react';
+
 interface IMedia {
   id: number;
   title?: string;
@@ -49,7 +51,11 @@ function BrowseContent() {
   const [loading, setLoading] = useState(true);
 
   const [movieHero, setMovieHero] = useState<IMedia[]>([]);
-  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+  const [currentMovieHeroIndex, setCurrentMovieHeroIndex] = useState(0);
+
+  const [showHero, setShowHero] = useState<IMedia[]>([]);
+  const [currentShowHeroIndex, setCurrentShowHeroIndex] = useState(0);
+
   const [movieSections, setMovieSections] = useState<ICategory[]>([]);
   const [showSections, setShowSections] = useState<ICategory[]>([]);
 
@@ -74,13 +80,32 @@ function BrowseContent() {
     async function loadAllContent() {
       setLoading(true);
 
-      const trendingMovies = await fetchFromTMDB('/trending/movie/week');
-      const popularMovies = await fetchFromTMDB('/movie/popular');
-      const topRatedMovies = await fetchFromTMDB('/movie/top_rated');
-      const upcomingMovies = await fetchFromTMDB('/movie/upcoming');
-      const nowPlayingMovies = await fetchFromTMDB('/movie/now_playing');
+      const [
+        trendingMovies,
+        popularMovies,
+        topRatedMovies,
+        upcomingMovies,
+        nowPlayingMovies,
+        trendingShows,
+        popularShows,
+        topRatedShows,
+        airingTodayShows,
+        onTheAirShows,
+      ] = await Promise.all([
+        fetchFromTMDB('/trending/movie/week'),
+        fetchFromTMDB('/movie/popular'),
+        fetchFromTMDB('/movie/top_rated'),
+        fetchFromTMDB('/movie/upcoming'),
+        fetchFromTMDB('/movie/now_playing'),
+        fetchFromTMDB('/trending/tv/week'),
+        fetchFromTMDB('/tv/popular'),
+        fetchFromTMDB('/tv/top_rated'),
+        fetchFromTMDB('/tv/airing_today'),
+        fetchFromTMDB('/tv/on_the_air'),
+      ]);
 
       setMovieHero(trendingMovies.slice(0, 5));
+      setShowHero(trendingShows.slice(0, 5));
 
       setMovieSections([
         { id: 'genres_movie', name: 'Our Genres', items: popularMovies },
@@ -97,12 +122,6 @@ function BrowseContent() {
           items: nowPlayingMovies,
         },
       ]);
-
-      const trendingShows = await fetchFromTMDB('/trending/tv/week');
-      const popularShows = await fetchFromTMDB('/tv/popular');
-      const topRatedShows = await fetchFromTMDB('/tv/top_rated');
-      const airingTodayShows = await fetchFromTMDB('/tv/airing_today');
-      const onTheAirShows = await fetchFromTMDB('/tv/on_the_air');
 
       setShowSections([
         { id: 'genres_tv', name: 'Our Genres', items: popularShows },
@@ -122,18 +141,6 @@ function BrowseContent() {
     loadAllContent();
   }, []);
 
-  const nextHero = () => {
-    setCurrentHeroIndex((prev) =>
-      prev === movieHero.length - 1 ? 0 : prev + 1,
-    );
-  };
-
-  const prevHero = () => {
-    setCurrentHeroIndex((prev) =>
-      prev === 0 ? movieHero.length - 1 : prev - 1,
-    );
-  };
-
   if (loading) {
     return (
       <div className="bg-[#141414] min-h-screen text-white flex items-center justify-center">
@@ -144,86 +151,36 @@ function BrowseContent() {
     );
   }
 
-  const currentHero = movieHero[currentHeroIndex];
-
   return (
     <div className="bg-[#141414] min-h-screen text-white pb-32 select-none">
-      {currentHero && (
-        <div className="relative w-full h-[65vh] sm:h-[75vh] md:h-[80vh] lg:h-[85vh] overflow-hidden px-4 md:px-12 pt-6">
-          <div className="relative w-full h-full rounded-2xl overflow-hidden border border-[#262628] bg-[#1A1A1A]">
-            <div className="absolute inset-0 bg-linear-to-t from-[#141414] via-[#141414]/40 to-transparent z-10" />
-            <div className="absolute inset-0 bg-linear-to-r from-[#141414]/70 via-transparent to-transparent z-10" />
+      {/* ── MOVIES HERO ── */}
+      <HeroSlider
+        items={movieHero}
+        currentIndex={currentMovieHeroIndex}
+        onPrev={() =>
+          setCurrentMovieHeroIndex((p) =>
+            p === 0 ? movieHero.length - 1 : p - 1,
+          )
+        }
+        onNext={() =>
+          setCurrentMovieHeroIndex((p) =>
+            p === movieHero.length - 1 ? 0 : p + 1,
+          )
+        }
+        onDot={setCurrentMovieHeroIndex}
+        type="movie"
+      />
 
-            <Image
-              src={`${TMDB_IMAGE_URL.replace('w500', 'original')}${currentHero.backdrop_path}`}
-              alt={currentHero.title || 'Hero'}
-              fill
-              priority
-              className="object-cover"
-            />
-
-            <div className="absolute inset-x-0 bottom-0 z-20 flex flex-col items-center justify-end pb-10 px-6 md:px-16 text-center max-w-4xl mx-auto">
-              <h1 className="text-[26px] sm:text-[34px] md:text-[42px] font-bold text-white mb-3 drop-shadow-md tracking-tight">
-                {currentHero.title}
-              </h1>
-              <p className="text-[13px] sm:text-[15px] text-[#e4e4e7] max-w-2xl line-clamp-2 mb-6 opacity-85 leading-relaxed">
-                {currentHero.overview ||
-                  'Описание подготавливается бэкенд-сервером.'}
-              </p>
-
-              <div className="flex items-center justify-between w-full max-w-xl gap-4 mt-2">
-                <button
-                  onClick={prevHero}
-                  className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#141414]/80 border border-[#262628] hover:bg-[#E50000] hover:border-[#E50000] transition cursor-pointer">
-                  <ArrowLeft size={16} className="text-white" />
-                </button>
-
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() =>
-                      router.push(`/browse/movie/${currentHero.id}`)
-                    }
-                    className="flex items-center gap-2 px-6 py-3 bg-[#E50000] hover:bg-red-700 font-semibold rounded-lg text-sm transition duration-200 cursor-pointer">
-                    <Play size={16} fill="currentColor" /> Play Now
-                  </button>
-                  <button className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#141414] border border-[#262628] hover:bg-[#1A1A1A] transition cursor-pointer">
-                    <Plus size={18} />
-                  </button>
-                  <button className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#141414] border border-[#262628] hover:bg-[#1A1A1A] transition cursor-pointer">
-                    <ThumbsUp size={16} />
-                  </button>
-                  <button className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#141414] border border-[#262628] hover:bg-[#1A1A1A] transition cursor-pointer">
-                    <Volume2 size={16} />
-                  </button>
-                </div>
-
-                <button
-                  onClick={nextHero}
-                  className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#141414]/80 border border-[#262628] hover:bg-[#E50000] hover:border-[#E50000] transition cursor-pointer">
-                  <ArrowRight size={16} className="text-white" />
-                </button>
-              </div>
-
-              <div className="flex items-center gap-1.5 mt-6">
-                {movieHero.map((_, idx) => (
-                  <span
-                    key={idx}
-                    onClick={() => setCurrentHeroIndex(idx)}
-                    className={`h-[4px] rounded-full transition-all duration-300 cursor-pointer ${idx === currentHeroIndex ? 'w-6 bg-[#E50000]' : 'w-3 bg-[#333]'}`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="container mx-auto px-4 md:px-12 mt-20">
+      {/* ── MOVIES SECTIONS ── */}
+      <div
+        className="container mx-auto px-4 md:px-12"
+        style={{ marginTop: '180px' }}>
         <div className="mb-10">
           <span className="px-3 py-1 bg-[#E50000] text-white text-xs font-bold rounded uppercase tracking-wider">
             Movies
           </span>
         </div>
+
         {movieSections.map((section) => (
           <HorizontalTrack
             key={section.id}
@@ -234,12 +191,16 @@ function BrowseContent() {
         ))}
       </div>
 
-      <div className="container mx-auto px-4 md:px-12 mt-32">
+      {/* ── SHOWS SECTIONS ── */}
+      <div
+        className="container mx-auto px-4 md:px-12"
+        style={{ marginTop: '150px' }}>
         <div className="mb-10">
           <span className="px-3 py-1 bg-[#E50000] text-white text-xs font-bold rounded uppercase tracking-wider">
             Shows
           </span>
         </div>
+
         {showSections.map((section) => (
           <HorizontalTrack
             key={section.id}
@@ -248,6 +209,97 @@ function BrowseContent() {
             type="tv"
           />
         ))}
+      </div>
+    </div>
+  );
+} // ← ВОТ ЭТО ЧАСТО УДАЛЯЮТ СЛУЧАЙНО
+/* ─────────────────────────────────────────
+   Hero Slider — переиспользуется для фильмов и сериалов
+───────────────────────────────────────── */
+function HeroSlider({
+  items,
+  currentIndex,
+  onPrev,
+  onNext,
+  onDot,
+  type,
+}: {
+  items: IMedia[];
+  currentIndex: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onDot: (i: number) => void;
+  type: 'movie' | 'tv';
+}) {
+  const router = useRouter();
+  const current = items[currentIndex];
+  if (!current) return null;
+
+  return (
+    <div className="relative w-full h-[65vh] sm:h-[75vh] md:h-[80vh] lg:h-[85vh] overflow-hidden px-4 md:px-12 pt-6">
+      <div className="relative w-full h-full rounded-2xl overflow-hidden border border-[#262628] bg-[#1A1A1A]">
+        <div className="absolute inset-0 bg-linear-to-t from-[#141414] via-[#141414]/40 to-transparent z-10" />
+        <div className="absolute inset-0 bg-linear-to-r from-[#141414]/70 via-transparent to-transparent z-10" />
+
+        <Image
+          src={`${TMDB_IMAGE_URL.replace('w500', 'original')}${current.backdrop_path}`}
+          alt={current.title || current.name || 'Hero'}
+          fill
+          priority
+          className="object-cover"
+        />
+
+        <div className="absolute inset-x-0 bottom-0 z-20 flex flex-col items-center justify-end pb-10 px-6 md:px-16 text-center max-w-4xl mx-auto">
+          <h1 className="text-[26px] sm:text-[34px] md:text-[42px] font-bold text-white mb-3 drop-shadow-md tracking-tight">
+            {current.title || current.name}
+          </h1>
+          <p className="text-[13px] sm:text-[15px] text-[#e4e4e7] max-w-2xl line-clamp-2 mb-6 opacity-85 leading-relaxed">
+            {current.overview || 'Описание подготавливается бэкенд-сервером.'}
+          </p>
+
+          <div className="flex items-center justify-between w-full max-w-xl gap-4 mt-2">
+            <button
+              onClick={onPrev}
+              className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#141414]/80 border border-[#262628] hover:bg-[#E50000] hover:border-[#E50000] transition cursor-pointer">
+              <ArrowLeft size={16} className="text-white" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push(`/browse/${type}/${current.id}`)}
+                className="flex items-center gap-2 px-6 py-3 bg-[#E50000] hover:bg-red-700 font-semibold rounded-lg text-sm transition duration-200 cursor-pointer">
+                <Play size={16} fill="currentColor" /> Play Now
+              </button>
+              <button className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#141414] border border-[#262628] hover:bg-[#1A1A1A] transition cursor-pointer">
+                <Plus size={18} />
+              </button>
+              <button className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#141414] border border-[#262628] hover:bg-[#1A1A1A] transition cursor-pointer">
+                <ThumbsUp size={16} />
+              </button>
+              <button className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#141414] border border-[#262628] hover:bg-[#1A1A1A] transition cursor-pointer">
+                <Volume2 size={16} />
+              </button>
+            </div>
+
+            <button
+              onClick={onNext}
+              className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#141414]/80 border border-[#262628] hover:bg-[#E50000] hover:border-[#E50000] transition cursor-pointer">
+              <ArrowRight size={16} className="text-white" />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1.5 mt-6">
+            {items.map((_, idx) => (
+              <span
+                key={idx}
+                onClick={() => onDot(idx)}
+                className={`h-[4px] rounded-full transition-all duration-300 cursor-pointer ${
+                  idx === currentIndex ? 'w-6 bg-[#E50000]' : 'w-3 bg-[#333]'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -328,16 +380,16 @@ function HorizontalTrack({
             className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#1A1A1A] border border-[#262628] hover:bg-[#262628] transition cursor-pointer">
             <ArrowLeft size={16} />
           </button>
-
           <div className="flex items-center gap-1">
             {Array.from({ length: totalSlides }).map((_, i) => (
               <span
                 key={i}
-                className={`h-0.75 rounded-full transition-all ${i === activeIndex ? 'w-6 bg-[#E50000]' : 'w-4 bg-[#333]'}`}
+                className={`h-0.75 rounded-full transition-all ${
+                  i === activeIndex ? 'w-6 bg-[#E50000]' : 'w-4 bg-[#333]'
+                }`}
               />
             ))}
           </div>
-
           <button
             onClick={() => scroll('right')}
             className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#1A1A1A] border border-[#262628] hover:bg-[#262628] transition cursor-pointer">
@@ -352,13 +404,6 @@ function HorizontalTrack({
         className="flex gap-5 overflow-x-auto pb-3 scroll-smooth"
         style={{ scrollbarWidth: 'none' }}>
         {loopedItems.map((item, index) => {
-          const releaseYear = item.release_date
-            ? item.release_date.split('-')[0]
-            : item.first_air_date
-              ? item.first_air_date.split('-')[0]
-              : 'N/A';
-
-          // Математическая генерация стабильного хронометража для карточки (от 85 до 155 минут)
           const generatedMinutes = (item.id % 70) + 85;
           const hours = Math.floor(generatedMinutes / 60);
           const mins = generatedMinutes % 60;
@@ -399,8 +444,6 @@ function HorizontalTrack({
                 <h4 className="text-[15px] font-medium text-white truncate px-1 mb-2.5">
                   {item.title || item.name}
                 </h4>
-
-                {/* ИНФО-ПАНЕЛЬ С ХРОНОМЕТРАЖЕМ, ГОДОМ И ОЦЕНКОЙ СТРОГО ПО МАКЕТУ */}
                 <div className="flex items-center justify-between px-1 text-[12px] text-[#999999] font-medium">
                   <div className="flex items-center gap-1.5">
                     <Clock size={12} className="text-[#666666]" />
