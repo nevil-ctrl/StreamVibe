@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:push": "dotenv -e .env -- prisma db push",
+    "db:gen": "dotenv -e .env -- prisma generate",
+    "db:studio": "dotenv -e .env -- prisma studio"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
@@ -32,6 +35,7 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "prettier": "^3.8.3",

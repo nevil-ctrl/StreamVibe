@@ -1,3 +1,48 @@
-export default function page() {
-  return <div>page</div>;
+import LoginForm from './LoginForm';
+
+interface TMDBMovie {
+  poster_path: string;
+  title: string;
+  [key: string]: unknown;
+}
+
+async function getTrendingMovies() {
+  try {
+    const apiKey = process.env.TMDB_API_KEY;
+
+    if (!apiKey) {
+      console.error(
+        'КРИТИЧЕСКАЯ ОШИБКА: Переменная TMDB_API_KEY не найдена в .env файле!',
+      );
+      return [];
+    }
+
+    const res = await fetch(
+      `https://api.themoviedb.org/3/trending/movie/day?api_key=${apiKey}&language=ru-RU`,
+      { next: { revalidate: 3600 } },
+    );
+
+    if (!res.ok) {
+      console.error(`TMDB API вернул статус: ${res.status}`);
+      return [];
+    }
+
+    const data = await res.json();
+
+    return (
+      data.results?.map((m: TMDBMovie) => ({
+        poster_path: m.poster_path,
+        title: m.title,
+      })) || []
+    );
+  } catch (error) {
+    console.error('Ошибка при получении фильмов для фона:', error);
+    return [];
+  }
+}
+
+export default async function LoginPage() {
+  const movies = await getTrendingMovies();
+
+  return <LoginForm movies={movies} />;
 }
