@@ -4,34 +4,39 @@ import { Pool } from 'pg';
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-// 1. Инициализируем пул подключений pg
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+function createPrismaClient() {
+  const url = process.env.DATABASE_URL;
+  console.log('DATABASE_URL:', url ? 'найден' : 'НЕ НАЙДЕН!');
 
-// 2. Инициализируем адаптер для Prisma
-const adapter = new PrismaPg(pool);
+  const pool = new Pool({ connectionString: url });
+  const adapter = new PrismaPg(pool);
+  return new PrismaClient({ adapter });
+}
 
-// 3. Создаем клиент с АДАПТЕРОМ (без 'datasources')
-const prisma = globalForPrisma.prisma || new PrismaClient({ adapter });
+export const prisma = globalForPrisma.prisma || createPrismaClient();
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
 }
-
-export { prisma };
-// export { prisma };
 // import { PrismaClient } from '@prisma/client';
 // import { PrismaPg } from '@prisma/adapter-pg';
 // import { Pool } from 'pg';
 
 // const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-// if (!globalForPrisma.prisma) {
-//   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-//   const adapter = new PrismaPg(pool);
+// // 1. Инициализируем пул подключений pg
+// const pool = new Pool({
+//   connectionString: process.env.DATABASE_URL,
+// });
 
-//   globalForPrisma.prisma = new PrismaClient({ adapter });
+// // 2. Инициализируем адаптер для Prisma
+// const adapter = new PrismaPg(pool);
+
+// // 3. Создаем клиент с АДАПТЕРОМ (без 'datasources')
+// const prisma = globalForPrisma.prisma || new PrismaClient({ adapter });
+
+// if (process.env.NODE_ENV !== 'production') {
+//   globalForPrisma.prisma = prisma;
 // }
 
-// export const prisma = globalForPrisma.prisma;
+// export { prisma };

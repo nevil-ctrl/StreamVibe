@@ -1,25 +1,23 @@
 import NextAuth from 'next-auth';
-import { PrismaAdapter } from '@auth/prisma-adapter';
-import { prisma } from './lib/prisma';
 import Credentials from 'next-auth/providers/credentials';
-import Google from 'next-auth/providers/google'; // ИМПОРТИРУЕМ GOOGLE
+import Google from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
+import { prisma } from './lib/prisma';
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
   session: { strategy: 'jwt' },
+  debug: true,
   pages: {
     signIn: '/auth/login',
-    error: '/auth/login', // Если будет ошибка от Google, перенаправит сюда же
+    error: '/auth/login',
   },
   providers: [
-    // 1. ПРОВАЙДЕР GOOGLE
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
     }),
-
-    // 2. ТВОЙ ТЕКУЩИЙ credentials ПРОВАЙДЕР
     Credentials({
       name: 'Credentials',
       credentials: {
@@ -52,6 +50,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === 'google') {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email! },
+        });
+
+        if (!existingUser) {
+          await prisma.user.create({
+            data: {
+              email: user.email!,
+              name: user.name,
+              image: user.image,
+            },
+          });
+        }
+      }
+      return true;
+    },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.sub as string;
