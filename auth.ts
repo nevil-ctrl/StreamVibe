@@ -44,6 +44,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: user.id,
           email: user.email,
           name: user.name,
+          image: user.image,
           role: user.role,
         };
       },
@@ -68,9 +69,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return true;
     },
+    async jwt({ token, user, trigger, session }) {
+      if (user) {
+        token.id = user.id;
+        token.picture = user.image;
+      }
+
+      if (trigger === 'update') {
+        if (session?.image) {
+          token.picture = session.image;
+        } else if (session?.user?.image) {
+          token.picture = session.user.image;
+        }
+      }
+
+      return token;
+    },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.sub as string;
+        session.user.id = (token.id ?? token.sub) as string;
+        session.user.image = token.picture as string;
       }
       return session;
     },
