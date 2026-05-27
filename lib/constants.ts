@@ -1,6 +1,7 @@
 export const NAV_LINKS = [
   { href: '/', label: 'Home' },
   { href: '/browse', label: 'Movies & Shows' },
+  { href: '/search', label: 'Search' },
   { href: '/support', label: 'Support' },
   { href: '/subscriptions', label: 'Subscriptions' },
 ];

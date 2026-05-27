@@ -266,7 +266,13 @@ function HeroSlider({
 
             <div className="flex items-center gap-3">
               <button
-                onClick={() => router.push(`/browse/${type}/${current.id}`)}
+                onClick={() =>
+                  router.push(
+                    type === 'movie'
+                      ? `/movies/${current.id}`
+                      : `/shows/${current.id}`,
+                  )
+                }
                 className="flex items-center gap-2 px-6 py-3 bg-[#E50000] hover:bg-red-700 font-semibold rounded-lg text-sm transition duration-200 cursor-pointer">
                 <Play size={16} fill="currentColor" /> Play Now
               </button>
@@ -415,7 +421,13 @@ function HorizontalTrack({
           return (
             <article
               key={`${item.id}-${index}`}
-              onClick={() => router.push(`/browse/${type}/${item.id}`)}
+                onClick={() =>
+                  router.push(
+                    type === 'movie'
+                      ? `/movies/${item.id}`
+                      : `/shows/${item.id}`,
+                  )
+                }
               style={{
                 minWidth: `${CARD_WIDTH}px`,
                 maxWidth: `${CARD_WIDTH}px`,

@@ -33,9 +33,12 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-6">
-        <button className="cursor-pointer">
+        <Link
+          href="/search"
+          className="cursor-pointer"
+          aria-label="Поиск фильмов">
           <Search size={28} className="text-white transition hover:scale-110" />
-        </button>
+        </Link>
 
         <button className="cursor-pointer">
           <Bell size={28} className="text-white transition hover:scale-110" />
