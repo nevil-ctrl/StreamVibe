@@ -1,17 +1,16 @@
 import Sidebar from '@/components/layout/Sidebar';
 import { SessionProvider } from 'next-auth/react';
 
-export default function DashboardLayout({
+export default function UserLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
     <SessionProvider>
-      <div className="flex min-h-screen bg-(--black-06)">
+      <div className="flex w-full h-screen overflow-hidden">
         <Sidebar />
-
-        <main className="flex-1 p-8 overflow-y-auto transition-all duration-300 ease-in-out">
+        <main className="flex-1 h-screen overflow-y-auto bg-black">
           {children}
         </main>
       </div>

@@ -1,10 +1,9 @@
 import './globals.css';
 import { Manrope } from 'next/font/google';
-import { headers } from 'next/headers';
-
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Providers } from '@/components/Providers';
+import FooterController from '@/components/layout/FooterController';
 
 const manrope = Manrope({
   subsets: ['latin'],
@@ -12,22 +11,23 @@ const manrope = Manrope({
   variable: '--font-manrope',
 });
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const headersList = await headers();
-  const pathname = headersList.get('x-pathname') ?? '';
-  const isUserPage = pathname.startsWith('/user');
-
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={manrope.variable} suppressHydrationWarning={true}>
+      <body
+        className={`${manrope.variable} font-sans`}
+        suppressHydrationWarning={true}>
         <Providers>
-          {!isUserPage && <Header />}
+          <Header />
           <main>{children}</main>
-          {!isUserPage && <Footer />}
+
+          <FooterController>
+            <Footer />
+          </FooterController>
         </Providers>
       </body>
     </html>
