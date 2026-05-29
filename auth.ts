@@ -3,8 +3,37 @@ import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
 import { prisma } from './lib/prisma';
+import { Role } from '@prisma/client';
 
+// Отключаем строгую проверку TLS для локальной разработки
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+// ВСЕ типы для Auth.js v5 расширяем строго в ОДНОМ модуле 'next-auth'
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      id: string;
+      email: string;
+      name?: string | null;
+      image?: string | null;
+      role: Role;
+    };
+  }
+
+  interface User {
+    id?: string;
+    email?: string | null;
+    name?: string | null;
+    image?: string | null;
+    role?: Role;
+  }
+
+  // В Auth.js v5 интерфейс JWT расширяется прямо здесь!
+  interface JWT {
+    id?: string;
+    role?: Role;
+  }
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: 'jwt' },
@@ -58,13 +87,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
 
         if (!existingUser) {
-          await prisma.user.create({
+          const newUser = await prisma.user.create({
             data: {
               email: user.email!,
               name: user.name,
               image: user.image,
+              role: Role.USER,
             },
           });
+
+          user.id = newUser.id;
+          user.role = newUser.role;
+        } else {
+          user.id = existingUser.id;
+          user.role = existingUser.role;
         }
       }
       return true;
@@ -73,6 +109,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
         token.picture = user.image;
+        token.role = user.role;
       }
 
       if (trigger === 'update') {
@@ -89,6 +126,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token && session.user) {
         session.user.id = (token.id ?? token.sub) as string;
         session.user.image = token.picture as string;
+
+        // Надежное приведение типа, чтобы TS не ругался на {}
+        if (token.role === Role.ADMIN || token.role === Role.USER) {
+          session.user.role = token.role;
+        } else {
+          session.user.role = Role.USER; // Дефолтное безопасное значение
+        }
       }
       return session;
     },
