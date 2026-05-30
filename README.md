@@ -1,90 +1,270 @@
-# 🚀 Инструкция по запуску StreamVibe (База данных, Prisma и Stripe)
+# 🚀 StreamVibe — Local Development Setup
 
-Этот гайд поможет быстро поднять локальное окружение для разработки, включая базу данных PostgreSQL, миграции Prisma и локальное тестирование платежей через Stripe.
-
----
-
-## 📋 Предварительные требования
-
-Перед запуском убедитесь, что у вас установлены:
-
-1. **Node.js** (v18+)
-2. **Docker Desktop** (для запуска базы данных)
-3. **Stripe CLI** (файл `stripe.exe` уже находится в корне проекта и добавлен в `.gitignore`)
+Полная инструкция по запуску проекта локально: база данных PostgreSQL, Prisma, Stripe Webhooks и запуск Next.js.
 
 ---
 
-## 🛠️ Шаг 1: Настройка окружения (.env)
+# 📋 Requirements
 
-1. Создайте файл `.env` в корне проекта на основе примера:
+Перед началом убедитесь, что установлены:
 
-   ```bash
-   cp .env.example .env
-   ```
+- **Node.js** `v18+`
+- **Docker Desktop**
+- **Git**
+- **Stripe CLI** _(stripe.exe уже находится в корне проекта и добавлен в `.gitignore`)_
 
-Заполните переменные своими ключами (Stripe API Keys, TMDB, Resend и т.д.).
+---
 
-💾 Шаг 2: Запуск базы данных и Prisma
-Запустите Docker-контейнер с PostgreSQL (если у вас настроен docker-compose.yml):
+# ⚙️ 1. Environment Setup
 
-Bash
+Создайте `.env` файл в корне проекта:
+
+```bash
+cp .env.example .env
+```
+
+Заполните необходимые переменные окружения:
+
+- Stripe API Keys
+- Database URL
+- TMDB API Key
+- Resend API Key
+- Auth Secret
+- OAuth Providers (если используются)
+
+Пример:
+
+```env
+DATABASE_URL="postgresql://admin:password@localhost:5433/streamvibe"
+
+NEXTAUTH_SECRET=your_secret
+
+STRIPE_SECRET_KEY=sk_test_xxxxxxxxx
+STRIPE_PUBLISHABLE_KEY=pk_test_xxxxxxxxx
+STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxx
+
+TMDB_API_KEY=xxxxxxxxx
+RESEND_API_KEY=re_xxxxxxxxx
+```
+
+---
+
+# 🐘 2. Database Setup (PostgreSQL + Prisma)
+
+## Запуск PostgreSQL через Docker
+
+Если используется `docker-compose.yml`, выполните:
+
+```bash
 docker-compose up -d
-Если докера нет, убедитесь, что локальный PostgreSQL запущен на порту, указанном в DATABASE_URL (по умолчанию 5433).
+```
 
-Примените миграции Prisma, чтобы создать таблицы в базе данных:
+Проверить запущенные контейнеры:
 
-Bash
-npx prisma migrate dev
-Сгенерируйте клиент Prisma (чтобы работал автокомплит в коде):
+```bash
+docker ps
+```
 
-Bash
-npx prisma generate
-(Опционально) Запустите визуальную панель управления базой данных:
-
-Bash
-npx prisma studio
-Панель откроется по адресу http://localhost:5555.
-
-💳 Шаг 3: Настройка и запуск Stripe CLI (Вебхуки)
-Чтобы Stripe на вашем компьютере понимал, когда прошла оплата, нужно запустить прослушивание событий.
-
-Авторизуйте Stripe CLI (выполняется один раз):
-
-На Windows (в Git Bash):
-
-Bash
-./stripe login
-Перейдите по ссылке в терминале и подтвердите доступ в браузере.
-
-Запустите прослушивание вебхуков:
-
-Bash
-./stripe listen --forward-to localhost:3000/api/stripe/webhook
-⚠️ Не закрывайте этот терминал! Он должен работать постоянно во время тестов оплаты.
-
-Обновите .env:
-После запуска команды выше, Stripe CLI выведет в консоль строчку вида:
-Your webhook signing secret is whsec_XXXXXXXXXXXXXXXXXXXXXXXX
-
-Скопируйте этот ключ и вставьте его в файл .env в переменную:
-
-Фрагмент кода
-STRIPE*WEBHOOK_SECRET=whsec*твой*полученный*секрет
-🏃‍♂️ Шаг 4: Запуск приложения Next.js
-Откройте новый терминал (не закрывая Stripe CLI) и запустите сервер разработки:
-
-Bash
-npm run dev
-
-Приложение будет доступно по адресу: http://localhost:3000.
-
-🧪 Тестирование оплаты (Проверка)
-Перейдите на страницу подписок в приложении.
-
-Нажмите «Оформить подписку» — вас перенаправит на тестовую страницу Stripe.
-
-Для успешной оплаты используйте тестовую карту: 4242 4242 4242 4242 (любой срок действия в будущем и любой CVC).
-
-После оплаты вернитесь в приложение. В терминале, где запущен stripe listen, вы должны увидеть успешные события checkout.session.completed со статусом 200 OK.
+> PostgreSQL по умолчанию работает на порту `5433`.
 
 ---
+
+## Prisma Migration
+
+Создайте таблицы в базе данных:
+
+```bash
+npx prisma migrate dev
+```
+
+---
+
+## Prisma Client Generation
+
+Сгенерируйте Prisma Client:
+
+```bash
+npx prisma generate
+```
+
+---
+
+## Prisma Studio (Optional)
+
+Запуск визуальной панели управления БД:
+
+```bash
+npx prisma studio
+```
+
+Prisma Studio будет доступна:
+
+```txt
+http://localhost:5555
+```
+
+---
+
+# 💳 3. Stripe Webhooks Setup
+
+Для локального тестирования оплаты необходимо запустить Stripe Webhook Listener.
+
+## Авторизация Stripe CLI
+
+Выполняется **один раз**.
+
+### Windows (Git Bash)
+
+```bash
+./stripe login
+```
+
+Откройте ссылку из терминала и подтвердите авторизацию в браузере.
+
+---
+
+## Запуск Webhook Listener
+
+После авторизации выполните:
+
+```bash
+./stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+> ⚠️ Не закрывайте терминал. Он должен работать во время тестирования оплаты.
+
+---
+
+## Обновление `.env`
+
+После запуска `stripe listen` в терминале появится:
+
+```txt
+Your webhook signing secret is:
+
+whsec_xxxxxxxxxxxxxxxxxxxxx
+```
+
+Скопируйте ключ и вставьте в `.env`:
+
+```env
+STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxx
+```
+
+---
+
+# ▶️ 4. Start Development Server
+
+Откройте **новый терминал** и запустите Next.js:
+
+```bash
+npm run dev
+```
+
+Приложение будет доступно:
+
+```txt
+http://localhost:3000
+```
+
+---
+
+# 🧪 5. Payment Testing
+
+1. Откройте страницу подписок.
+2. Нажмите **«Оформить подписку»**.
+3. Вы будете перенаправлены на тестовую страницу Stripe.
+4. Используйте тестовую карту:
+
+```txt
+4242 4242 4242 4242
+```
+
+Любые значения:
+
+- Expiration Date → в будущем
+- CVC → любой
+- ZIP Code → любой
+
+---
+
+## Successful Payment Check
+
+После оплаты:
+
+- Stripe вернёт пользователя в приложение
+- В терминале `stripe listen` появится событие:
+
+```txt
+checkout.session.completed
+```
+
+Со статусом:
+
+```txt
+200 OK
+```
+
+---
+
+# ✅ Features Included
+
+- PostgreSQL Database
+- Prisma ORM + Migrations
+- Stripe Payments
+- Stripe Webhooks
+- Subscription System
+- Notification System
+- NextAuth Authentication
+- TMDB Integration
+
+---
+
+# 🛠 Useful Commands
+
+### Start Database
+
+```bash
+docker-compose up -d
+```
+
+### Stop Database
+
+```bash
+docker-compose down
+```
+
+### Run Prisma Migration
+
+```bash
+npx prisma migrate dev
+```
+
+### Generate Prisma Client
+
+```bash
+npx prisma generate
+```
+
+### Open Prisma Studio
+
+```bash
+npx prisma studio
+```
+
+## Stripe (Local Testing)
+
+```Login to Stripe CLI
+
+./stripe login
+
+Start Webhook Listener
+
+./stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+### Run Development Server
+
+```bash
+npm run dev
+```
