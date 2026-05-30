@@ -1,31 +1,31 @@
-# dependencies
-node_modules/
+        # dependencies
+        node_modules/
 
-# next.js
-.next/
-out/
+        # next.js
+        .next/
+        out/
 
-# production
-build/
+        # production
+        build/
 
-# logs
-*.log
+        # logs
+        *.log
 
-# env files
-.env*
-!.env.example
+        # env files
+        .env*
+        !.env.example
 
-# OS
-.DS_Store
+        # OS
+        .DS_Store
 
-# vercel
-.vercel/
+        # vercel
+        .vercel/
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+        # typescript
+        *.tsbuildinfo
+        next-env.d.ts
 
-# cache
-.cache/
-.turbo/
-/lib/generated/prisma
+        # cache
+        .cache/
+        .turbo/
+        stripe.exe
