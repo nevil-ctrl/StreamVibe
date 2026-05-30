@@ -10,6 +10,7 @@ export const MAIN_MENU = [
   { name: 'История', icon: 'History', path: '/user/history' },
   { name: 'Просмотры', icon: 'Film', path: '/user/watched' },
   { name: 'Избранное', icon: 'Heart', path: '/user/favorites' },
+  { name: 'Поддержка', icon: 'LifeBuoy', path: '/user/support' },
 ];
 
 export const SETTINGS_MENU = [

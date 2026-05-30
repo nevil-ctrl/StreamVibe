@@ -11,17 +11,17 @@ datasource db {
 // ==========================================
 
 model User {
-  id            String        @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String?
-  email         String        @unique
+  email         String    @unique
   emailVerified DateTime?
   password      String?
   image         String?
-  role          Role          @default(USER)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  
-  // Связи приложения
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  tickets       SupportTicket[]
+
   accounts      Account[]
   sessions      Session[]
   subscription  Subscription?
@@ -90,33 +90,64 @@ model Payment {
   createdAt DateTime         @default(now())
 }
 
-// ==========================================
-// БЛОК: КОНТЕНТ, КИНОТЕАТР И АКТИВНОСТЬ
-// ==========================================
+model SupportTicket {
+  id        String   @id @default(cuid())
+  userId    String?  // опционально — если юзер залогинен
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  firstName String
+  lastName  String
+  email     String
+  phone     String?
+  message   String   @db.Text
+  status    TicketStatus @default(OPEN)
+  
+  // 👇 Добавлено поле для связи с ответами
+  replies   TicketReply[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TicketReply {
+  id        String        @id @default(cuid())
+  ticketId  String
+  // 👇 Исправлено: указали явные поля привязки и настроили каскадное удаление
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  message   String        @db.Text
+  fromAdmin Boolean       @default(false)
+  createdAt DateTime      @default(now())
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
 
 // ==========================================
 // БЛОК: КОНТЕНТ, КИНОТЕАТР И АКТИВНОСТЬ
 // ==========================================
 
 model Movie {
-  id           String         @id // ID из TMDB (например, "157336")
-  title        String
-  posterPath   String?
+  id          String         @id // ID из TMDB (например, "157336")
+  title       String
+  posterPath  String?
   
-  watchedBy    WatchHistory[]
-  comments     Comment[]
-  createdAt    DateTime       @default(now())
+  watchedBy   WatchHistory[]
+  comments    Comment[]
+  createdAt   DateTime       @default(now())
 }
 
-// 👈 ДОБАВЛЯЕМ МОДЕЛЬ ДЛЯ СЕРИАЛОВ
 model Show {
-  id           String         @id // ID сериала из TMDB
-  name         String
-  posterPath   String?
+  id          String         @id // ID сериала из TMDB
+  name        String
+  posterPath  String?
   
-  watchedBy    WatchHistory[]
-  comments     Comment[]
-  createdAt    DateTime       @default(now())
+  watchedBy   WatchHistory[]
+  comments    Comment[]
+  createdAt   DateTime       @default(now())
 }
 
 model WatchHistory {
@@ -124,15 +155,14 @@ model WatchHistory {
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  // Делаем поля связи опциональными, так как запись будет ИЛИ для фильма, ИЛИ для сериала
   movieId    String?
   movie      Movie?   @relation(fields: [movieId], references: [id], onDelete: Cascade)
   
-  showId     String?  // 👈 Ссылка на сериал
+  showId     String?  
   show       Show?    @relation(fields: [showId], references: [id], onDelete: Cascade)
   
-  progress   Int      @default(0)    // Секунды для фильма или текущей серии
-  episodeId  String?  // Опционально: ID серии из TMDB, если это сериал
+  progress   Int      @default(0)    
+  episodeId  String?  
   isFinished Boolean  @default(false)
   
   watchedAt  DateTime @default(now()) @updatedAt
@@ -156,6 +186,7 @@ model Comment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
 // ==========================================
 // ЭНУМЫ (Ограничения типов данных)
 // ==========================================
