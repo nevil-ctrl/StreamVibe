@@ -21,7 +21,7 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   tickets       SupportTicket[]
-
+  notifications Notification[]
   accounts      Account[]
   sessions      Session[]
   subscription  Subscription?
@@ -126,6 +126,18 @@ enum TicketStatus {
   CLOSED
 }
 
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "PAYMENT_SUCCESS" | "SUBSCRIPTION_ACTIVATED" | "SUBSCRIPTION_EXPIRED"
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+}
 // ==========================================
 // БЛОК: КОНТЕНТ, КИНОТЕАТР И АКТИВНОСТЬ
 // ==========================================

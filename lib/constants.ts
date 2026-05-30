@@ -11,6 +11,7 @@ export const MAIN_MENU = [
   { name: 'Просмотры', icon: 'Film', path: '/user/watched' },
   { name: 'Избранное', icon: 'Heart', path: '/user/favorites' },
   { name: 'Подписка', icon: 'CreditCard', path: '/user/subscription' },
+  { name: 'Уведомления', icon: 'Bell', path: '/user/notifications' },
   { name: 'Поддержка', icon: 'LifeBuoy', path: '/user/support' },
 ];
 export const SETTINGS_MENU = [

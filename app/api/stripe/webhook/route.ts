@@ -3,11 +3,6 @@ import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
 import Stripe from 'stripe';
 
-// ВАЖНО: отключаем body parser Next.js — Stripe требует raw body для верификации подписи
-export const config = {
-  api: { bodyParser: false },
-};
-
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const sig = req.headers.get('stripe-signature');
@@ -31,7 +26,6 @@ export async function POST(req: NextRequest) {
 
   try {
     switch (event.type) {
-      // Успешная оплата — активируем/создаём подписку
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
         const userId = session.metadata?.userId;
@@ -42,45 +36,48 @@ export async function POST(req: NextRequest) {
         const expiresAt = new Date();
         expiresAt.setMonth(expiresAt.getMonth() + 1);
 
-        // Создаём запись об оплате
+        const amount = session.amount_total ?? 25;
+
+        // Платёж
         await prisma.payment.create({
           data: {
             userId,
-            amount: session.amount_total ?? 25,
+            amount,
             currency: session.currency?.toUpperCase() ?? 'USD',
             plan,
             status: 'SUCCESS',
           },
         });
 
-        // Upsert подписки — создаём если нет, обновляем если есть
+        // Подписка
         await prisma.subscription.upsert({
           where: { userId },
-          update: {
-            plan,
-            status: 'ACTIVE',
-            expiresAt,
-          },
-          create: {
+          update: { plan, status: 'ACTIVE', expiresAt },
+          create: { userId, plan, status: 'ACTIVE', expiresAt },
+        });
+
+        const planLabel = plan.charAt(0) + plan.slice(1).toLowerCase();
+        const amountFormatted = `$${(amount / 100).toFixed(2)}`;
+
+        // Уведомление об оплате
+        await prisma.notification.create({
+          data: {
             userId,
-            plan,
-            status: 'ACTIVE',
-            expiresAt,
+            type: 'PAYMENT_SUCCESS',
+            title: 'Оплата прошла успешно',
+            message: `${planLabel} Plan активирован. Списано ${amountFormatted}. Следующее продление: ${expiresAt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}.`,
           },
         });
 
         console.log(
-          `[WEBHOOK] Subscription activated for user ${userId}, plan ${plan}`,
+          `[WEBHOOK] Subscription activated: user=${userId} plan=${plan}`,
         );
         break;
       }
 
-      // Платёж не прошёл
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
-
-        // Находим пользователя по email из Stripe customer
         const customer = (await stripe.customers.retrieve(
           customerId,
         )) as Stripe.Customer;
@@ -89,7 +86,6 @@ export async function POST(req: NextRequest) {
         const user = await prisma.user.findUnique({
           where: { email: customer.email },
         });
-
         if (!user) break;
 
         await prisma.subscription.updateMany({
@@ -97,23 +93,29 @@ export async function POST(req: NextRequest) {
           data: { status: 'EXPIRED' },
         });
 
-        console.log(`[WEBHOOK] Payment failed for user ${user.id}`);
+        await prisma.notification.create({
+          data: {
+            userId: user.id,
+            type: 'PAYMENT_FAILED',
+            title: 'Ошибка оплаты',
+            message:
+              'Не удалось продлить подписку. Проверьте платёжные данные и попробуйте снова.',
+          },
+        });
+
         break;
       }
 
-      // Подписка отменена
       case 'customer.subscription.deleted': {
         const sub = event.data.object as Stripe.Subscription;
         const customer = (await stripe.customers.retrieve(
           sub.customer as string,
         )) as Stripe.Customer;
-
         if (!customer.email) break;
 
         const user = await prisma.user.findUnique({
           where: { email: customer.email },
         });
-
         if (!user) break;
 
         await prisma.subscription.updateMany({
@@ -121,7 +123,16 @@ export async function POST(req: NextRequest) {
           data: { status: 'CANCELLED' },
         });
 
-        console.log(`[WEBHOOK] Subscription cancelled for user ${user.id}`);
+        await prisma.notification.create({
+          data: {
+            userId: user.id,
+            type: 'SUBSCRIPTION_CANCELLED',
+            title: 'Подписка отменена',
+            message:
+              'Ваша подписка была отменена. Вы можете оформить новую в любое время.',
+          },
+        });
+
         break;
       }
     }
