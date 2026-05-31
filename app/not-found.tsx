@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
-// Импортируем иконку стрелки из lucide-react
 import { ArrowLeft } from 'lucide-react';
 
 export default function NotFound() {
@@ -25,7 +24,6 @@ export default function NotFound() {
 
       <Link href="/">
         <Button className="bg-[var(--black-08)] border border-[var(--black-15)] hover:bg-[var(--black-10)] text-[var(--white)] px-8 h-12 rounded-[8px] transition-all flex items-center gap-2">
-          {/* Чистая иконка Lucide вместо ручного кода */}
           <ArrowLeft className="w-4 h-4 text-[var(--grey-70)]" />
           На главный экран
         </Button>

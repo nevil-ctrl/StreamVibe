@@ -79,7 +79,7 @@ export default async function Footer() {
           <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent pointer-events-none" />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none md:hidden" />
 
-          <div className="relative z-10 max-w-2xl text-center md:text-left flex flex-col gap-3">
+          <div className="relative z-10 text-center md:text-left flex flex-col gap-3">
             <h2 className="text-[28px] md:text-[36px] font-bold text-white tracking-tight">
               Start your free trial today!
             </h2>
@@ -91,7 +91,7 @@ export default async function Footer() {
 
           <div className="relative z-10 shrink-0">
             <Link
-              href="/browse"
+              href="/subscriptions"
               className="px-6 py-4 bg-[#E50000] hover:bg-red-700 text-white font-semibold rounded-lg text-sm transition duration-200 shadow-lg shadow-red-900/30 cursor-pointer whitespace-nowrap">
               Start a Free Trial
             </Link>

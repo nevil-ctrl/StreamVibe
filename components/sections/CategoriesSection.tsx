@@ -88,14 +88,10 @@ export default function CategoriesSection({
 
   const totalSlides = Math.ceil(originalLength / VISIBLE);
 
-  // ... дальше ваш return JSX без изменений
-
   return (
     <section className="container py-20">
-      {/* HEADER */}
       <div className="flex items-start justify-between mb-10">
         <div className="flex flex-col gap-2">
-          {/* Красивый красный тег над заголовком как на макете */}
           <span className="w-fit px-3 py-1 bg-[#E50000] text-white text-xs font-semibold rounded-md uppercase tracking-wider mb-1">
             {type === 'movie' ? 'Movies' : 'Shows'}
           </span>
@@ -134,7 +130,6 @@ export default function CategoriesSection({
         </div>
       </div>
 
-      {/* TRACK */}
       <div
         ref={trackRef}
         onScroll={onScroll}

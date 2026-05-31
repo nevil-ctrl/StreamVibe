@@ -178,7 +178,6 @@ export default function SubscriptionsClient({
 
   return (
     <div className="min-h-screen bg-[#0F0F0F]">
-      {/* Тосты */}
       {success && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-[#1A1A1A] border border-[#333] text-white px-5 py-3 rounded-xl shadow-2xl text-sm">
           <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[#E50000]/15 text-[#E50000]">
@@ -204,7 +203,6 @@ export default function SubscriptionsClient({
       )}
 
       <div className="container px-4 py-16 md:py-20">
-        {/* Баннер текущей подписки */}
         {hasActiveSub && (
           <div className="mb-10 flex items-center justify-between bg-[#141414] border border-[#E50000]/30 rounded-2xl px-6 py-4">
             <div className="flex items-center gap-3">
@@ -240,7 +238,7 @@ export default function SubscriptionsClient({
 
         {/* Заголовок + тоггл */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6 mb-12">
-          <div className="max-w-xl">
+          <div className="lex-1">
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 leading-tight">
               Choose the plan that&apos;s right for you
             </h1>
@@ -435,7 +433,7 @@ export default function SubscriptionsClient({
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
             Compare our plans and find the right one for you
           </h2>
-          <p className="text-[#999] text-sm leading-relaxed max-w-2xl">
+          <p className="text-[#999] text-sm leading-relaxed max-w-[1000px]">
             StreamVibe offers three different plans to fit your needs: Basic,
             Standard, and Premium. Compare the features of each plan and choose
             the one that&apos;s right for you.

@@ -330,10 +330,9 @@ export default function SupportPage() {
 
       <div className="container mx-auto px-4 md:px-8 py-10 md:py-16 max-w-360">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center mb-20 md:mb-28">
-          {/* ── Left: headline + poster grid ── */}
           <div className="lg:col-span-5 flex flex-col gap-8 h-full justify-between">
             <div className="space-y-3">
-              <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white">
+              <h1 className="text-3xl w-[400px] md:text-5xl font-bold tracking-tight text-white">
                 Welcome to our support page!
               </h1>
               <p className="text-[#999999] text-sm md:text-base leading-relaxed">
@@ -389,7 +388,6 @@ export default function SupportPage() {
           <div
             ref={formRef}
             className="lg:col-span-7 bg-[#0F0F0F] border border-[#262628] p-6 md:p-10 rounded-xl shadow-2xl">
-            {/* Баннер для незалогиненных */}
             {!isLoggedIn && status !== 'loading' && (
               <div className="mb-6 flex items-start gap-3 bg-[#1A1A1A] border border-[#262628] rounded-lg px-4 py-3">
                 <AlertCircle className="w-4 h-4 text-[#E50000] mt-0.5 shrink-0" />
@@ -609,7 +607,7 @@ export default function SupportPage() {
                       <div className="flex-1 space-y-3">
                         <button
                           onClick={() => toggleFaq(item.id)}
-                          className="w-full flex items-center justify-between text-left group">
+                          className="  cursor-pointer  w-full flex items-center justify-between text-left group">
                           <span className="font-semibold text-base md:text-lg text-white group-hover:text-[#E50000] transition-colors">
                             {item.question}
                           </span>
