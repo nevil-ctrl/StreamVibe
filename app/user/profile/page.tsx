@@ -51,12 +51,16 @@ export default async function ProfileDashboard() {
   if (!user) redirect('/auth/login');
 
   const stats = await getUserWatchStats(user.id);
+  const displayName =
+    user.name?.trim() ||
+    session.user.name?.trim() ||
+    user.email.split('@')[0];
 
   return (
     <div className="space-y-10 p-8">
       <div className="p-8 rounded-2xl bg-(--black-08) border border-(--black-15)">
         <h1 className="text-3xl font-bold text-white">
-          Привет, {user.name ?? 'пользователь'}!
+          Привет, {displayName}!
         </h1>
         <p className="text-(--grey-60) mt-2">
           {user.subscription

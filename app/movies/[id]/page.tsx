@@ -10,6 +10,7 @@ import {
   pickComposer,
 } from '@/services/media-detail.service';
 import { getLocalMovie } from '@/services/content.service';
+import { getUserReviewForMedia } from '@/services/review.service';
 import { getWatchEntry } from '@/services/watch-history.service';
 import { isFavoriteEntry, isWatchlistEntry } from '@/lib/watch-constants';
 import { auth } from '@/auth';
@@ -39,11 +40,14 @@ export default async function MoviePage({ params }: PageProps) {
 
   const session = await auth();
 
-  const [movie, local, watchEntry] = await Promise.all([
+  const [movie, local, watchEntry, userOwnReview] = await Promise.all([
     getMovieDetail(movieId).catch(() => null),
     getLocalMovie(id).catch(() => null),
     session?.user?.id
       ? getWatchEntry(session.user.id, { movieId: id })
+      : Promise.resolve(null),
+    session?.user?.id
+      ? getUserReviewForMedia(session.user.id, { movieId: id })
       : Promise.resolve(null),
   ]);
 
@@ -77,6 +81,26 @@ export default async function MoviePage({ params }: PageProps) {
           <ReviewsSection
             tmdbReviews={movie.reviews?.results ?? []}
             localComments={local?.comments}
+            media={{
+              type: 'movie',
+              id: movie.id,
+              title: movie.title,
+              poster_path: movie.poster_path,
+            }}
+            currentUserId={session?.user?.id}
+            currentUserRole={session?.user?.role}
+            userOwnReview={
+              userOwnReview
+                ? {
+                    id: userOwnReview.id,
+                    content: userOwnReview.content,
+                    userId: userOwnReview.userId,
+                    createdAt: userOwnReview.createdAt,
+                    updatedAt: userOwnReview.updatedAt,
+                    user: userOwnReview.user,
+                  }
+                : null
+            }
           />
         </div>
 

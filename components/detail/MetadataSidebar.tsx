@@ -9,6 +9,7 @@ import {
 import Image from 'next/image';
 import type { TMDBGenre, TMDBCrewMember } from '@/types/media-detail';
 import { tmdbProfile } from '@/lib/tmdb-images';
+import { formatRating, tmdbToFiveScale } from '@/lib/rating';
 
 interface MetadataSidebarProps {
   releaseYear: string | null;
@@ -76,7 +77,8 @@ export default function MetadataSidebar({
   composer,
   watchersCount = 0,
 }: MetadataSidebarProps) {
-  const ratingText = rating ? rating.toFixed(1) : '—';
+  const ratingFive = rating ? tmdbToFiveScale(rating) : 0;
+  const ratingText = ratingFive > 0 ? formatRating(ratingFive) : '—';
 
   return (
     <aside className="h-fit rounded-2xl border border-[#262628] bg-[#1A1A1A] p-6">

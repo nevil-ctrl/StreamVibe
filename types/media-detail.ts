@@ -103,8 +103,15 @@ export interface ShowDetail {
 export interface LocalComment {
   id: string;
   content: string;
+  userId: string;
   createdAt: Date;
-  user: { name: string | null; image: string | null };
+  updatedAt: Date;
+  user: {
+    id: string;
+    name: string | null;
+    image: string | null;
+    role: 'USER' | 'ADMIN';
+  };
 }
 
 export interface LocalMediaData {

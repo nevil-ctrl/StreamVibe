@@ -12,7 +12,9 @@ export async function getLocalMovie(
         take: 12,
         orderBy: { createdAt: 'desc' },
         include: {
-          user: { select: { name: true, image: true } },
+          user: {
+            select: { id: true, name: true, image: true, role: true },
+          },
         },
       },
       _count: { select: { watchedBy: true } },
@@ -37,7 +39,9 @@ export async function getLocalShow(
         take: 12,
         orderBy: { createdAt: 'desc' },
         include: {
-          user: { select: { name: true, image: true } },
+          user: {
+            select: { id: true, name: true, image: true, role: true },
+          },
         },
       },
       _count: { select: { watchedBy: true } },
