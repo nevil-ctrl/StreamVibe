@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { isFavoriteEntry, stripFavoriteMarker } from '@/lib/watch-constants';
+import { episodeIdOnPlayStart } from '@/lib/watch-constants';
 import type { LocalMediaData } from '@/types/media-detail';
 
 export async function getLocalMovie(
@@ -93,9 +93,7 @@ export async function recordMovieWatch(userId: string, movieId: string) {
     where: { userId_movieId: { userId, movieId } },
     update: {
       watchedAt: new Date(),
-      episodeId: isFavoriteEntry(existing?.episodeId)
-        ? null
-        : existing?.episodeId,
+      episodeId: episodeIdOnPlayStart(existing?.episodeId ?? null),
     },
     create: { userId, movieId, progress: 0 },
   });
@@ -110,12 +108,10 @@ export async function recordShowWatch(
     where: { userId_showId: { userId, showId } },
   });
 
-  const nextEpisodeId =
-    episodeId ??
-    (isFavoriteEntry(existing?.episodeId)
-      ? stripFavoriteMarker(existing?.episodeId)
-      : existing?.episodeId) ??
-    null;
+  const nextEpisodeId = episodeIdOnPlayStart(
+    existing?.episodeId ?? null,
+    episodeId ?? undefined,
+  );
 
   return prisma.watchHistory.upsert({
     where: { userId_showId: { userId, showId } },

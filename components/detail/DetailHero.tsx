@@ -3,12 +3,13 @@
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTransition, useState } from 'react';
-import { Play, Plus, ThumbsUp, Volume2, Loader2 } from 'lucide-react';
+import { Play, Plus, ThumbsUp, Volume2, Loader2, Check } from 'lucide-react';
 import { tmdbBackdrop } from '@/lib/tmdb-images';
 import {
   startWatchingMovie,
   startWatchingShow,
   toggleFavoriteMedia,
+  toggleWatchlistMedia,
 } from '@/app/actions/watch.actions';
 
 interface DetailHeroProps {
@@ -19,6 +20,7 @@ interface DetailHeroProps {
   type: 'movie' | 'tv';
   posterPath: string | null;
   initialFavorited?: boolean;
+  initialInWatchlist?: boolean;
 }
 
 export default function DetailHero({
@@ -29,10 +31,12 @@ export default function DetailHero({
   type,
   posterPath,
   initialFavorited = false,
+  initialInWatchlist = false,
 }: DetailHeroProps) {
   const router = useRouter();
   const backdrop = tmdbBackdrop(backdropPath);
   const [favorited, setFavorited] = useState(initialFavorited);
+  const [inWatchlist, setInWatchlist] = useState(initialInWatchlist);
   const [pending, startTransition] = useTransition();
 
   const handlePlay = () => {
@@ -54,6 +58,19 @@ export default function DetailHero({
         poster_path: posterPath,
       });
       setFavorited(result.favorited);
+      router.refresh();
+    });
+  };
+
+  const handleWatchlist = () => {
+    startTransition(async () => {
+      const result = await toggleWatchlistMedia({
+        type,
+        id,
+        title,
+        poster_path: posterPath,
+      });
+      setInWatchlist(result.inWatchlist);
       router.refresh();
     });
   };
@@ -100,6 +117,24 @@ export default function DetailHero({
             </button>
             <button
               type="button"
+              onClick={handleWatchlist}
+              disabled={pending}
+              title={
+                inWatchlist ? 'Убрать из «Мой список»' : 'Добавить в «Мой список»'
+              }
+              className={`flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border transition disabled:opacity-60 ${
+                inWatchlist
+                  ? 'border-white bg-white text-black'
+                  : 'border-[#262628] bg-[#141414] hover:bg-[#1A1A1A]'
+              }`}>
+              {inWatchlist ? (
+                <Check size={18} strokeWidth={2.5} />
+              ) : (
+                <Plus size={18} className="text-white" />
+              )}
+            </button>
+            <button
+              type="button"
               onClick={handleFavorite}
               disabled={pending}
               title={favorited ? 'Убрать из избранного' : 'В избранное'}
@@ -112,13 +147,6 @@ export default function DetailHero({
                 size={16}
                 className={favorited ? 'fill-current text-[#E50000]' : 'text-white'}
               />
-            </button>
-            <button
-              type="button"
-              className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-[#262628] bg-[#141414] transition hover:bg-[#1A1A1A]"
-              title="Скоро"
-            >
-              <Plus size={18} className="text-white" />
             </button>
             <button
               type="button"

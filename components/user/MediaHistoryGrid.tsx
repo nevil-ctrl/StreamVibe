@@ -1,7 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { tmdbPoster } from '@/lib/tmdb-images';
-import { isFavoriteEntry } from '@/lib/watch-constants';
+import {
+  episodeIdForPlayback,
+  isFavoriteEntry,
+  isWatchlistEntry,
+} from '@/lib/watch-constants';
 import type { WatchHistoryWithMedia } from '@/services/watch-history.service';
 
 interface MediaHistoryGridProps {
@@ -15,7 +19,7 @@ function itemHref(item: WatchHistoryWithMedia): string {
     return `/watch/movie/${item.movieId}${progress}`;
   }
   if (item.showId) {
-    const ep = item.episodeId?.replace(/^FAVORITE:/, '') ?? '';
+    const ep = episodeIdForPlayback(item.episodeId);
     const q = ep ? `?episodeId=${ep}` : '';
     return `/watch/tv/${item.showId}${q}`;
   }
@@ -48,6 +52,7 @@ export default function MediaHistoryGrid({
       {items.map((item) => {
         const poster = itemPoster(item);
         const favorite = isFavoriteEntry(item.episodeId);
+        const watchlist = isWatchlistEntry(item.episodeId);
         const detailPath = item.movieId
           ? `/movies/${item.movieId}`
           : `/shows/${item.showId}`;
@@ -76,11 +81,18 @@ export default function MediaHistoryGrid({
                     Завершено
                   </span>
                 )}
-                {favorite && (
-                  <span className="absolute right-2 top-2 rounded bg-(--red-45)/90 px-2 py-0.5 text-[10px] font-medium text-white">
-                    ♥
-                  </span>
-                )}
+                <div className="absolute right-2 top-2 flex flex-col gap-1">
+                  {watchlist && (
+                    <span className="rounded bg-white/90 px-2 py-0.5 text-[10px] font-medium text-black">
+                      +
+                    </span>
+                  )}
+                  {favorite && (
+                    <span className="rounded bg-(--red-45)/90 px-2 py-0.5 text-[10px] font-medium text-white">
+                      ♥
+                    </span>
+                  )}
+                </div>
                 {item.progress > 0 && !item.isFinished && (
                   <div className="absolute inset-x-0 bottom-0 h-1 bg-black/50">
                     <div

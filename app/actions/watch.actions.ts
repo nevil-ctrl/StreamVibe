@@ -9,7 +9,10 @@ import {
   recordMovieWatch,
   recordShowWatch,
 } from '@/services/content.service';
-import { toggleFavorite } from '@/services/watch-history.service';
+import {
+  toggleFavorite,
+  toggleWatchlist,
+} from '@/services/watch-history.service';
 
 export async function startWatchingMovie(movie: {
   id: number;
@@ -75,6 +78,31 @@ export async function toggleFavoriteMedia(media: {
   revalidatePath(`/shows/${media.id}`);
   revalidatePath('/user/profile');
   revalidatePath('/user/favorites');
+  revalidatePath('/user/my-list');
+
+  return result;
+}
+
+export async function toggleWatchlistMedia(media: {
+  type: 'movie' | 'tv';
+  id: number;
+  title: string;
+  poster_path: string | null;
+  episodeId?: string;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect(
+      `/auth/login?callbackUrl=/${media.type === 'movie' ? 'movies' : 'shows'}/${media.id}`,
+    );
+  }
+
+  const result = await toggleWatchlist(session.user.id, media);
+
+  revalidatePath(`/movies/${media.id}`);
+  revalidatePath(`/shows/${media.id}`);
+  revalidatePath('/user/profile');
+  revalidatePath('/user/my-list');
 
   return result;
 }

@@ -1,7 +1,8 @@
+import Link from 'next/link';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
-import { Film, Clock, Heart, Rocket } from 'lucide-react';
+import { Film, Clock, Heart, ListPlus } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 import { getUserWatchStats } from '@/services/watch-history.service';
 
@@ -9,11 +10,12 @@ interface DashboardCardProps {
   title: string;
   value: string;
   icon: LucideIcon;
+  href?: string;
 }
 
-function DashboardCard({ title, value, icon: Icon }: DashboardCardProps) {
-  return (
-    <div className="bg-(--black-08) p-6 rounded-xl border border-(--black-15) flex gap-4 items-center hover:border-(--red-45)/50 transition-all">
+function DashboardCard({ title, value, icon: Icon, href }: DashboardCardProps) {
+  const content = (
+    <div className="bg-(--black-08) p-6 rounded-xl border border-(--black-15) flex gap-4 items-center hover:border-(--red-45)/50 transition-all h-full">
       <div className="p-3 bg-(--black-06) rounded-lg text-(--red-45)">
         <Icon size={24} />
       </div>
@@ -23,6 +25,16 @@ function DashboardCard({ title, value, icon: Icon }: DashboardCardProps) {
       </div>
     </div>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block">
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
 }
 
 export default async function ProfileDashboard() {
@@ -53,16 +65,18 @@ export default async function ProfileDashboard() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <DashboardCard
           title="Просмотрено"
           value={`${stats.totalWatched} тайтлов`}
           icon={Film}
+          href="/user/watched"
         />
         <DashboardCard
           title="Завершено"
           value={`${stats.completed} тайтлов`}
           icon={Clock}
+          href="/user/history"
         />
         <DashboardCard
           title="В избранном"
@@ -72,6 +86,17 @@ export default async function ProfileDashboard() {
               : 'Пусто'
           }
           icon={Heart}
+          href="/user/favorites"
+        />
+        <DashboardCard
+          title="Мой список"
+          value={
+            stats.watchlist > 0
+              ? `${stats.watchlist} тайтлов`
+              : 'Пусто'
+          }
+          icon={ListPlus}
+          href="/user/my-list"
         />
       </div>
     </div>
