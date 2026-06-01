@@ -10,7 +10,8 @@ export function middleware(request: NextRequest) {
   const isAuthPage = request.nextUrl.pathname.startsWith('/auth');
   const isPrivatePage =
     request.nextUrl.pathname.startsWith('/user') ||
-    request.nextUrl.pathname.startsWith('/admin');
+    request.nextUrl.pathname.startsWith('/admin') ||
+    request.nextUrl.pathname.startsWith('/watch');
 
   if (!sessionToken && isPrivatePage) {
     return NextResponse.redirect(new URL('/auth/login', request.url));

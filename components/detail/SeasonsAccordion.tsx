@@ -142,6 +142,8 @@ export default function SeasonsAccordion({
                                     name: showName,
                                     poster_path: posterPath,
                                     episodeId: String(ep.id),
+                                    season: season.season_number,
+                                    episode: ep.episode_number,
                                   })
                                 }
                                 className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/40 opacity-0 transition hover:opacity-100">

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { Film, Clock, Heart, Rocket } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
+import { getUserWatchStats } from '@/services/watch-history.service';
 
 interface DashboardCardProps {
   title: string;
@@ -31,18 +32,16 @@ export default async function ProfileDashboard() {
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
     include: {
-      watchHistory: true,
       subscription: true,
     },
   });
 
   if (!user) redirect('/auth/login');
 
-  const totalWatched = user.watchHistory.length;
-  const favorites = user.watchHistory.filter((h) => h.isFinished).length;
+  const stats = await getUserWatchStats(user.id);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 p-8">
       <div className="p-8 rounded-2xl bg-(--black-08) border border-(--black-15)">
         <h1 className="text-3xl font-bold text-white">
           Привет, {user.name ?? 'пользователь'}!
@@ -57,15 +56,23 @@ export default async function ProfileDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <DashboardCard
           title="Просмотрено"
-          value={`${totalWatched} тайтлов`}
+          value={`${stats.totalWatched} тайтлов`}
           icon={Film}
         />
         <DashboardCard
           title="Завершено"
-          value={`${favorites} тайтлов`}
+          value={`${stats.completed} тайтлов`}
           icon={Clock}
         />
-        <DashboardCard title="В избранном" value="Пусто" icon={Heart} />
+        <DashboardCard
+          title="В избранном"
+          value={
+            stats.favorites > 0
+              ? `${stats.favorites} тайтлов`
+              : 'Пусто'
+          }
+          icon={Heart}
+        />
       </div>
     </div>
   );

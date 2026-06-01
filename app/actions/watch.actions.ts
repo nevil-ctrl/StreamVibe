@@ -9,6 +9,7 @@ import {
   recordMovieWatch,
   recordShowWatch,
 } from '@/services/content.service';
+import { toggleFavorite } from '@/services/watch-history.service';
 
 export async function startWatchingMovie(movie: {
   id: number;
@@ -17,12 +18,12 @@ export async function startWatchingMovie(movie: {
 }) {
   const session = await auth();
   if (!session?.user?.id) {
-    redirect(`/auth/login?callbackUrl=/movies/${movie.id}`);
+    redirect(`/auth/login?callbackUrl=/watch/movie/${movie.id}`);
   }
 
   await ensureMovieInDb(movie);
   await recordMovieWatch(session.user.id, String(movie.id));
-  revalidatePath(`/movies/${movie.id}`);
+  redirect(`/watch/movie/${movie.id}`);
 }
 
 export async function startWatchingShow(show: {
@@ -30,6 +31,8 @@ export async function startWatchingShow(show: {
   name: string;
   poster_path: string | null;
   episodeId?: string;
+  season?: number;
+  episode?: number;
 }) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -42,5 +45,36 @@ export async function startWatchingShow(show: {
     String(show.id),
     show.episodeId,
   );
-  revalidatePath(`/shows/${show.id}`);
+
+  const params = new URLSearchParams();
+  if (show.episodeId) params.set('episodeId', show.episodeId);
+  if (show.season != null) params.set('season', String(show.season));
+  if (show.episode != null) params.set('episode', String(show.episode));
+
+  const qs = params.toString();
+  redirect(`/watch/tv/${show.id}${qs ? `?${qs}` : ''}`);
+}
+
+export async function toggleFavoriteMedia(media: {
+  type: 'movie' | 'tv';
+  id: number;
+  title: string;
+  poster_path: string | null;
+  episodeId?: string;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect(
+      `/auth/login?callbackUrl=/${media.type === 'movie' ? 'movies' : 'shows'}/${media.id}`,
+    );
+  }
+
+  const result = await toggleFavorite(session.user.id, media);
+
+  revalidatePath(`/movies/${media.id}`);
+  revalidatePath(`/shows/${media.id}`);
+  revalidatePath('/user/profile');
+  revalidatePath('/user/favorites');
+
+  return result;
 }

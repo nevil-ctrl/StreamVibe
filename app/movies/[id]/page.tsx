@@ -10,6 +10,9 @@ import {
   pickComposer,
 } from '@/services/media-detail.service';
 import { getLocalMovie } from '@/services/content.service';
+import { getWatchEntry } from '@/services/watch-history.service';
+import { isFavoriteEntry } from '@/lib/watch-constants';
+import { auth } from '@/auth';
 import type { Metadata } from 'next';
 
 interface PageProps {
@@ -34,12 +37,19 @@ export default async function MoviePage({ params }: PageProps) {
 
   if (Number.isNaN(movieId)) notFound();
 
-  const [movie, local] = await Promise.all([
+  const session = await auth();
+
+  const [movie, local, watchEntry] = await Promise.all([
     getMovieDetail(movieId).catch(() => null),
     getLocalMovie(id).catch(() => null),
+    session?.user?.id
+      ? getWatchEntry(session.user.id, { movieId: id })
+      : Promise.resolve(null),
   ]);
 
   if (!movie) notFound();
+
+  const initialFavorited = isFavoriteEntry(watchEntry?.episodeId);
 
   const releaseYear = movie.release_date?.slice(0, 4) ?? null;
   const languages = movie.spoken_languages?.map((l) => l.english_name) ?? [];
@@ -55,6 +65,7 @@ export default async function MoviePage({ params }: PageProps) {
         backdropPath={movie.backdrop_path}
         posterPath={movie.poster_path}
         type="movie"
+        initialFavorited={initialFavorited}
       />
 
       <div className="mx-auto grid max-w-[1600px] gap-8 px-6 py-10 md:px-12 lg:grid-cols-3">

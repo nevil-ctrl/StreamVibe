@@ -1,9 +1,15 @@
 'use client';
 
 import Image from 'next/image';
-import { Play, Plus, ThumbsUp, Volume2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useTransition, useState } from 'react';
+import { Play, Plus, ThumbsUp, Volume2, Loader2 } from 'lucide-react';
 import { tmdbBackdrop } from '@/lib/tmdb-images';
-import { startWatchingMovie, startWatchingShow } from '@/app/actions/watch.actions';
+import {
+  startWatchingMovie,
+  startWatchingShow,
+  toggleFavoriteMedia,
+} from '@/app/actions/watch.actions';
 
 interface DetailHeroProps {
   id: number;
@@ -12,6 +18,7 @@ interface DetailHeroProps {
   backdropPath: string | null;
   type: 'movie' | 'tv';
   posterPath: string | null;
+  initialFavorited?: boolean;
 }
 
 export default function DetailHero({
@@ -21,15 +28,34 @@ export default function DetailHero({
   backdropPath,
   type,
   posterPath,
+  initialFavorited = false,
 }: DetailHeroProps) {
+  const router = useRouter();
   const backdrop = tmdbBackdrop(backdropPath);
+  const [favorited, setFavorited] = useState(initialFavorited);
+  const [pending, startTransition] = useTransition();
 
   const handlePlay = () => {
-    if (type === 'movie') {
-      startWatchingMovie({ id, title, poster_path: posterPath });
-    } else {
-      startWatchingShow({ id, name: title, poster_path: posterPath });
-    }
+    startTransition(async () => {
+      if (type === 'movie') {
+        await startWatchingMovie({ id, title, poster_path: posterPath });
+      } else {
+        await startWatchingShow({ id, name: title, poster_path: posterPath });
+      }
+    });
+  };
+
+  const handleFavorite = () => {
+    startTransition(async () => {
+      const result = await toggleFavoriteMedia({
+        type,
+        id,
+        title,
+        poster_path: posterPath,
+      });
+      setFavorited(result.favorited);
+      router.refresh();
+    });
   };
 
   return (
@@ -63,23 +89,42 @@ export default function DetailHero({
             <button
               type="button"
               onClick={handlePlay}
-              className="flex cursor-pointer items-center gap-2 rounded-lg bg-[#E50000] px-6 py-3 text-sm font-semibold text-white transition hover:bg-red-700">
-              <Play size={16} fill="currentColor" />
+              disabled={pending}
+              className="flex cursor-pointer items-center gap-2 rounded-lg bg-[#E50000] px-6 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60">
+              {pending ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Play size={16} fill="currentColor" />
+              )}
               Play Now
             </button>
             <button
               type="button"
-              className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-[#262628] bg-[#141414] transition hover:bg-[#1A1A1A]">
+              onClick={handleFavorite}
+              disabled={pending}
+              title={favorited ? 'Убрать из избранного' : 'В избранное'}
+              className={`flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border transition disabled:opacity-60 ${
+                favorited
+                  ? 'border-[#E50000] bg-[#E50000]/20 text-[#E50000]'
+                  : 'border-[#262628] bg-[#141414] hover:bg-[#1A1A1A]'
+              }`}>
+              <ThumbsUp
+                size={16}
+                className={favorited ? 'fill-current text-[#E50000]' : 'text-white'}
+              />
+            </button>
+            <button
+              type="button"
+              className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-[#262628] bg-[#141414] transition hover:bg-[#1A1A1A]"
+              title="Скоро"
+            >
               <Plus size={18} className="text-white" />
             </button>
             <button
               type="button"
-              className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-[#262628] bg-[#141414] transition hover:bg-[#1A1A1A]">
-              <ThumbsUp size={16} className="text-white" />
-            </button>
-            <button
-              type="button"
-              className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-[#262628] bg-[#141414] transition hover:bg-[#1A1A1A]">
+              className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg border border-[#262628] bg-[#141414] transition hover:bg-[#1A1A1A]"
+              title="Скоро"
+            >
               <Volume2 size={16} className="text-white" />
             </button>
           </div>
