@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Plus, Minus, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { fetchTMDB } from '@/services/tmdb';
 import type { Movie, MovieResponse } from '@/types/movie';
-
+import AskQuestionButton from '@/components/ui/AskQuestionButton';
 const tmdbPoster = (path: string | null, size: string = 'w500'): string => {
   if (!path) return '';
   return `https://image.tmdb.org/t/p/${size}${path}`;
@@ -578,16 +578,15 @@ export default function SupportPage() {
                 find answers to the most common questions about StreamVibe.
               </p>
             </div>
-            <button
+
+            <AskQuestionButton
               onClick={() =>
                 formRef.current?.scrollIntoView({
                   behavior: 'smooth',
                   block: 'center',
                 })
               }
-              className="bg-[#E50000] hover:bg-[#FF1919] text-white px-5 py-3 rounded-md font-medium text-sm whitespace-nowrap self-start sm:self-auto transition-colors">
-              Ask a Question
-            </button>
+            />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 items-start pt-4">

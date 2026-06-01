@@ -1,5 +1,5 @@
-// components/sections/FAQSection.tsx
 import FaqSection from '@/components/ui/FaqSection';
+import AskQuestionButton from '@/components/ui/AskQuestionButton';
 
 const faqs = [
   {
@@ -51,10 +51,16 @@ const faqs = [
   },
 ];
 
-export default function FAQSection() {
+export default function SupportPage() {
   return (
     <section className="py-16">
-      <FaqSection items={faqs} />
+      {/* форма выше */}
+      <div id="contact-form">{/* твоя контактная форма */}</div>
+
+      <FaqSection
+        items={faqs}
+        actionButton={<AskQuestionButton href="/support" />}
+      />
     </section>
   );
 }

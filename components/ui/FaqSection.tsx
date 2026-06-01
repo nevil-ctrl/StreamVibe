@@ -1,6 +1,5 @@
-// components/FaqSection.tsx
 'use client';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Plus, Minus } from 'lucide-react';
 
 interface FaqItem {
@@ -11,11 +10,11 @@ interface FaqItem {
 
 interface FaqSectionProps {
   items: FaqItem[];
+  actionButton?: React.ReactNode;
 }
 
-export default function FaqSection({ items }: FaqSectionProps) {
+export default function FaqSection({ items, actionButton }: FaqSectionProps) {
   const [openFaq, setOpenFaq] = useState<string | null>(items[0]?.id ?? null);
-  const formRef = useRef<HTMLDivElement>(null);
 
   const toggle = (id: string) => setOpenFaq(openFaq === id ? null : id);
 
@@ -34,23 +33,16 @@ export default function FaqSection({ items }: FaqSectionProps) {
             answers to the most common questions about StreamVibe.
           </p>
         </div>
-        <button
-          onClick={() =>
-            formRef.current?.scrollIntoView({
-              behavior: 'smooth',
-              block: 'center',
-            })
-          }
-          className="bg-[#E50000] hover:bg-[#FF1919] text-white px-5 py-3 rounded-md font-medium text-sm whitespace-nowrap self-start sm:self-auto transition-colors">
-          Ask a Question
-        </button>
+
+        {/* ← слот для кнопки, рендерится только если передали */}
+        {actionButton}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 items-start pt-4">
         {[left, right].map((column, colIdx) => (
           <div
             key={colIdx}
-            className={`flex flex-col gap-y-5 w-full  ${colIdx === 1 ? 'lg:mt-0 mt-5' : ''}`}>
+            className={`flex flex-col gap-y-5 w-full ${colIdx === 1 ? 'lg:mt-0 mt-5' : ''}`}>
             {column.map((item) => {
               const isOpen = openFaq === item.id;
               return (
@@ -63,7 +55,7 @@ export default function FaqSection({ items }: FaqSectionProps) {
                   <div className="flex-1 space-y-3">
                     <button
                       onClick={() => toggle(item.id)}
-                      className="  cursor-pointer  w-full flex items-center justify-between text-left group">
+                      className="cursor-pointer w-full flex items-center justify-between text-left group">
                       <span className="font-semibold text-base md:text-lg text-white group-hover:text-[#E50000] transition-colors">
                         {item.question}
                       </span>
@@ -88,8 +80,6 @@ export default function FaqSection({ items }: FaqSectionProps) {
           </div>
         ))}
       </div>
-
-      <div ref={formRef} />
     </div>
   );
 }
