@@ -6,206 +6,10 @@ datasource db {
   provider = "postgresql"
 }
 
-// ==========================================
-// БЛОК: ПОЛЬЗОВАТЕЛИ И АВТОРИЗАЦИЯ (NextAuth)
-// ==========================================
-
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  password      String?
-  image         String?
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  tickets       SupportTicket[]
-  notifications Notification[]
-  accounts      Account[]
-  sessions      Session[]
-  subscription  Subscription?
-  payments      Payment[]
-  watchHistory  WatchHistory[] // История просмотров юзера
-  comments      Comment[]      // Комментарии юзера
-}
-
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
-// ==========================================
-// БЛОК: БИЗНЕС-ЛОГИКА И ОПЛАТЫ
-// ==========================================
-
-model Subscription {
-  id        String             @id @default(cuid())
-  userId    String             @unique
-  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan      SubscriptionPlan   @default(BASIC)
-  status    SubscriptionStatus @default(ACTIVE)
-  expiresAt DateTime
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
-}
-
-model Payment {
-  id        String           @id @default(cuid())
-  userId    String
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount    Int              // Сумма в копейках/центах (например, 49900 вместо 499.00)
-  currency  String           // "RUB", "USD", "EUR"
-  plan      SubscriptionPlan
-  status    String           // "SUCCESS", "FAILED", "PENDING"
-  createdAt DateTime         @default(now())
-}
-
-model SupportTicket {
-  id        String   @id @default(cuid())
-  userId    String?  // опционально — если юзер залогинен
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  firstName String
-  lastName  String
-  email     String
-  phone     String?
-  message   String   @db.Text
-  status    TicketStatus @default(OPEN)
-  
-  // 👇 Добавлено поле для связи с ответами
-  replies   TicketReply[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model TicketReply {
-  id        String        @id @default(cuid())
-  ticketId  String
-  // 👇 Исправлено: указали явные поля привязки и настроили каскадное удаление
-  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  message   String        @db.Text
-  fromAdmin Boolean       @default(false)
-  createdAt DateTime      @default(now())
-}
-
-enum TicketStatus {
-  OPEN
-  IN_PROGRESS
-  RESOLVED
-  CLOSED
-}
-
-model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String   // "PAYMENT_SUCCESS" | "SUBSCRIPTION_ACTIVATED" | "SUBSCRIPTION_EXPIRED"
-  title     String
-  message   String
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  @@index([userId, isRead])
-}
-// ==========================================
-// БЛОК: КОНТЕНТ, КИНОТЕАТР И АКТИВНОСТЬ
-// ==========================================
-
-model Movie {
-  id          String         @id // ID из TMDB (например, "157336")
-  title       String
-  posterPath  String?
-  
-  watchedBy   WatchHistory[]
-  comments    Comment[]
-  createdAt   DateTime       @default(now())
-}
-
-model Show {
-  id          String         @id // ID сериала из TMDB
-  name        String
-  posterPath  String?
-  
-  watchedBy   WatchHistory[]
-  comments    Comment[]
-  createdAt   DateTime       @default(now())
-}
-
-model WatchHistory {
-  id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  movieId    String?
-  movie      Movie?   @relation(fields: [movieId], references: [id], onDelete: Cascade)
-  
-  showId     String?  
-  show       Show?    @relation(fields: [showId], references: [id], onDelete: Cascade)
-  
-  progress   Int      @default(0)    
-  episodeId  String?  
-  isFinished Boolean  @default(false)
-  
-  watchedAt  DateTime @default(now()) @updatedAt
-
-  @@unique([userId, movieId])
-  @@unique([userId, showId]) 
-}
-
-model Comment {
-  id        String   @id @default(cuid())
-  content   String   @db.Text
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  movieId   String?
-  movie     Movie?   @relation(fields: [movieId], references: [id], onDelete: Cascade)
-  
-  showId    String?  
-  show      Show?    @relation(fields: [showId], references: [id], onDelete: Cascade)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// ==========================================
-// ЭНУМЫ (Ограничения типов данных)
-// ==========================================
-
 enum Role {
   USER
   ADMIN
+  SUPERADMIN
 }
 
 enum SubscriptionPlan {
@@ -218,4 +22,300 @@ enum SubscriptionStatus {
   ACTIVE
   CANCELLED
   EXPIRED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum AdminAction {
+  USER_BAN
+  USER_UNBAN
+  SUB_MODIFY
+  CONTENT_CREATE
+  CONTENT_DELETE
+  TICKET_CLOSE
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+
+  role          Role            @default(USER)
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  isBanned      Boolean         @default(false)
+  banReason     String?
+  bannedAt      DateTime?
+  banExpiresAt  DateTime?
+
+  accounts      Account[]
+  comments      Comment[]
+  notifications Notification[]
+  pageViews     PageView[]
+  payments      Payment[]
+  sessions      Session[]
+  subscription  Subscription?
+  tickets       SupportTicket[]
+  watchHistory  WatchHistory[]
+  auditLogs     AuditLog[]
+
+  favorites Favorite[]
+  ratings   Rating[]
+
+  @@index([role])
+  @@index([isBanned])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Subscription {
+  id        String             @id @default(cuid())
+  userId    String             @unique
+  plan      SubscriptionPlan   @default(BASIC)
+  status    SubscriptionStatus @default(ACTIVE)
+  expiresAt DateTime
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id         String           @id @default(cuid())
+  userId     String
+  amount     Int
+  currency   String           @default("USD")
+  plan       SubscriptionPlan
+  status     PaymentStatus    @default(PENDING)
+  providerId String?          @unique
+  createdAt  DateTime         @default(now())
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model SupportTicket {
+  id        String        @id @default(cuid())
+  userId    String?
+  firstName String
+  lastName  String
+  email     String
+  phone     String?
+  message   String
+  status    TicketStatus  @default(OPEN)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  replies   TicketReply[]
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model TicketReply {
+  id        String        @id @default(cuid())
+  ticketId  String
+  message   String
+  fromAdmin Boolean       @default(false)
+  createdAt DateTime      @default(now())
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+
+model Movie {
+  id         String         @id
+  title      String
+  posterPath String?
+  createdAt  DateTime       @default(now())
+
+  comments   Comment[]
+  watchedBy  WatchHistory[]
+
+  favorites  Favorite[]
+  ratings    Rating[]
+}
+
+model Show {
+  id         String         @id
+  name       String
+  posterPath String?
+  createdAt  DateTime       @default(now())
+
+  comments   Comment[]
+  watchedBy  WatchHistory[]
+  favorites  Favorite[]
+  ratings    Rating[]
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  movieId   String?
+  showId    String?
+  createdAt DateTime @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie Movie? @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  show  Show?  @relation(fields: [showId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([movieId])
+  @@index([showId])
+
+  @@unique([userId, movieId])
+  @@unique([userId, showId])
+}
+
+model Rating {
+  id        String   @id @default(cuid())
+  userId    String
+  movieId   String?
+  showId    String?
+  rating    Int
+  createdAt DateTime @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie Movie? @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  show  Show?  @relation(fields: [showId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([movieId])
+  @@index([showId])
+
+  @@unique([userId, movieId])
+  @@unique([userId, showId])
+}
+
+model WatchHistory {
+  id         String   @id @default(cuid())
+  userId     String
+  movieId    String?
+  showId     String?
+  progress   Int      @default(0)
+  episodeId  String?
+  isFinished Boolean  @default(false)
+  watchedAt  DateTime @default(now()) @updatedAt
+  movie      Movie?   @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  show       Show?    @relation(fields: [showId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId])
+  @@unique([userId, showId])
+  @@index([userId])
+  @@index([movieId])
+  @@index([showId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  movieId   String?
+  showId    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  movie     Movie?   @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  show      Show?    @relation(fields: [showId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([movieId])
+  @@index([showId])
+  @@index([createdAt])
+}
+
+model PageView {
+  id         String   @id @default(cuid())
+  userId     String?
+  path       String
+  method     String   @default("GET")
+  statusCode Int      @default(200)
+  duration   Int?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([path, createdAt])
+  @@index([userId, createdAt])
+}
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  adminId   String
+  action    AdminAction
+  targetId  String?
+  changes   Json?
+  ipAddress String?
+  createdAt DateTime    @default(now())
+  admin     User        @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([createdAt])
 }

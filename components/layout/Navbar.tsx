@@ -253,7 +253,7 @@ export default function Navbar() {
           <Search size={24} className="text-white transition hover:scale-110" />
         </Link>
 
-        {session ? (
+        {session?.user ? (
           <NotificationBell />
         ) : (
           <div className="flex items-center justify-center w-7 h-7">

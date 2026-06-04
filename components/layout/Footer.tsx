@@ -4,7 +4,7 @@ import { getPopularMovies } from '@/services/movies.service';
 import { TMDB_IMAGE_URL } from '@/lib/tmdb';
 
 type Movie = {
-  id: number; // добавим id для более надежного key
+  id: number;
   poster_path: string;
   title: string;
 };
@@ -18,7 +18,7 @@ function FooterPosterRow({
 }) {
   return (
     <div
-      suppressHydrationWarning // Глушит варнинги от браузерных расширений типа bis_skin_checked
+      suppressHydrationWarning
       className={`flex w-max gap-4 ${
         direction === 'right' ? 'animate-scroll-right' : 'animate-scroll-left'
       }`}>
@@ -123,7 +123,7 @@ export default async function Footer() {
             <h4 className="text-[17px] font-semibold text-white">Movies</h4>
             <div className="flex flex-col gap-2.5 text-[14px] text-[#999999]">
               <Link href="#" className="hover:text-white transition">
-                Gernes
+                Genres
               </Link>
               <Link href="#" className="hover:text-white transition">
                 Trending
@@ -141,7 +141,7 @@ export default async function Footer() {
             <h4 className="text-[17px] font-semibold text-white">Shows</h4>
             <div className="flex flex-col gap-2.5 text-[14px] text-[#999999]">
               <Link href="#" className="hover:text-white transition">
-                Gernes
+                Genres
               </Link>
               <Link href="#" className="hover:text-white transition">
                 Trending

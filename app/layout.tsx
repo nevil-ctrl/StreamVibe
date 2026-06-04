@@ -1,9 +1,11 @@
 import './globals.css';
 import { Manrope } from 'next/font/google';
-import Header from '@/components/layout/Header';
+// import Header from '@/components/layout/Header';
+import HeaderController from '@/components/layout/HeaderController';
 import Footer from '@/components/layout/Footer';
-import { Providers } from '@/components/Providers';
+import { Providers } from '@/components/Providers'; // Твой обновленный провайдер
 import FooterController from '@/components/layout/FooterController';
+import { Suspense } from 'react';
 
 const manrope = Manrope({
   subsets: ['latin'],
@@ -17,16 +19,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${manrope.variable} font-sans`}
-        suppressHydrationWarning={true}>
+    <html lang="en" suppressHydrationWarning className={manrope.variable}>
+      <body className={manrope.className}>
         <Providers>
-          <Header />
+          <HeaderController /> {/* ← вместо <Header /> */}
           <main>{children}</main>
-
           <FooterController>
-            <Footer />
+            <Suspense fallback={null}>
+              <Footer />
+            </Suspense>
           </FooterController>
         </Providers>
       </body>

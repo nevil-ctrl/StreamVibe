@@ -84,7 +84,7 @@
   animation: scrollRight 55s linear infinite;
 }
 
-ЦФ .animate-scroll-left {
+.animate-scroll-left {
   animation: scrollLeft 55s linear infinite;
 }
 
@@ -97,6 +97,20 @@
   scrollbar-width: none;
 }
 
+input[type="datetime-local"] {
+  color-scheme: var(--red-60);
+  /* Самый простой способ заставить браузер адаптировать календарь */
+}
+
+/* Дополнительно для настройки иконки календаря */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
 
 /* @theme inline {
   --color-background: var(--background);
@@ -111,6 +125,26 @@
     --foreground: #ededed;
   }
 } */
+/* В ваш CSS файл */
+
+
 .hide-footer {
   display: none !important;
+}
+
+.hide-layout-elements {
+  display: none !important;
+}
+
+
+
+.hide-layout header,
+.hide-layout footer {
+  display: none !important;
+}
+
+/* Если футер все еще торчит из-за отступов, добавь это: */
+.hide-layout main {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
 }

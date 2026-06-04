@@ -137,7 +137,7 @@ http://localhost:5555
 
 ## Обновление `.env`
 
-После запуска `stripe listen` в терминале появится:
+После запуска `stripe listen`
 
 ```txt
 Your webhook signing secret is:

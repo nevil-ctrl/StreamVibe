@@ -29,7 +29,7 @@ export default function AskQuestionButton({
   return (
     <button
       onClick={handleClick}
-      className="bg-[#E50000] hover:bg-[#FF1919] text-white px-5 py-3 rounded-md font-medium text-sm whitespace-nowrap self-start sm:self-auto transition-colors">
+      className=" cursor-pointer bg-[#E50000] hover:bg-[#FF1919] text-white px-5 py-3 rounded-md font-medium text-sm whitespace-nowrap self-start sm:self-auto transition-colors">
       Ask a Question
     </button>
   );

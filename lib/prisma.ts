@@ -8,7 +8,10 @@ function createPrismaClient() {
   const url = process.env.DATABASE_URL;
   console.log('DATABASE_URL:', url ? 'найден' : 'НЕ НАЙДЕН!');
 
-  const pool = new Pool({ connectionString: url });
+  const pool = new Pool({
+    connectionString: url,
+    ssl: false,
+  });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
 }

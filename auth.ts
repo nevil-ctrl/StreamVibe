@@ -1,58 +1,46 @@
 import NextAuth from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
+import Credentials from 'next-auth/providers/credentials';
+import { PrismaAdapter } from '@auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
+
 import { prisma } from './lib/prisma';
 import { Role } from '@prisma/client';
 
-// Отключаем строгую проверку TLS для локальной разработки
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
-// ВСЕ типы для Auth.js v5 расширяем строго в ОДНОМ модуле 'next-auth'
-declare module 'next-auth' {
-  interface Session {
-    user: {
-      id: string;
-      email: string;
-      name?: string | null;
-      image?: string | null;
-      role: Role;
-    };
-  }
-
-  interface User {
-    id?: string;
-    email?: string | null;
-    name?: string | null;
-    image?: string | null;
-    role?: Role;
-  }
-
-  // В Auth.js v5 интерфейс JWT расширяется прямо здесь!
-  interface JWT {
-    id?: string;
-    role?: Role;
-  }
+function isBanActive(isBanned: boolean, banExpiresAt: Date | null) {
+  if (!isBanned) return false;
+  if (!banExpiresAt) return true; // вечный бан
+  return banExpiresAt > new Date(); // ещё действует
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: 'jwt' },
-  debug: true,
+  adapter: PrismaAdapter(prisma),
+
+  session: {
+    strategy: 'jwt',
+  },
+
+  trustHost: true,
+
   pages: {
     signIn: '/auth/login',
     error: '/auth/login',
   },
+
   providers: [
     Google({
-      clientId: process.env.AUTH_GOOGLE_ID,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+      allowDangerousEmailAccountLinking: true,
     }),
+
     Credentials({
-      name: 'Credentials',
+      name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
+
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
@@ -60,14 +48,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { email: credentials.email as string },
         });
 
-        if (!user || !user.password) return null;
+        if (!user?.password) return null;
 
-        const isValidPassword = await bcrypt.compare(
+        const ok = await bcrypt.compare(
           credentials.password as string,
           user.password,
         );
 
-        if (!isValidPassword) return null;
+        if (!ok) return null;
+
+        const banned = isBanActive(user.isBanned, user.banExpiresAt);
+
+        if (banned) {
+          throw new Error('ACCOUNT_BANNED');
+        }
 
         return {
           id: user.id,
@@ -75,65 +69,78 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           image: user.image,
           role: user.role,
+          isBanned: user.isBanned,
+          banExpiresAt: user.banExpiresAt,
         };
       },
     }),
   ],
+
   callbacks: {
     async signIn({ user, account }) {
-      if (account?.provider === 'google') {
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email! },
-        });
+      if (!user?.id) return false;
 
-        if (!existingUser) {
-          const newUser = await prisma.user.create({
-            data: {
-              email: user.email!,
-              name: user.name,
-              image: user.image,
-              role: Role.USER,
-            },
-          });
+      // Google / OAuth пропускаем проверку тут (проверим в jwt)
+      if (account?.provider !== 'credentials') return true;
 
-          user.id = newUser.id;
-          user.role = newUser.role;
-        } else {
-          user.id = existingUser.id;
-          user.role = existingUser.role;
-        }
-      }
-      return true;
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { isBanned: true, banExpiresAt: true },
+      });
+
+      if (!dbUser) return true;
+
+      const banned = isBanActive(dbUser.isBanned, dbUser.banExpiresAt);
+
+      return !banned;
     },
-    async jwt({ token, user, trigger, session }) {
+
+    async jwt({ token, user, account }) {
+      // первый вход
       if (user) {
         token.id = user.id;
-        token.picture = user.image;
         token.role = user.role;
+        token.isBanned = user.isBanned;
+        token.banExpiresAt = user.banExpiresAt ?? null;
+        token.picture = user.image;
+        return token;
       }
 
-      if (trigger === 'update') {
-        if (session?.image) {
-          token.picture = session.image;
-        } else if (session?.user?.image) {
-          token.picture = session.user.image;
-        }
-      }
+      const userId = (token.id as string) || token.sub;
+      if (!userId) return token;
+
+      const dbUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          role: true,
+          isBanned: true,
+          banExpiresAt: true,
+          image: true,
+        },
+      });
+
+      if (!dbUser) return token;
+
+      const banned = isBanActive(dbUser.isBanned, dbUser.banExpiresAt);
+
+      token.id = userId;
+      token.role = dbUser.role;
+      token.isBanned = banned;
+      token.banExpiresAt = dbUser.banExpiresAt ?? null;
+      token.picture = dbUser.image;
 
       return token;
     },
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = (token.id ?? token.sub) as string;
-        session.user.image = token.picture as string;
 
-        // Надежное приведение типа, чтобы TS не ругался на {}
-        if (token.role === Role.ADMIN || token.role === Role.USER) {
-          session.user.role = token.role;
-        } else {
-          session.user.role = Role.USER; // Дефолтное безопасное значение
-        }
-      }
+    async session({ session, token }) {
+      if (!session.user) return session;
+
+      session.user.id = token.id as string;
+      session.user.role = (token.role as Role) ?? Role.USER;
+      session.user.isBanned = (token.isBanned as boolean) ?? false;
+      session.user.banExpiresAt = (token.banExpiresAt as Date | null) ?? null;
+      session.user.image = (token.picture as string) ?? null;
+
       return session;
     },
   },
