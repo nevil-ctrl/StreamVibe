@@ -3,7 +3,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { Role } from '@prisma/client';
+import { Role } from '@/types/role';
 import {
   createReview,
   deleteReview,

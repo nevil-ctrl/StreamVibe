@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import LoginForm from './LoginForm';
 
 interface TMDBMovie {
@@ -44,5 +45,14 @@ async function getTrendingMovies() {
 export default async function LoginPage() {
   const movies = await getTrendingMovies();
 
-  return <LoginForm movies={movies} />;
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#141414] text-[#999999]">
+          Загрузка...
+        </div>
+      }>
+      <LoginForm movies={movies} />
+    </Suspense>
+  );
 }

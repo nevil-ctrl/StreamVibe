@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import SubscriptionsClient from './SubscriptionsClient';
@@ -22,11 +23,18 @@ export default async function SubscriptionsPage() {
   }
 
   return (
-    <SubscriptionsClient
-      currentPlan={currentPlan}
-      subscriptionStatus={subscriptionStatus}
-      expiresAt={expiresAt}
-      isLoggedIn={!!session?.user}
-    />
+    <Suspense
+      fallback={
+        <div className="flex min-h-[50vh] items-center justify-center text-[#999999]">
+          Загрузка...
+        </div>
+      }>
+      <SubscriptionsClient
+        currentPlan={currentPlan}
+        subscriptionStatus={subscriptionStatus}
+        expiresAt={expiresAt}
+        isLoggedIn={!!session?.user}
+      />
+    </Suspense>
   );
 }

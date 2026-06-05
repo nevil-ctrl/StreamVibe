@@ -5,7 +5,7 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
 
 import { prisma } from './lib/prisma';
-import { Role } from '@prisma/client';
+import { Role } from '@/types/role';
 
 function isBanActive(isBanned: boolean, banExpiresAt: Date | null) {
   if (!isBanned) return false;
