@@ -6,11 +6,7 @@ export async function POST(req: Request) {
   const session = await auth();
   const role = String(session?.user?.role || '').toUpperCase();
   const hasAccess = role === 'ADMIN' || role === 'SUPERADMIN';
-
   if (!session || !hasAccess) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-  if (!session || session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -51,7 +47,10 @@ export async function POST(req: Request) {
 
 export async function GET() {
   const session = await auth();
-  if (!session || session.user.role !== 'ADMIN') {
+  const role = String(session?.user?.role || '').toUpperCase();
+  const hasAccess = role === 'ADMIN' || role === 'SUPERADMIN';
+
+  if (!session || !hasAccess) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

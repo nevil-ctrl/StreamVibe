@@ -1,15 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { auth } from '@/auth';
 
 export async function proxy(req: NextRequest) {
   try {
-    const { pathname } = req.nextUrl;
+    const session = await auth();
+    const user = session?.user ?? null;
 
-    const token = await getToken({
-      req,
-      secret: process.env.AUTH_SECRET,
-    });
+    const { pathname } = req.nextUrl;
 
     const isAuthPage = pathname.startsWith('/auth');
     const isPrivate =
@@ -19,29 +17,24 @@ export async function proxy(req: NextRequest) {
     const isAdminPage = pathname.startsWith('/admin');
     const isBannedPage = pathname.startsWith('/banned');
 
-    if (!token && isPrivate) {
+    if (!user && isPrivate) {
       return NextResponse.redirect(new URL('/auth/login', req.url));
     }
 
-    if (token && isAuthPage) {
+    if (user && isAuthPage) {
       return NextResponse.redirect(new URL('/browse', req.url));
     }
 
-    if (token?.isBanned && !isBannedPage) {
+    if (user?.isBanned && !isBannedPage) {
       return NextResponse.redirect(new URL('/banned', req.url));
     }
 
     if (isAdminPage) {
-      // Если токена нет или роли нет — отправляем на главную
-      if (!token || !token.role) {
+      if (!user?.role) {
         return NextResponse.redirect(new URL('/', req.url));
       }
-
-      const currentRole = String(token.role).toUpperCase();
-      const hasAdminAccess =
-        currentRole === 'ADMIN' || currentRole === 'SUPERADMIN';
-
-      if (!hasAdminAccess) {
+      const role = String(user.role).toUpperCase();
+      if (role !== 'ADMIN' && role !== 'SUPERADMIN') {
         return NextResponse.redirect(new URL('/', req.url));
       }
     }
@@ -49,7 +42,7 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   } catch (error) {
     console.error('Proxy Middleware Error:', error);
-    return NextResponse.redirect(new URL('/', req.url));
+    return NextResponse.next();
   }
 }
 

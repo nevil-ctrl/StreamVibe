@@ -9,19 +9,14 @@ import { Role } from '@prisma/client';
 
 function isBanActive(isBanned: boolean, banExpiresAt: Date | null) {
   if (!isBanned) return false;
-  if (!banExpiresAt) return true; // вечный бан
-  return banExpiresAt > new Date(); // ещё действует
+  if (!banExpiresAt) return true;
+  return banExpiresAt > new Date();
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-
-  session: {
-    strategy: 'jwt',
-  },
-
+  session: { strategy: 'jwt' },
   trustHost: true,
-
   pages: {
     signIn: '/auth/login',
     error: '/auth/login',
@@ -40,7 +35,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
@@ -54,12 +48,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           credentials.password as string,
           user.password,
         );
-
         if (!ok) return null;
 
-        const banned = isBanActive(user.isBanned, user.banExpiresAt);
-
-        if (banned) {
+        if (isBanActive(user.isBanned, user.banExpiresAt)) {
           throw new Error('ACCOUNT_BANNED');
         }
 
@@ -79,55 +70,49 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user, account }) {
       if (!user?.id) return false;
-
-      // Google / OAuth пропускаем проверку тут (проверим в jwt)
       if (account?.provider !== 'credentials') return true;
 
       const dbUser = await prisma.user.findUnique({
         where: { id: user.id },
         select: { isBanned: true, banExpiresAt: true },
       });
-
       if (!dbUser) return true;
 
-      const banned = isBanActive(dbUser.isBanned, dbUser.banExpiresAt);
-
-      return !banned;
+      return !isBanActive(dbUser.isBanned, dbUser.banExpiresAt);
     },
 
-    async jwt({ token, user, account }) {
-      // первый вход
+    async jwt({ token, user }) {
+      // Первый вход — записываем данные из user
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.isBanned = user.isBanned;
         token.banExpiresAt = user.banExpiresAt ?? null;
         token.picture = user.image;
+        token._lastRefresh = Date.now();
         return token;
       }
+
+      // Обновляем раз в 5 минут
+      const REFRESH_INTERVAL = 5 * 60 * 1000;
+      const lastRefresh = (token._lastRefresh as number) ?? 0;
+      if (Date.now() - lastRefresh < REFRESH_INTERVAL) return token;
 
       const userId = (token.id as string) || token.sub;
       if (!userId) return token;
 
       const dbUser = await prisma.user.findUnique({
         where: { id: userId },
-        select: {
-          role: true,
-          isBanned: true,
-          banExpiresAt: true,
-          image: true,
-        },
+        select: { role: true, isBanned: true, banExpiresAt: true, image: true },
       });
-
       if (!dbUser) return token;
-
-      const banned = isBanActive(dbUser.isBanned, dbUser.banExpiresAt);
 
       token.id = userId;
       token.role = dbUser.role;
-      token.isBanned = banned;
+      token.isBanned = isBanActive(dbUser.isBanned, dbUser.banExpiresAt);
       token.banExpiresAt = dbUser.banExpiresAt ?? null;
       token.picture = dbUser.image;
+      token._lastRefresh = Date.now();
 
       return token;
     },
