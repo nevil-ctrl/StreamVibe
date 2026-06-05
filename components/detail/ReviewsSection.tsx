@@ -45,7 +45,7 @@ interface ReviewsSectionProps {
     poster_path: string | null;
   };
   currentUserId?: string | null;
-  currentUserRole?: 'USER' | 'ADMIN' | null;
+  currentUserRole?: 'USER' | 'ADMIN' | 'SUPERADMIN' | null;
   userOwnReview?: LocalComment | null;
 }
 
@@ -131,7 +131,7 @@ export default function ReviewsSection({
 
   const canModify = (review: ReviewItem) => {
     if (review.source !== 'local' || !review.userId) return false;
-    if (currentUserRole === 'ADMIN') return true;
+    if (currentUserRole === 'ADMIN' || currentUserRole === 'SUPERADMIN') return true;
     return currentUserId === review.userId;
   };
 

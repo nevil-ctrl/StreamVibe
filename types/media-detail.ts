@@ -110,7 +110,7 @@ export interface LocalComment {
     id: string;
     name: string | null;
     image: string | null;
-    role: 'USER' | 'ADMIN';
+    role: 'USER' | 'ADMIN' | 'SUPERADMIN';
   };
 }
 

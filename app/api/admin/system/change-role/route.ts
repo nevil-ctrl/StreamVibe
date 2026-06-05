@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-import { AdminAction, Role } from '@prisma/client';
+import { AdminAction } from '@prisma/client';
+import { Role } from '@/types/role';
 
 export async function PATCH(req: Request) {
   const session = await auth();

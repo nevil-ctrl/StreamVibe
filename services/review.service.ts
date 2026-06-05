@@ -5,7 +5,7 @@ import {
   reviewFormSchema,
   type ReviewFormInput,
 } from '@/lib/review-payload';
-import { Role } from '@prisma/client';
+import { Role } from '@/types/role';
 import { ensureMovieInDb, ensureShowInDb } from '@/services/content.service';
 
 export class ReviewAuthError extends Error {

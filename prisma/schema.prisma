@@ -6,47 +6,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  USER
-  ADMIN
-  SUPERADMIN
-}
-
-enum SubscriptionPlan {
-  BASIC
-  STANDARD
-  PREMIUM
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  CANCELLED
-  EXPIRED
-}
-
-enum PaymentStatus {
-  PENDING
-  SUCCESS
-  FAILED
-  REFUNDED
-}
-
-enum TicketStatus {
-  OPEN
-  IN_PROGRESS
-  RESOLVED
-  CLOSED
-}
-
-enum AdminAction {
-  USER_BAN
-  USER_UNBAN
-  SUB_MODIFY
-  CONTENT_CREATE
-  CONTENT_DELETE
-  TICKET_CLOSE
-}
-
 model User {
   id            String          @id @default(cuid())
   name          String?
@@ -54,30 +13,25 @@ model User {
   emailVerified DateTime?
   password      String?
   image         String?
-
   role          Role            @default(USER)
-
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-
-  isBanned      Boolean         @default(false)
   banReason     String?
   bannedAt      DateTime?
+  isBanned      Boolean         @default(false)
   banExpiresAt  DateTime?
-
   accounts      Account[]
+  auditLogs     AuditLog[]
   comments      Comment[]
+  favorites     Favorite[]
   notifications Notification[]
   pageViews     PageView[]
   payments      Payment[]
+  ratings       Rating[]
   sessions      Session[]
   subscription  Subscription?
   tickets       SupportTicket[]
   watchHistory  WatchHistory[]
-  auditLogs     AuditLog[]
-
-  favorites Favorite[]
-  ratings   Rating[]
 
   @@index([role])
   @@index([isBanned])
@@ -137,9 +91,9 @@ model Payment {
   amount     Int
   currency   String           @default("USD")
   plan       SubscriptionPlan
-  status     PaymentStatus    @default(PENDING)
-  providerId String?          @unique
   createdAt  DateTime         @default(now())
+  providerId String?          @unique
+  status     PaymentStatus    @default(PENDING)
   user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -157,7 +111,7 @@ model SupportTicket {
   status    TicketStatus  @default(OPEN)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
-  user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user      User?         @relation(fields: [userId], references: [id])
   replies   TicketReply[]
 
   @@index([userId])
@@ -193,12 +147,10 @@ model Movie {
   title      String
   posterPath String?
   createdAt  DateTime       @default(now())
-
   comments   Comment[]
-  watchedBy  WatchHistory[]
-
   favorites  Favorite[]
   ratings    Rating[]
+  watchedBy  WatchHistory[]
 }
 
 model Show {
@@ -206,11 +158,10 @@ model Show {
   name       String
   posterPath String?
   createdAt  DateTime       @default(now())
-
   comments   Comment[]
-  watchedBy  WatchHistory[]
   favorites  Favorite[]
   ratings    Rating[]
+  watchedBy  WatchHistory[]
 }
 
 model Favorite {
@@ -219,17 +170,15 @@ model Favorite {
   movieId   String?
   showId    String?
   createdAt DateTime @default(now())
-
-  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  movie Movie? @relation(fields: [movieId], references: [id], onDelete: Cascade)
-  show  Show?  @relation(fields: [showId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([movieId])
-  @@index([showId])
+  movie     Movie?   @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  show      Show?    @relation(fields: [showId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, movieId])
   @@unique([userId, showId])
+  @@index([userId])
+  @@index([movieId])
+  @@index([showId])
 }
 
 model Rating {
@@ -239,17 +188,15 @@ model Rating {
   showId    String?
   rating    Int
   createdAt DateTime @default(now())
-
-  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  movie Movie? @relation(fields: [movieId], references: [id], onDelete: Cascade)
-  show  Show?  @relation(fields: [showId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([movieId])
-  @@index([showId])
+  movie     Movie?   @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  show      Show?    @relation(fields: [showId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, movieId])
   @@unique([userId, showId])
+  @@index([userId])
+  @@index([movieId])
+  @@index([showId])
 }
 
 model WatchHistory {
@@ -294,12 +241,12 @@ model PageView {
   id         String   @id @default(cuid())
   userId     String?
   path       String
+  createdAt  DateTime @default(now())
+  duration   Int?
   method     String   @default("GET")
   statusCode Int      @default(200)
-  duration   Int?
   userAgent  String?
-  createdAt  DateTime @default(now())
-  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user       User?    @relation(fields: [userId], references: [id])
 
   @@index([createdAt])
   @@index([path, createdAt])
@@ -318,4 +265,45 @@ model AuditLog {
 
   @@index([adminId])
   @@index([createdAt])
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPERADMIN
+}
+
+enum SubscriptionPlan {
+  BASIC
+  STANDARD
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum AdminAction {
+  USER_BAN
+  USER_UNBAN
+  SUB_MODIFY
+  CONTENT_CREATE
+  CONTENT_DELETE
+  TICKET_CLOSE
 }
