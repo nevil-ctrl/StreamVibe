@@ -1,0 +1,95 @@
+/* Cookie consent — анимации fade + slide, в стиле StreamVibe */
+
+@keyframes cookie-consent-enter {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cookie-consent-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+@keyframes cookie-modal-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.cookie-consent-banner {
+  animation: cookie-consent-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.cookie-consent-banner--exit {
+  animation: cookie-consent-exit 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.cookie-consent-modal {
+  animation: cookie-modal-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.cookie-consent-overlay {
+  animation: cookie-consent-enter 0.25s ease forwards;
+}
+
+/* Переключатель категорий */
+.cookie-consent-toggle {
+  position: relative;
+  display: inline-flex;
+  height: 24px;
+  width: 44px;
+  flex-shrink: 0;
+  cursor: pointer;
+  align-items: center;
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+.cookie-consent-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.cookie-consent-toggle-knob {
+  pointer-events: none;
+  display: block;
+  height: 18px;
+  width: 18px;
+  border-radius: 9999px;
+  background: var(--white);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.cookie-consent-toggle--on .cookie-consent-toggle-knob {
+  transform: translateX(20px);
+}
+
+.cookie-consent-toggle--off .cookie-consent-toggle-knob {
+  transform: translateX(3px);
+}
+
+.cookie-consent-toggle--on {
+  background: var(--red-45);
+}
+
+.cookie-consent-toggle--off {
+  background: var(--black-20);
+}
