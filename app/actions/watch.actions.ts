@@ -13,6 +13,7 @@ import {
   toggleFavorite,
   toggleWatchlist,
 } from '@/services/watch-history.service';
+import { canRecordWatchHistory } from '@/lib/consent/server';
 
 export async function startWatchingMovie(movie: {
   id: number;
@@ -24,8 +25,11 @@ export async function startWatchingMovie(movie: {
     redirect(`/auth/login?callbackUrl=/watch/movie/${movie.id}`);
   }
 
-  await ensureMovieInDb(movie);
-  await recordMovieWatch(session.user.id, String(movie.id));
+  if (await canRecordWatchHistory()) {
+    await ensureMovieInDb(movie);
+    await recordMovieWatch(session.user.id, String(movie.id));
+  }
+
   redirect(`/watch/movie/${movie.id}`);
 }
 
@@ -42,12 +46,14 @@ export async function startWatchingShow(show: {
     redirect(`/auth/login?callbackUrl=/shows/${show.id}`);
   }
 
-  await ensureShowInDb(show);
-  await recordShowWatch(
-    session.user.id,
-    String(show.id),
-    show.episodeId,
-  );
+  if (await canRecordWatchHistory()) {
+    await ensureShowInDb(show);
+    await recordShowWatch(
+      session.user.id,
+      String(show.id),
+      show.episodeId,
+    );
+  }
 
   const params = new URLSearchParams();
   if (show.episodeId) params.set('episodeId', show.episodeId);

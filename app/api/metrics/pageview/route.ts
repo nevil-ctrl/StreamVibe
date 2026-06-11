@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
+import { canRecordPageView } from '@/lib/consent/server';
 
 export async function POST(req: Request) {
   try {
+    if (!(await canRecordPageView())) {
+      return NextResponse.json({ success: true, skipped: true });
+    }
+
     const session = await auth();
     const { path } = await req.json();
 

@@ -1,5 +1,6 @@
 import { auth } from '@/auth';
 import { updateWatchProgress } from '@/services/watch-history.service';
+import { canRecordWatchHistory } from '@/lib/consent/server';
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -28,6 +29,10 @@ export async function POST(req: Request) {
     typeof durationSeconds !== 'number'
   ) {
     return Response.json({ error: 'Invalid payload' }, { status: 400 });
+  }
+
+  if (!(await canRecordWatchHistory())) {
+    return Response.json({ success: true, saved: false });
   }
 
   const row = await updateWatchProgress(session.user.id, {

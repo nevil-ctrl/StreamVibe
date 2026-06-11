@@ -18,6 +18,8 @@ import type {
   ConsentStatus,
 } from '@/lib/consent/types';
 import CookieConsent from '@/components/consent/CookieConsent';
+import { AnalyticsTracker } from '@/components/providers/AnalyticsTracker';
+import { MediaViewTracker } from '@/components/providers/MediaViewTracker';
 
 interface ConsentContextValue {
   prefs: ConsentPreferences | null;
@@ -77,7 +79,11 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ConsentContext.Provider value={value}>
-      <PostHogProvider client={posthog}>{children}</PostHogProvider>
+      <PostHogProvider client={posthog}>
+        <AnalyticsTracker />
+        <MediaViewTracker />
+        {children}
+      </PostHogProvider>
       <CookieConsent
         forceSettings={settingsOpen}
         onSettingsClose={() => setSettingsOpen(false)}
