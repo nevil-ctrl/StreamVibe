@@ -23,7 +23,7 @@ export default function Header() {
       transition-all duration-300
       ${scrolled ? 'bg-black/60 backdrop-blur-sm' : ''}
     `}>
-      <div className="mx-auto max-w-[1600px] px-18 pt-8">
+      <div className="container px-12 pt-8">
         <Navbar />
       </div>
     </header>

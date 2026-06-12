@@ -407,7 +407,7 @@ function HorizontalTrack({
       <div
         ref={trackRef}
         onScroll={onScroll}
-        className="flex gap-5 overflow-x-auto pb-3 scroll-smooth"
+        className="flex gap-5 overflow-x-auto pb-3"
         style={{ scrollbarWidth: 'none' }}>
         {loopedItems.map((item, index) => {
           const generatedMinutes = (item.id % 70) + 85;
@@ -421,13 +421,11 @@ function HorizontalTrack({
           return (
             <article
               key={`${item.id}-${index}`}
-                onClick={() =>
-                  router.push(
-                    type === 'movie'
-                      ? `/movies/${item.id}`
-                      : `/shows/${item.id}`,
-                  )
-                }
+              onClick={() =>
+                router.push(
+                  type === 'movie' ? `/movies/${item.id}` : `/shows/${item.id}`,
+                )
+              }
               style={{
                 minWidth: `${CARD_WIDTH}px`,
                 maxWidth: `${CARD_WIDTH}px`,

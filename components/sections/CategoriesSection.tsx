@@ -27,7 +27,7 @@ export default function CategoriesSection({
   const [activeIndex, setActiveIndex] = useState(0);
 
   const isResetting = useRef(false);
-  const isButtonScrolling = useRef(false); // Хелпер для отключения snap при клике
+  const isButtonScrolling = useRef(false); 
   const originalLength = categories.length;
   const loopedCategories = [...categories, ...categories, ...categories];
   const singleSetWidth = (CARD_WIDTH + GAP) * originalLength;
@@ -54,20 +54,18 @@ export default function CategoriesSection({
 
     const amount = (CARD_WIDTH + GAP) * VISIBLE;
 
-    // Включаем режим скролла кнопкой: вырубаем snap-эффект, чтобы не было задержки
     isButtonScrolling.current = true;
     el.style.scrollSnapType = 'none';
     el.style.scrollBehavior = 'smooth';
 
     el.scrollBy({ left: dir === 'right' ? amount : -amount });
 
-    // Как только плавная анимация от кнопки закончится, возвращаем snap обратно
     setTimeout(() => {
       if (el) {
         el.style.scrollSnapType = 'x mandatory';
         isButtonScrolling.current = false;
       }
-    }, 400); // Время совпадает с дефолтной длительностью smooth скролла в браузере
+    }, 400); 
   };
 
   const onScroll = () => {
@@ -76,11 +74,10 @@ export default function CategoriesSection({
 
     let currentScroll = el.scrollLeft;
 
-    // Бесшовный переброс краев карусели
     if (currentScroll >= singleSetWidth * 2) {
       isResetting.current = true;
       el.style.scrollBehavior = 'auto';
-      el.style.scrollSnapType = 'none'; // Отключаем snap на время телепортации
+      el.style.scrollSnapType = 'none';
       el.scrollLeft = currentScroll - singleSetWidth;
 
       if (!isDown.current && !isButtonScrolling.current) {
@@ -103,7 +100,6 @@ export default function CategoriesSection({
 
     if (isResetting.current) return;
 
-    // Рассчитываем индекс активной точки (только если не идет сброс)
     const relativeScroll = el.scrollLeft % singleSetWidth;
     const itemIndex = Math.round(relativeScroll / (CARD_WIDTH + GAP));
     const pageIndex =
@@ -114,7 +110,6 @@ export default function CategoriesSection({
     }
   };
 
-  // Драг мышью
   const onMouseDown = (e: React.MouseEvent) => {
     const el = trackRef.current;
     if (!el) return;
@@ -122,7 +117,7 @@ export default function CategoriesSection({
     walked.current = 0;
 
     el.style.scrollBehavior = 'auto';
-    el.style.scrollSnapType = 'none'; // При драге мышкой snap тоже не должен мешать
+    el.style.scrollSnapType = 'none';
 
     startX.current = e.pageX - el.offsetLeft;
     scrollLeft.current = el.scrollLeft;
@@ -134,7 +129,7 @@ export default function CategoriesSection({
     const el = trackRef.current;
     if (el) {
       el.style.scrollBehavior = 'smooth';
-      el.style.scrollSnapType = 'x mandatory'; // Возвращаем магнит, когда отпустили мышь
+      el.style.scrollSnapType = 'x mandatory';
     }
   };
 

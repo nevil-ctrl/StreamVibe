@@ -62,15 +62,3 @@ export default function DevicesSection() {
     </section>
   );
 }
-
-// <div className="max-w-7xl mb-12 gap-3.5">
-//   <h2 className="text-2xl md:text-4xl font-bold text-white tracking-tight">
-//     We Provide you streaming experience across various devices.
-//   </h2>
-//   <p className="text-[#999] text-[18px]  max-w-[1250px]">
-//     With StreamVibe, you can enjoy your favorite movies and TV shows
-//     anytime, anywhere. Our platform is designed to be compatible with a
-//     wide range of devices, ensuring that you never miss a moment of
-//     entertainment.
-//   </p>
-// </div>;

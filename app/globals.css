@@ -43,6 +43,8 @@
 .container {
   max-width: 1480px;
   margin: 0 auto;
+  padding-left: 48px;
+  padding-right: 48px;
 }
 
 @layer components {

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getPopularMovies } from '@/services/movies.service';
 import { TMDB_IMAGE_URL } from '@/lib/tmdb';
+import { ManageCookiesButton } from '@/components/consent/CookieConsent';
 
 type Movie = {
   id: number;
@@ -229,6 +230,7 @@ export default async function Footer() {
             <Link href="#" className="hover:text-white transition">
               Cookie Policy
             </Link>
+            <ManageCookiesButton />
           </div>
         </div>
       </div>
