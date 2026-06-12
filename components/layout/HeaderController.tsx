@@ -6,10 +6,12 @@ import Header from './Header';
 export default function HeaderController() {
   const pathname = usePathname();
 
-  const hideHeader =
-    pathname.startsWith('/admin') || pathname.startsWith('/user');
-
-  if (hideHeader) return null;
+  if (
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/user') ||
+    pathname.startsWith('/watch')
+  )
+    return null;
 
   return <Header />;
 }

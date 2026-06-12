@@ -5,18 +5,15 @@ import type {
   TMDBSeasonDetail,
 } from '@/types/media-detail';
 
-const MOVIE_APPEND = 'credits,reviews';
-const TV_APPEND = 'credits,reviews';
-
 export async function getMovieDetail(id: number): Promise<MovieDetail> {
   return fetchTMDB<MovieDetail>(
-    `/movie/${id}?append_to_response=${MOVIE_APPEND}&language=en-US`,
+    `/movie/${id}?append_to_response=credits,reviews,videos,external_ids&language=en-US`,
   );
 }
 
 export async function getShowDetail(id: number): Promise<ShowDetail> {
   return fetchTMDB<ShowDetail>(
-    `/tv/${id}?append_to_response=${TV_APPEND}&language=en-US`,
+    `/tv/${id}?append_to_response=credits,reviews,external_ids&language=en-US`,
   );
 }
 

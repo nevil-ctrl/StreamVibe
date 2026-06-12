@@ -6,7 +6,7 @@ import Footer from '@/components/layout/Footer';
 import { Providers } from '@/components/Providers'; // Твой обновленный провайдер
 import FooterController from '@/components/layout/FooterController';
 import { Suspense } from 'react';
-
+import MainWrapper from '@/components/layout/MainWrapper';
 const manrope = Manrope({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
@@ -22,8 +22,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={manrope.variable}>
       <body className={manrope.className} suppressHydrationWarning>
         <Providers>
-          <HeaderController /> {/* ← вместо <Header /> */}
-          <main>{children}</main>
+          <HeaderController />
+          <MainWrapper>{children}</MainWrapper>
           <FooterController>
             <Suspense fallback={null}>
               <Footer />

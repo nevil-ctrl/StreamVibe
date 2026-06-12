@@ -40,16 +40,22 @@ export default async function MoviePage({ params }: PageProps) {
 
   const session = await auth();
 
-  const [movie, local, watchEntry, userOwnReview] = await Promise.all([
-    getMovieDetail(movieId).catch(() => null),
-    getLocalMovie(id).catch(() => null),
-    session?.user?.id
-      ? getWatchEntry(session.user.id, { movieId: id })
-      : Promise.resolve(null),
-    session?.user?.id
-      ? getUserReviewForMedia(session.user.id, { movieId: id })
-      : Promise.resolve(null),
-  ]);
+const [movie, local, watchEntry, userOwnReview] = await Promise.all([
+  getMovieDetail(movieId).catch((e) => {
+    console.error('TMDB error:', e);
+    return null;
+  }),
+  getLocalMovie(id).catch((e) => {
+    console.error('Local error:', e);
+    return null;
+  }),
+  session?.user?.id
+    ? getWatchEntry(session.user.id, { movieId: id })
+    : Promise.resolve(null),
+  session?.user?.id
+    ? getUserReviewForMedia(session.user.id, { movieId: id })
+    : Promise.resolve(null),
+]);
 
   if (!movie) notFound();
 

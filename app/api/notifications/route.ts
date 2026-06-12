@@ -37,7 +37,6 @@ export async function DELETE(req: NextRequest) {
 
   const body = await req.json();
 
-  // Удалить одно или все
   if (body.id) {
     await prisma.notification.deleteMany({
       where: { id: body.id, userId: session.user.id },

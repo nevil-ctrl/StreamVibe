@@ -73,11 +73,14 @@ function NotificationBell() {
   const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/notifications');
+      const res = await fetch('/api/alerts');
       if (!res.ok) return;
       const data = await res.json();
       setNotifications(data.notifications ?? []);
       setUnreadCount(data.unreadCount ?? 0);
+    } catch (err) {
+      setNotifications([]);
+      setUnreadCount(0);
     } finally {
       setLoading(false);
     }
@@ -102,31 +105,36 @@ function NotificationBell() {
   async function handleOpen() {
     setOpen((prev) => !prev);
     if (!open && unreadCount > 0) {
-      await fetch('/api/notifications', { method: 'PATCH' });
-      setUnreadCount(0);
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      try {
+        await fetch('/api/alerts', { method: 'PATCH' });
+        setUnreadCount(0);
+        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      } catch (err) {}
     }
   }
 
   async function handleDelete(id: string, e: React.MouseEvent) {
     e.stopPropagation();
-    await fetch('/api/notifications', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    try {
+      await fetch('/api/alerts', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    } catch (err) {}
   }
 
   async function handleMarkAllRead() {
-    await fetch('/api/notifications', { method: 'PATCH' });
-    setUnreadCount(0);
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    try {
+      await fetch('/api/alerts', { method: 'PATCH' });
+      setUnreadCount(0);
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch (err) {}
   }
 
   return (
     <div ref={ref} className="relative flex items-center justify-center">
-      {/* ── Кнопка колокольчика ── */}
       <button
         onClick={handleOpen}
         className="relative cursor-pointer flex items-center justify-center w-7 h-7"
@@ -142,7 +150,6 @@ function NotificationBell() {
         )}
       </button>
 
-      {/* ── Дропдаун ── */}
       {open && (
         <div className="absolute right-0 top-10 w-80 bg-[#0F0F0F] border border-[#1F1F1F] rounded-2xl shadow-2xl z-50 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#1F1F1F]">
