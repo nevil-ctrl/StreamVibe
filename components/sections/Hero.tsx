@@ -48,9 +48,9 @@ export default async function Hero() {
   }
 
   const row1 = movies.slice(0, 10);
-  const row2 = movies.slice(10, 20);
+  const row2 = movies.slice(0, 10);
   const row3 = movies.slice(0, 10);
-  const row4 = movies.slice(10, 20);
+  const row4 = movies.slice(0, 10);
   return (
     <section className="relative min-h-screen pt-[80px] overflow-hidden">
       <div className="absolute inset-0 flex flex-col gap-5 overflow-hidden">

@@ -9,7 +9,6 @@ import { MAIN_MENU, SETTINGS_MENU } from '@/lib/constants';
 
 type IconName = keyof typeof LucideIcons;
 
-// Меню для админки
 const ADMIN_MENU = [
   { name: 'Дашборд', icon: 'LayoutDashboard', path: '/admin/dashboard' },
   { name: 'Пользователи', icon: 'Users', path: '/admin/users' },
@@ -54,14 +53,18 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
 
   return (
     <aside
-      className={`${isOpen ? 'w-56' : 'w-20'} h-full shrink-0 bg-black border-r border-neutral-900 p-4 flex flex-col transition-all duration-300`}>
-      {/* Toggle кнопка */}
+      className={`${
+        isOpen ? 'w-56' : 'w-20'
+      } h-full shrink-0 bg-black border-r border-neutral-900 p-4 flex flex-col transition-all duration-300`}>
+      {/* Toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white mb-2 transition-colors cursor-pointer rounded-xl hover:bg-neutral-900">
         <LucideIcons.PanelLeftClose
           size={20}
-          className={`shrink-0 transition-transform duration-300 ${!isOpen ? 'rotate-180' : ''}`}
+          className={`shrink-0 transition-transform duration-300 ${
+            !isOpen ? 'rotate-180' : ''
+          }`}
         />
         {isOpen && <span className="font-medium">Меню</span>}
       </button>
@@ -97,10 +100,9 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
 
       <div className="h-px bg-neutral-900 mb-4" />
 
-      {/* Навигация */}
-      <div className="space-y-6 mb-6 flex-1">
+      {/* ↓ flex-1 + overflow-y-auto + min-h-0 — ключевое исправление */}
+      <div className="space-y-6 mb-6 flex-1 overflow-y-auto min-h-0 scrollbar-hide">
         {isAdmin ? (
-          // Админское меню — один блок
           <nav className="space-y-1">
             {isOpen && (
               <p className="px-3 text-[10px] uppercase tracking-widest text-neutral-600 font-bold mb-2">
@@ -110,7 +112,6 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
             {ADMIN_MENU.map(renderLink)}
           </nav>
         ) : (
-          // Юзерское меню — два блока
           <>
             <nav className="space-y-1">
               {isOpen && (
@@ -120,6 +121,7 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
               )}
               {MAIN_MENU.map(renderLink)}
             </nav>
+
             <nav className="space-y-1">
               {isOpen && (
                 <p className="px-3 text-[10px] uppercase tracking-widest text-neutral-600 font-bold mb-2">
@@ -128,28 +130,28 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
               )}
               {SETTINGS_MENU.map(renderLink)}
             </nav>
+
+            {/* Панель управления — внутри скролл-зоны, всегда видна */}
+            {hasAdminAccess && (
+              <div className="pt-2 px-2">
+                <Link
+                  href="/admin/dashboard"
+                  className="flex items-center gap-3 px-3 py-2.5 text-amber-400/80 hover:text-amber-400 bg-amber-500/5 hover:bg-amber-500/10 w-full rounded-xl border border-amber-500/10 hover:border-amber-500/20 transition-all duration-200 group">
+                  <LucideIcons.ShieldCheck
+                    size={18}
+                    className="shrink-0 transition-transform group-hover:scale-105"
+                  />
+                  {isOpen && (
+                    <span className="text-sm font-medium tracking-wide">
+                      Панель управления
+                    </span>
+                  )}
+                </Link>
+              </div>
+            )}
           </>
         )}
       </div>
-
-      {/* Панель управления (юзер с правами админа) */}
-      {!isAdmin && hasAdminAccess && (
-        <div className="border-t border-white/5 pt-4 mb-2 px-2">
-          <Link
-            href="/admin/dashboard"
-            className="flex items-center gap-3 px-3 py-2.5 text-amber-400/80 hover:text-amber-400 bg-amber-500/5 hover:bg-amber-500/10 w-full rounded-xl border border-amber-500/10 hover:border-amber-500/20 transition-all duration-200 group">
-            <LucideIcons.ShieldCheck
-              size={18}
-              className="shrink-0 transition-transform group-hover:scale-105"
-            />
-            {isOpen && (
-              <span className="text-sm font-medium tracking-wide">
-                Панель управления
-              </span>
-            )}
-          </Link>
-        </div>
-      )}
 
       {/* PostHog — только в админке */}
       {isAdmin && (
@@ -161,7 +163,6 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
             <LucideIcons.BarChart2 size={14} className="shrink-0" />
             {isOpen && <span>PostHog Analytics</span>}
           </Link>
-          {/* На сайт */}
           <Link
             href="/"
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-500 hover:text-white hover:bg-neutral-900 transition-all">

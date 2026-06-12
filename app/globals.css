@@ -56,8 +56,8 @@
 }
 
 @theme {
-  --animate-scroll-right: scrollRight 55s linear infinite;
-  --animate-scroll-left: scrollLeft 55s linear infinite;
+  --animate-scroll-right: scrollRight 65s linear infinite;
+  --animate-scroll-left: scrollLeft 65s linear infinite;
 
   @keyframes scrollRight {
     from {
