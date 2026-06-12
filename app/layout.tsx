@@ -20,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className={manrope.variable}>
-      <body className={manrope.className}>
+      <body className={manrope.className} suppressHydrationWarning>
         <Providers>
           <HeaderController /> {/* ← вместо <Header /> */}
           <main>{children}</main>

@@ -52,7 +52,13 @@ export function DeviceCard({ icon, title, description }: DeviceCardProps) {
 
       <div style={iconWrapStyle}>
         <div style={iconBoxStyle}>
-          <Image src={icon} alt={title} width={20} height={36} />
+          <Image
+            src={icon}
+            alt={title}
+            width={36}
+            height={36}
+            style={{ width: 'auto', height: '36px' }}
+          />
         </div>
         <span className="text-white text-xl font-semibold">{title}</span>
       </div>
