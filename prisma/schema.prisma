@@ -307,3 +307,13 @@ enum AdminAction {
   CONTENT_DELETE
   TICKET_CLOSE
 }
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+
+  @@index([email])
+}
+

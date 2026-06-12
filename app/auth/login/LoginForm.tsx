@@ -11,6 +11,7 @@ import { ErrorMessage } from '@/components/ui/error-message';
 import { LoadingButton } from '@/components/ui/loading-button';
 import { Globe } from 'lucide-react';
 import MovieBackground from '@/components/auth/MovieBackground';
+import { checkAccountStatus, resendVerificationLink } from './actions';
 
 // 1. Описываем четкий тип для фильма, чтобы TS не ругался
 type Movie = {
@@ -32,13 +33,22 @@ export default function LoginForm({ movies }: LoginFormProps) {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState(
-    urlError ? 'Неверный email или пароль' : '',
+    urlError === 'AccessDenied'
+      ? 'Доступ запрещен. Проверьте подтверждение почты.'
+      : urlError
+        ? 'Неверный email или пароль'
+        : '',
   );
+  const [isUnverified, setIsUnverified] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setIsUnverified(false);
+    setResendSuccess(null);
 
     try {
       const result = await signIn('credentials', {
@@ -48,7 +58,20 @@ export default function LoginForm({ movies }: LoginFormProps) {
       });
 
       if (result?.error) {
-        setError('Неверный логин или пароль');
+        // Проверяем детальный статус пользователя
+        const status = await checkAccountStatus(email);
+        if (status.exists) {
+          if (status.isBanned) {
+            setError('Ваш аккаунт заблокирован.');
+          } else if (!status.emailVerified) {
+            setIsUnverified(true);
+            setError('Ваш адрес электронной почты не подтвержден.');
+          } else {
+            setError('Неверный логин или пароль');
+          }
+        } else {
+          setError('Неверный логин или пароль');
+        }
       } else {
         router.push('/browse');
         router.refresh();
@@ -57,6 +80,24 @@ export default function LoginForm({ movies }: LoginFormProps) {
       setError('Что-то пошло не так. Попробуйте снова.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResendLoading(true);
+    setResendSuccess(null);
+    try {
+      const res = await resendVerificationLink(email);
+      if (res.success) {
+        setResendSuccess(res.message);
+        setError('');
+      } else {
+        setError(res.message || 'Не удалось отправить ссылку.');
+      }
+    } catch {
+      setError('Ошибка при отправке ссылки.');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -96,8 +137,23 @@ export default function LoginForm({ movies }: LoginFormProps) {
         </p>
 
         {error && (
-          <div className="mb-4">
+          <div className="mb-4 space-y-2">
             <ErrorMessage message={error} />
+            {isUnverified && (
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={resendLoading}
+                className="text-xs text-(--red-45) hover:text-(--red-55) font-medium underline block transition-colors mt-2 text-left cursor-pointer">
+                {resendLoading ? 'Отправка...' : 'Отправить письмо подтверждения повторно'}
+              </button>
+            )}
+          </div>
+        )}
+
+        {resendSuccess && (
+          <div className="mb-4 p-3 rounded-lg border border-green-500/20 bg-green-500/10 text-green-400 text-xs text-left">
+            {resendSuccess}
           </div>
         )}
 
@@ -116,9 +172,16 @@ export default function LoginForm({ movies }: LoginFormProps) {
             />
           </div>
           <div>
-            <label className="block text-sm text-(--grey-75) font-medium mb-2">
-              Пароль
-            </label>
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-sm text-(--grey-75) font-medium">
+                Пароль
+              </label>
+              <Link
+                href="/auth/forgot-password"
+                className="text-xs text-(--grey-60) hover:text-(--red-45) hover:underline transition-colors cursor-pointer">
+                Забыли пароль?
+              </Link>
+            </div>
             <Input
               type="password"
               placeholder="••••••••"

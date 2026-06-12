@@ -54,6 +54,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new Error('ACCOUNT_BANNED');
         }
 
+        if (!user.emailVerified) {
+          throw new Error('EMAIL_NOT_VERIFIED');
+        }
+
         return {
           id: user.id,
           email: user.email,
@@ -74,11 +78,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       const dbUser = await prisma.user.findUnique({
         where: { id: user.id },
-        select: { isBanned: true, banExpiresAt: true },
+        select: { isBanned: true, banExpiresAt: true, emailVerified: true },
       });
       if (!dbUser) return true;
 
-      return !isBanActive(dbUser.isBanned, dbUser.banExpiresAt);
+      if (isBanActive(dbUser.isBanned, dbUser.banExpiresAt)) return false;
+      if (!dbUser.emailVerified) return false;
+
+      return true;
     },
 
     async jwt({ token, user }) {
