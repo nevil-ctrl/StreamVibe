@@ -177,7 +177,7 @@ export default function SubscriptionsClient({
   }
 
   return (
-    <div className="min-h-screen bg-[#0F0F0F]">
+    <div className="min-h-screen flex items-center  bg-[#0F0F0F]">
       {success && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-[#1A1A1A] border border-[#333] text-white px-5 py-3 rounded-xl shadow-2xl text-sm">
           <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[#E50000]/15 text-[#E50000]">

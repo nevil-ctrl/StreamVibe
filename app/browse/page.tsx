@@ -187,6 +187,7 @@ function BrowseContent() {
             title={section.name}
             items={section.items}
             type="movie"
+            sectionId={String(section.id)}
           />
         ))}
       </div>
@@ -207,15 +208,14 @@ function BrowseContent() {
             title={section.name}
             items={section.items}
             type="tv"
+            sectionId={String(section.id)}
           />
         ))}
       </div>
     </div>
   );
-} // ← ВОТ ЭТО ЧАСТО УДАЛЯЮТ СЛУЧАЙНО
-/* ─────────────────────────────────────────
-   Hero Slider — переиспользуется для фильмов и сериалов
-───────────────────────────────────────── */
+}
+
 function HeroSlider({
   items,
   currentIndex,
@@ -315,10 +315,12 @@ function HorizontalTrack({
   title,
   items,
   type,
+  sectionId,
 }: {
   title: string;
   items: IMedia[];
   type: 'movie' | 'tv';
+  sectionId: string;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -377,7 +379,13 @@ function HorizontalTrack({
   return (
     <div className="mb-20 last:mb-0">
       <div className="flex items-center justify-between mb-8">
-        <h3 className="text-[20px] sm:text-[24px] font-bold text-white tracking-tight">
+        <h3
+          onClick={() =>
+            router.push(
+              `/browse/genre?type=${type}&status=${sectionId}&name=${encodeURIComponent(title)}`,
+            )
+          }
+          className="text-[20px] sm:text-[24px] font-bold text-white tracking-tight cursor-pointer hover:text-[#E50000] transition">
           {title}
         </h3>
         <div className="flex items-center gap-3">
@@ -421,11 +429,13 @@ function HorizontalTrack({
           return (
             <article
               key={`${item.id}-${index}`}
-              onClick={() =>
+              onClick={(e) => {
+               
+                if ((e.target as HTMLElement).closest('h3')) return;
                 router.push(
                   type === 'movie' ? `/movies/${item.id}` : `/shows/${item.id}`,
-                )
-              }
+                );
+              }}
               style={{
                 minWidth: `${CARD_WIDTH}px`,
                 maxWidth: `${CARD_WIDTH}px`,

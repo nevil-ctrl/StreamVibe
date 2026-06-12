@@ -153,23 +153,23 @@ export default function CategoriesSection({
     el.scrollLeft = scrollLeft.current - walk;
   };
 
-  const handleCategoryClick = (id: number | string, name: string) => {
-    if (walked.current > 5) return;
-    if (typeof id === 'string') {
-      router.push(
-        `/browse?type=${type}&status=${id}&name=${encodeURIComponent(name)}`,
-      );
-    } else {
-      router.push(
-        `/browse?type=${type}&genre=${id}&name=${encodeURIComponent(name)}`,
-      );
-    }
-  };
+const handleCategoryClick = (id: number | string, name: string) => {
+  if (walked.current > 5) return;
+  if (typeof id === 'string') {
+    router.push(
+      `/browse/genre?type=${type}&status=${id}&name=${encodeURIComponent(name)}`,
+    );
+  } else {
+    router.push(
+      `/browse/genre?type=${type}&genre=${id}&name=${encodeURIComponent(name)}`,
+    );
+  }
+};
 
   const totalSlides = Math.ceil(originalLength / VISIBLE);
 
   return (
-    <section className="container py-20 select-none">
+    <section className="container  select-none">
       <div className="flex items-start justify-between mb-10">
         <div className="flex flex-col gap-2">
           <span className="w-fit px-3 py-1 bg-[#E50000] text-white text-xs font-semibold rounded-md uppercase tracking-wider mb-1">
