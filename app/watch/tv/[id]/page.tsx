@@ -1,6 +1,8 @@
 import { notFound, redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { getShowDetail } from '@/services/media-detail.service';
+import { parsePlaybackEpisodeId } from '@/lib/player-utils';
+import { parseEpisodeMeta } from '@/lib/watch-constants';
 import WatchTvClient from './WatchTvClient';
 
 interface PageProps {
@@ -8,6 +10,8 @@ interface PageProps {
   searchParams: Promise<{
     season?: string;
     episode?: string;
+    episodeId?: string;
+    t?: string;
   }>;
 }
 
@@ -26,17 +30,35 @@ export default async function WatchTvPage({ params, searchParams }: PageProps) {
   const show = await getShowDetail(showId).catch(() => null);
   if (!show) notFound();
 
-  const season = sp.season ? Number(sp.season) : 1;
-  const episode = sp.episode ? Number(sp.episode) : 1;
+  const parsedEpisode = parsePlaybackEpisodeId(
+    sp.episodeId
+      ? parseEpisodeMeta(sp.episodeId).episodeTmdbId ?? sp.episodeId
+      : undefined,
+  );
+
+  const season = sp.season
+    ? Number(sp.season)
+    : parsedEpisode.season ?? 1;
+  const episode = sp.episode
+    ? Number(sp.episode)
+    : parsedEpisode.episode ?? 1;
+
+  const safeSeason = Number.isFinite(season) && season > 0 ? season : 1;
+  const safeEpisode = Number.isFinite(episode) && episode > 0 ? episode : 1;
+
+  const showRecord = show as {
+    external_ids?: { imdb_id?: string | null };
+  };
+  const imdbId = showRecord.external_ids?.imdb_id ?? null;
 
   return (
     <WatchTvClient
       showId={id}
       title={show.name}
-      season={season}
-      episode={episode}
-      totalSeasons={show.number_of_seasons ?? 1}
-      imdbId={(show as any).external_ids?.imdb_id ?? null}
+      season={safeSeason}
+      episode={safeEpisode}
+      imdbId={imdbId}
+      episodeTmdbId={parsedEpisode.episodeTmdbId}
     />
   );
 }

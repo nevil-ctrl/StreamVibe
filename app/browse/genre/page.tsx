@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -11,7 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { TMDB_IMAGE_URL, TMDB_BASE_URL, TMDB_ACCESS_TOKEN } from '@/lib/tmdb';
+import { TMDB_IMAGE_URL, TMDB_BASE_URL } from '@/lib/tmdb';
 
 interface Movie {
   id: number;
@@ -42,6 +42,17 @@ const STATUS_MAP: Record<string, string> = {
 };
 
 export default function GenrePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container py-12 min-h-screen text-[#999]">Загрузка...</div>
+      }>
+      <GenrePageContent />
+    </Suspense>
+  );
+}
+
+function GenrePageContent() {
   const searchParams = useSearchParams();
   const genre = searchParams.get('genre');
   const status = searchParams.get('status');
@@ -82,9 +93,8 @@ export default function GenrePage() {
           return;
         }
 
-        const res = await fetch(url, {
-          headers: { Authorization: `Bearer ${TMDB_ACCESS_TOKEN}` },
-        });
+        const encodedUrl = encodeURIComponent(url);
+        const res = await fetch(`/api/tmdb?path=${encodedUrl}`);
         const data = await res.json();
         setMovies(data.results ?? []);
         setTotalPages(Math.min(data.total_pages ?? 1, 20)); // TMDB лимит

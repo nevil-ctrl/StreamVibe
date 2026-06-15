@@ -140,6 +140,7 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
+  @@index([userId, createdAt])
 }
 
 model Movie {
@@ -316,4 +317,3 @@ model PasswordResetToken {
 
   @@index([email])
 }
-

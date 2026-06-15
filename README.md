@@ -169,6 +169,23 @@ http://localhost:3000
 
 ---
 
+# 🔧 Что было исправлено
+
+- Добавлены новые источники плеера для `WatchMovieClient` и страницы просмотра фильма:
+  - `voidboost`
+  - `moviesapi`
+- Сохранена работа существующих провайдеров:
+  - `superembed`
+  - `kinobox`
+  - `vidsrc`
+- Упрощено и унифицировано использование провайдеров между экраном детали фильма и экраном воспроизведения.
+
+Почему это важно:
+- Для фильма `Michael` основной плеер раньше мог зависать из-за проблем с конкретным iframe-источником.
+- Новые провайдеры дают более стабильные fallback-опции и быстрее загружаются.
+
+---
+
 # 🧪 5. Payment Testing
 
 1. Откройте страницу подписок.
@@ -260,7 +277,7 @@ npx prisma studio
 
 Start Webhook Listener
 
-./stripe listen --forward-to localhost:3000/api/stripe/webhook
+    ./stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
 
 ### Run Development Server

@@ -4,14 +4,17 @@ import Link from 'next/link';
 import { ArrowLeft, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { ALL_PROVIDERS } from '@/lib/providers';
 import { useProviderManager } from '@/hooks/useProviderManager';
+import { useWatchProgress } from '@/hooks/useWatchProgress';
+import { encodePlaybackEpisodeId } from '@/lib/player-utils';
+import PlayerViewport from '@/components/player/PlayerViewport';
 
 interface Props {
   showId: string;
   title: string;
   season: number;
   episode: number;
-  totalSeasons: number;
   imdbId: string | null;
+  episodeTmdbId?: string | null;
 }
 
 export default function WatchTvClient({
@@ -20,14 +23,31 @@ export default function WatchTvClient({
   season,
   episode,
   imdbId,
+  episodeTmdbId,
 }: Props) {
+  const playbackEpisodeId = encodePlaybackEpisodeId(
+    season,
+    episode,
+    episodeTmdbId,
+  );
+
+  const { saveProgress } = useWatchProgress({
+    showId,
+    episodeId: playbackEpisodeId,
+    enabled: true,
+  });
+
   const {
     activeId,
-    embedUrl,
+    providerUrl,
+    playerReady,
+    needsInteraction,
     statuses,
     iframeRef,
     selectProvider,
     onIframeLoad,
+    onIframeError,
+    handleManualPlay,
   } = useProviderManager({
     providers: ALL_PROVIDERS,
     tmdbId: showId,
@@ -35,6 +55,9 @@ export default function WatchTvClient({
     type: 'tv',
     season,
     episode,
+    onProgress: (currentTime, duration) => {
+      saveProgress(currentTime, duration || 3600);
+    },
   });
 
   return (
@@ -51,7 +74,7 @@ export default function WatchTvClient({
           {title} (S{season}E{episode})
         </span>
 
-        <div className="flex items-center gap-1.5 ml-auto flex-wrap justify-end">
+        <div className="flex items-center gap-1.5 ml-auto flex-wrap justify-end overflow-x-auto max-w-full">
           {ALL_PROVIDERS.map((p) => {
             const status = statuses[p.id]?.status ?? 'idle';
             return (
@@ -59,7 +82,7 @@ export default function WatchTvClient({
                 key={p.id}
                 type="button"
                 onClick={() => selectProvider(p.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition border cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition border cursor-pointer shrink-0 ${
                   activeId === p.id
                     ? 'bg-[#E50000] border-[#E50000] text-white'
                     : status === 'error'
@@ -95,24 +118,17 @@ export default function WatchTvClient({
         </div>
       </div>
 
-      <div className="flex-1 relative bg-black min-h-0">
-        {embedUrl ? (
-          <iframe
-            ref={iframeRef}
-            key={`${activeId}-${season}-${episode}-${embedUrl}`}
-            src={embedUrl}
-            className="absolute inset-0 w-full h-full border-0 bg-black"
-            allowFullScreen
-            allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
-            onLoad={onIframeLoad}
-            title={title}
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-[#999] bg-black">
-            Нет доступных источников
-          </div>
-        )}
-      </div>
+      <PlayerViewport
+        title={title}
+        providerUrl={providerUrl}
+        playerReady={playerReady}
+        needsInteraction={needsInteraction}
+        iframeKey={`${activeId}-${season}-${episode}-${providerUrl ?? ''}`}
+        iframeRef={iframeRef}
+        onIframeLoad={onIframeLoad}
+        onIframeError={onIframeError}
+        onManualPlay={handleManualPlay}
+      />
     </div>
   );
 }

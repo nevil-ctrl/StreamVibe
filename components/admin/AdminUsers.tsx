@@ -169,7 +169,8 @@ export default function AdminUsers() {
             Пользователи не найдены
           </div>
         ) : (
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px]">
             <thead>
               <tr className="border-b border-white/10">
                 <th className="text-left text-white/40 text-xs font-medium px-5 py-3">
@@ -314,6 +315,7 @@ export default function AdminUsers() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

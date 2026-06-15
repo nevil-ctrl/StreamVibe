@@ -12,6 +12,8 @@ import {
   CreditCard,
   AlertCircle,
   XCircle,
+  Menu,
+  X,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -73,7 +75,7 @@ function NotificationBell() {
   const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/alerts');
+      const res = await fetch('/api/notifications');
       if (!res.ok) return;
       const data = await res.json();
       setNotifications(data.notifications ?? []);
@@ -88,8 +90,22 @@ function NotificationBell() {
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
+
+    const onVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchNotifications();
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    const interval = setInterval(() => {
+      if (!document.hidden) fetchNotifications();
+    }, 60000);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
   }, [fetchNotifications]);
 
   useEffect(() => {
@@ -106,7 +122,7 @@ function NotificationBell() {
     setOpen((prev) => !prev);
     if (!open && unreadCount > 0) {
       try {
-        await fetch('/api/alerts', { method: 'PATCH' });
+        await fetch('/api/notifications', { method: 'PATCH' });
         setUnreadCount(0);
         setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       } catch (err) {}
@@ -116,7 +132,7 @@ function NotificationBell() {
   async function handleDelete(id: string, e: React.MouseEvent) {
     e.stopPropagation();
     try {
-      await fetch('/api/alerts', {
+      await fetch('/api/notifications', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
@@ -127,7 +143,7 @@ function NotificationBell() {
 
   async function handleMarkAllRead() {
     try {
-      await fetch('/api/alerts', { method: 'PATCH' });
+      await fetch('/api/notifications', { method: 'PATCH' });
       setUnreadCount(0);
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     } catch (err) {}
@@ -230,14 +246,34 @@ function NotificationBell() {
 export default function Navbar() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mobileOpen]);
 
   return (
-    <nav className="flex items-center justify-between">
-      <Link href="/">
-        <Image src="/logo/Logo.svg" alt="StreamVibe" width={200} height={60} />
+    <nav className="relative flex items-center justify-between gap-3">
+      <Link href="/" className="shrink-0">
+        <Image
+          src="/logo/Logo.svg"
+          alt="StreamVibe"
+          width={200}
+          height={60}
+          className="h-10 w-auto md:h-[60px]"
+        />
       </Link>
 
-      <div className="flex items-center rounded-[14px] border border-[#262626] bg-[#0F0F0F]/90 p-2.5 backdrop-blur-xl">
+      <div className="hidden lg:flex items-center rounded-[14px] border border-[#262626] bg-[#0F0F0F]/90 p-2.5 backdrop-blur-xl">
         {NAV_LINKS.map(({ href, label }) => (
           <Link
             key={href}
@@ -252,7 +288,7 @@ export default function Navbar() {
         ))}
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="hidden md:flex items-center gap-6">
         <Link
           href="/search"
           className="cursor-pointer flex items-center justify-center w-7 h-7"
@@ -288,11 +324,73 @@ export default function Navbar() {
         ) : (
           <Link
             href="/auth/login"
-            className="rounded-lg bg-(--red-45) hover:bg-(--red-50) text-white text-sm font-medium px-5 py-2.5 transition duration-200">
+            className="rounded-lg bg-(--red-45) hover:bg-(--red-50) text-white text-sm font-medium px-5 py-2.5 transition duration-200 min-h-[44px] inline-flex items-center">
             Войти
           </Link>
         )}
       </div>
+
+      <button
+        type="button"
+        onClick={() => setMobileOpen((prev) => !prev)}
+        className="md:hidden flex items-center justify-center w-11 h-11 rounded-lg border border-[#262626] bg-[#1A1A1A] text-white"
+        aria-label={mobileOpen ? 'Закрыть меню' : 'Открыть меню'}>
+        {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+      </button>
+
+      {mobileOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/60 md:hidden"
+            onClick={() => setMobileOpen(false)}
+            aria-hidden
+          />
+          <div className="fixed inset-x-0 top-[72px] z-50 mx-4 rounded-2xl border border-[#262626] bg-[#0F0F0F] p-4 shadow-2xl md:hidden">
+            <div className="flex flex-col gap-1 mb-4">
+              {NAV_LINKS.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`rounded-lg px-4 py-3 text-base font-medium transition min-h-[44px] flex items-center ${
+                    pathname === href
+                      ? 'bg-[#1A1A1A] text-white'
+                      : 'text-[#BFBFBF] hover:text-white hover:bg-[#1A1A1A]'
+                  }`}>
+                  {label}
+                </Link>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-3 border-t border-[#262628] pt-4">
+              <Link
+                href="/search"
+                onClick={() => setMobileOpen(false)}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-[#262628] bg-[#1A1A1A] px-4 py-3 text-sm text-white min-h-[44px]">
+                <Search size={18} />
+                Поиск
+              </Link>
+
+              {session ? (
+                <Link
+                  href="/user/profile"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-(--red-45) px-4 py-3 text-sm font-medium text-white min-h-[44px]">
+                  <User size={18} />
+                  Профиль
+                </Link>
+              ) : (
+                <Link
+                  href="/auth/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex flex-1 items-center justify-center rounded-lg bg-(--red-45) px-4 py-3 text-sm font-medium text-white min-h-[44px]">
+                  Войти
+                </Link>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </nav>
   );
 }

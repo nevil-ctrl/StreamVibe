@@ -11,30 +11,16 @@ interface PlayerSectionProps {
   episode?: number;
 }
 
-const PLAYERS = [
-  {
-    id: 'voidboost',
-    label: 'Voidboost',
-    getUrl: (id: number, type: string) =>
-      type === 'movie'
-        ? `https://voidboost.tv/embed/${id}`
-        : `https://voidboost.tv/embed/${id}/1/1`,
-  },
-  {
-    id: 'moviesapi',
-    label: 'MoviesAPI',
-    getUrl: (id: number, type: string) =>
-      type === 'movie'
-        ? `https://moviesapi.club/movie/${id}`
-        : `https://moviesapi.club/tv/${id}-1-1`,
-  },
-  {
-    id: 'superembed',
-    label: 'SuperEmbed',
-    getUrl: (id: number, type: string) =>
-      `https://multiembed.mov/?video_id=${id}&tmdb=1${type === 'tv' ? '&s=1&e=1' : ''}`,
-  },
-];
+import { ALL_PROVIDERS } from '@/lib/providers';
+
+const PLAYERS = ALL_PROVIDERS.map((provider) => ({
+  id: provider.id,
+  label: provider.label,
+  getUrl: (id: number, type: string) =>
+    type === 'movie'
+      ? provider.getMovieUrl(String(id))
+      : provider.getTvUrl(String(id), 1, 1),
+}));
 
 export default function PlayerSection({
   tmdbId,

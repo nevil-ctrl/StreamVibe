@@ -87,7 +87,6 @@ export default function NotificationsPage() {
       if (res.ok) {
         const data = await res.json();
         setNotifications(data.notifications ?? []);
-        await fetch('/api/notifications', { method: 'PATCH' });
       }
     } finally {
       setLoading(false);

@@ -12,10 +12,12 @@ export default function FooterVisibilityWrapper({
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const isDashboard =
-      pathname?.startsWith('/user') || pathname?.startsWith('/admin');
+    const hideFooter =
+      pathname?.startsWith('/user') ||
+      pathname?.startsWith('/admin') ||
+      pathname?.startsWith('/auth');
     if (wrapperRef.current) {
-      if (isDashboard) {
+      if (hideFooter) {
         wrapperRef.current.classList.add('hide-footer');
       } else {
         wrapperRef.current.classList.remove('hide-footer');

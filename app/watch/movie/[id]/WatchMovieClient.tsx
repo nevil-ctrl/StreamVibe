@@ -4,26 +4,46 @@ import Link from 'next/link';
 import { ArrowLeft, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { ALL_PROVIDERS } from '@/lib/providers';
 import { useProviderManager } from '@/hooks/useProviderManager';
+import { useWatchProgress } from '@/hooks/useWatchProgress';
+import PlayerViewport from '@/components/player/PlayerViewport';
 
 interface Props {
   movieId: string;
   title: string;
   imdbId: string | null;
+  initialProgress?: number;
 }
 
-export default function WatchMovieClient({ movieId, title, imdbId }: Props) {
+export default function WatchMovieClient({
+  movieId,
+  title,
+  imdbId,
+  initialProgress = 0,
+}: Props) {
+  const { saveProgress } = useWatchProgress({
+    movieId,
+    enabled: true,
+  });
+
   const {
     activeId,
-    embedUrl,
+    providerUrl,
+    playerReady,
+    needsInteraction,
     statuses,
     iframeRef,
     selectProvider,
     onIframeLoad,
+    onIframeError,
+    handleManualPlay,
   } = useProviderManager({
     providers: ALL_PROVIDERS,
     tmdbId: movieId,
     imdbId,
     type: 'movie',
+    onProgress: (currentTime, duration) => {
+      saveProgress(currentTime, duration || 7200);
+    },
   });
 
   return (
@@ -40,7 +60,7 @@ export default function WatchMovieClient({ movieId, title, imdbId }: Props) {
           {title}
         </span>
 
-        <div className="flex items-center gap-1.5 ml-auto flex-wrap justify-end">
+        <div className="flex items-center gap-1.5 ml-auto flex-wrap justify-end overflow-x-auto max-w-full">
           {ALL_PROVIDERS.map((p) => {
             const status = statuses[p.id]?.status ?? 'idle';
             return (
@@ -48,7 +68,7 @@ export default function WatchMovieClient({ movieId, title, imdbId }: Props) {
                 key={p.id}
                 type="button"
                 onClick={() => selectProvider(p.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition border cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition border cursor-pointer shrink-0 ${
                   activeId === p.id
                     ? 'bg-[#E50000] border-[#E50000] text-white'
                     : status === 'error'
@@ -84,24 +104,17 @@ export default function WatchMovieClient({ movieId, title, imdbId }: Props) {
         </div>
       </div>
 
-      <div className="flex-1 relative bg-black min-h-0">
-        {embedUrl ? (
-          <iframe
-            ref={iframeRef}
-            key={`${activeId}-${embedUrl}`}
-            src={embedUrl}
-            className="absolute inset-0 w-full h-full border-0 bg-black"
-            allowFullScreen
-            allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
-            onLoad={onIframeLoad}
-            title={title}
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-[#999] bg-black">
-            Нет доступных источников
-          </div>
-        )}
-      </div>
+      <PlayerViewport
+        title={title}
+        providerUrl={providerUrl}
+        playerReady={playerReady}
+        needsInteraction={needsInteraction}
+        iframeKey={`${activeId}-${providerUrl ?? ''}-${initialProgress}`}
+        iframeRef={iframeRef}
+        onIframeLoad={onIframeLoad}
+        onIframeError={onIframeError}
+        onManualPlay={handleManualPlay}
+      />
     </div>
   );
 }

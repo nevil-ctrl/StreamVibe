@@ -5,11 +5,14 @@ import WatchMovieClient from './WatchMovieClient';
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ t?: string }>;
 }
 
-export default async function WatchMoviePage({ params }: PageProps) {
+export default async function WatchMoviePage({ params, searchParams }: PageProps) {
   const session = await auth();
   const { id } = await params;
+  const sp = await searchParams;
+  const initialProgress = sp.t ? Number(sp.t) : 0;
 
   if (!session?.user?.id) {
     redirect(`/auth/login?callbackUrl=/watch/movie/${id}`);
@@ -21,8 +24,19 @@ export default async function WatchMoviePage({ params }: PageProps) {
   const movie = await getMovieDetail(movieId).catch(() => null);
   if (!movie) notFound();
 
-  const rawMovie = movie as any;
-  const imdbId = rawMovie.imdb_id || rawMovie.imdbId || null;
+  const movieRecord = movie as { imdb_id?: string | null; imdbId?: string | null };
+  const imdbId = movieRecord.imdb_id ?? movieRecord.imdbId ?? null;
 
-  return <WatchMovieClient movieId={id} title={movie.title} imdbId={imdbId} />;
+  return (
+    <WatchMovieClient
+      movieId={id}
+      title={movie.title}
+      imdbId={imdbId}
+      initialProgress={
+        Number.isFinite(initialProgress) && initialProgress > 0
+          ? initialProgress
+          : 0
+      }
+    />
+  );
 }

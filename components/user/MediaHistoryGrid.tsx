@@ -1,10 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { tmdbPoster } from '@/lib/tmdb-images';
+import { parsePlaybackEpisodeId } from '@/lib/player-utils';
 import {
-  episodeIdForPlayback,
   isFavoriteEntry,
   isWatchlistEntry,
+  parseEpisodeMeta,
 } from '@/lib/watch-constants';
 import type { WatchHistoryWithMedia } from '@/services/watch-history.service';
 
@@ -19,9 +20,15 @@ function itemHref(item: WatchHistoryWithMedia): string {
     return `/watch/movie/${item.movieId}${progress}`;
   }
   if (item.showId) {
-    const ep = episodeIdForPlayback(item.episodeId);
-    const q = ep ? `?episodeId=${ep}` : '';
-    return `/watch/tv/${item.showId}${q}`;
+    const rawEpisodeId = parseEpisodeMeta(item.episodeId).episodeTmdbId;
+    const parsed = parsePlaybackEpisodeId(rawEpisodeId ?? item.episodeId);
+    const params = new URLSearchParams();
+    if (parsed.season != null) params.set('season', String(parsed.season));
+    if (parsed.episode != null) params.set('episode', String(parsed.episode));
+    if (parsed.episodeTmdbId) params.set('episodeId', parsed.episodeTmdbId);
+    if (item.progress > 0) params.set('t', String(item.progress));
+    const q = params.toString();
+    return `/watch/tv/${item.showId}${q ? `?${q}` : ''}`;
   }
   return '#';
 }

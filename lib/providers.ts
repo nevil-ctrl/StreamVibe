@@ -14,10 +14,26 @@ export interface Provider {
 
 export const PROVIDERS: Provider[] = [
   {
-    id: 'superembed',
+    id: 'voidboost',
     label: 'Плеер 1',
     lang: 'multi',
     priority: 1,
+    getMovieUrl: (tmdbId) => `https://voidboost.tv/embed/${tmdbId}`,
+    getTvUrl: (tmdbId, s, e) => `https://voidboost.tv/embed/${tmdbId}/${s}/${e}`,
+  },
+  {
+    id: 'moviesapi',
+    label: 'Плеер 2',
+    lang: 'multi',
+    priority: 2,
+    getMovieUrl: (tmdbId) => `https://moviesapi.club/movie/${tmdbId}`,
+    getTvUrl: (tmdbId, s, e) => `https://moviesapi.club/tv/${tmdbId}-${s}-${e}`,
+  },
+  {
+    id: 'superembed',
+    label: 'Плеер 3',
+    lang: 'multi',
+    priority: 3,
     getMovieUrl: (tmdbId) =>
       `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1`,
     getTvUrl: (tmdbId, s, e) =>
@@ -25,9 +41,9 @@ export const PROVIDERS: Provider[] = [
   },
   {
     id: 'kinobox',
-    label: 'Плеер 2',
+    label: 'Плеер 4',
     lang: 'ru',
-    priority: 2,
+    priority: 4,
     getMovieUrl: (tmdbId, imdbId) =>
       `https://kinobox.tv/embed/vod?${imdbId ? `imdb=${imdbId}` : `tmdb=${tmdbId}`}`,
     getTvUrl: (tmdbId, s, e, imdbId) =>
@@ -35,9 +51,9 @@ export const PROVIDERS: Provider[] = [
   },
   {
     id: 'vidsrc',
-    label: 'Плеер 3',
+    label: 'Плеер 5',
     lang: 'en',
-    priority: 3,
+    priority: 5,
     getMovieUrl: (tmdbId, imdbId) =>
       `https://vidsrc.to/embed/movie/${imdbId || tmdbId}?sub_lang=Russian`,
     getTvUrl: (tmdbId, s, e, imdbId) =>

@@ -14,6 +14,7 @@ import {
   Film,
 } from 'lucide-react';
 import type { PlaybackSource } from '@/services/tmdb-videos.service';
+import { enterFullscreen, exitFullscreen } from '@/lib/player-utils';
 
 interface VideoPlayerProps {
   title: string;
@@ -174,13 +175,15 @@ export default function VideoPlayer({
     if (!el) return;
     try {
       if (!document.fullscreenElement) {
-        await el.requestFullscreen();
+        enterFullscreen(el);
         setFullscreen(true);
       } else {
-        await document.exitFullscreen();
+        exitFullscreen();
         setFullscreen(false);
       }
-    } catch (err) {}
+    } catch {
+      // Fullscreen may be blocked by browser policy
+    }
   }, []);
 
   useEffect(() => {

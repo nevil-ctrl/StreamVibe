@@ -77,7 +77,7 @@ export default function DetailHero({
 
   return (
     <section className="relative w-full px-4 pt-4 md:px-12 md:pt-6">
-      <div className="relative mx-auto h-[55vh] min-h-[420px] max-w-[1600px] overflow-hidden rounded-2xl border border-[#262628] bg-[#1A1A1A] md:h-[65vh]">
+      <div className="relative mx-auto aspect-video w-full max-w-[1600px] min-h-[240px] overflow-hidden rounded-2xl border border-[#262628] bg-[#1A1A1A] md:aspect-auto md:h-[55vh] md:min-h-[420px] md:max-h-[65vh]">
         {backdrop ? (
           <Image
             src={backdrop}
@@ -102,12 +102,12 @@ export default function DetailHero({
             {overview || 'Описание скоро появится.'}
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3">
+          <div className="flex w-full max-w-md flex-col items-stretch gap-3 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
             <button
               type="button"
               onClick={handlePlay}
               disabled={pending}
-              className="flex cursor-pointer items-center gap-2 rounded-lg bg-[#E50000] px-6 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60">
+              className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#E50000] px-6 py-3 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60 sm:w-auto">
               {pending ? (
                 <Loader2 size={16} className="animate-spin" />
               ) : (
@@ -115,6 +115,7 @@ export default function DetailHero({
               )}
               Play Now
             </button>
+            <div className="flex items-center justify-center gap-3">
             <button
               type="button"
               onClick={handleWatchlist}
@@ -155,6 +156,7 @@ export default function DetailHero({
             >
               <Volume2 size={16} className="text-white" />
             </button>
+            </div>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { TMDB_BASE_URL, TMDB_IMAGE_URL, TMDB_ACCESS_TOKEN } from '@/lib/tmdb';
+import { TMDB_BASE_URL, TMDB_IMAGE_URL } from '@/lib/tmdb';
 
 const SORT_OPTIONS = [
   { value: 'popularity.desc', label: 'Most Popular' },
@@ -40,15 +40,10 @@ export default function BrowsePage() {
       setLoading(true);
 
       try {
-        const res = await fetch(
+        const encodedUrl = encodeURIComponent(
           `${TMDB_BASE_URL}/discover/movie?with_genres=${genreId}&sort_by=${s}&page=${p}&vote_count.gte=50`,
-          {
-            headers: {
-              Authorization: `Bearer ${TMDB_ACCESS_TOKEN}`,
-            },
-          },
         );
-
+        const res = await fetch(`/api/tmdb?path=${encodedUrl}`);
         const data = await res.json();
 
         setMovies(data.results ?? []);
@@ -66,7 +61,6 @@ export default function BrowsePage() {
 
     sortRef.current = defaultSort;
     pageRef.current = 1;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSort(defaultSort);
     setPage(1);
 

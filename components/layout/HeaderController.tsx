@@ -9,7 +9,8 @@ export default function HeaderController() {
   if (
     pathname.startsWith('/admin') ||
     pathname.startsWith('/user') ||
-    pathname.startsWith('/watch')
+    pathname.startsWith('/watch') ||
+    pathname.startsWith('/auth')
   )
     return null;
 

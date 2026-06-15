@@ -184,7 +184,7 @@ const handleCategoryClick = (id: number | string, name: string) => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0 ml-8 mt-8">
+        <div className="hidden md:flex items-center gap-3 shrink-0 ml-8 mt-8">
           <button
             onClick={() => scroll('left')}
             className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#1A1A1A] border border-[#262628] hover:bg-[#262628] hover:border-[#ffffff30] active:scale-95 transition">

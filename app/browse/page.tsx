@@ -13,7 +13,7 @@ import {
   Star,
   Clock,
 } from 'lucide-react';
-import { TMDB_IMAGE_URL, TMDB_BASE_URL, TMDB_ACCESS_TOKEN } from '@/lib/tmdb';
+import { TMDB_IMAGE_URL } from '@/lib/tmdb';
 
 interface IMedia {
   id: number;
@@ -47,26 +47,18 @@ export default function BrowsePage() {
 }
 
 function BrowseContent() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
 
   const [movieHero, setMovieHero] = useState<IMedia[]>([]);
   const [currentMovieHeroIndex, setCurrentMovieHeroIndex] = useState(0);
-
-  const [showHero, setShowHero] = useState<IMedia[]>([]);
-  const [currentShowHeroIndex, setCurrentShowHeroIndex] = useState(0);
 
   const [movieSections, setMovieSections] = useState<ICategory[]>([]);
   const [showSections, setShowSections] = useState<ICategory[]>([]);
 
   const fetchFromTMDB = async (path: string) => {
     try {
-      const res = await fetch(`${TMDB_BASE_URL}${path}`, {
-        headers: {
-          Authorization: `Bearer ${TMDB_ACCESS_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const encodedPath = encodeURIComponent(path);
+      const res = await fetch(`/api/tmdb?path=${encodedPath}`);
       if (!res.ok) return [];
       const data = await res.json();
       return data.results || [];
@@ -105,7 +97,6 @@ function BrowseContent() {
       ]);
 
       setMovieHero(trendingMovies.slice(0, 5));
-      setShowHero(trendingShows.slice(0, 5));
 
       setMovieSections([
         { id: 'genres_movie', name: 'Our Genres', items: popularMovies },

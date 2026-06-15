@@ -332,7 +332,7 @@ export default function SupportPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center mb-20 md:mb-28">
           <div className="lg:col-span-5 flex flex-col gap-8 h-full justify-between">
             <div className="space-y-3">
-              <h1 className="text-3xl w-[400px] md:text-5xl font-bold tracking-tight text-white">
+              <h1 className="text-3xl w-full md:text-5xl font-bold tracking-tight text-white">
                 Welcome to our support page!
               </h1>
               <p className="text-[#999999] text-sm md:text-base leading-relaxed">
@@ -548,7 +548,7 @@ export default function SupportPage() {
                   <button
                     type="submit"
                     disabled={submitStatus === 'loading'}
-                    className="w-full sm:w-auto bg-[#E50000] hover:bg-[#FF1919] disabled:opacity-60 disabled:cursor-not-allowed text-white px-6 py-3 rounded-md font-medium text-sm transition-colors shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 min-w-35">
+                    className="w-full bg-[#E50000] hover:bg-[#FF1919] disabled:opacity-60 disabled:cursor-not-allowed text-white px-6 py-3 min-h-[44px] rounded-md font-medium text-sm transition-colors shadow-lg active:scale-[0.98] flex items-center justify-center gap-2">
                     {submitStatus === 'loading' ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />

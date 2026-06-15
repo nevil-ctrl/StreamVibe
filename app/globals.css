@@ -37,6 +37,7 @@
     font-family: var(--font-manrope), sans-serif;
     background: var(--black-06);
     color: var(--white);
+    overflow-x: hidden;
   }
 }
 
@@ -148,4 +149,11 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 .hide-layout main {
   padding-bottom: 0 !important;
   margin-bottom: 0 !important;
+}
+
+@media (max-width: 767px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }

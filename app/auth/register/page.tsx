@@ -1,10 +1,5 @@
 import RegisterForm from './RegisterForm';
-
-interface TMDBMovie {
-  poster_path: string;
-  title: string;
-  [key: string]: unknown;
-}
+import { TMDBMovieShort } from '@/types/tmdb';
 
 async function getTrendingMovies() {
   try {
@@ -19,7 +14,7 @@ async function getTrendingMovies() {
 
     const data = await res.json();
     return (
-      data.results?.map((m: TMDBMovie) => ({
+      data.results?.map((m: TMDBMovieShort) => ({
         poster_path: m.poster_path,
         title: m.title,
       })) || []
