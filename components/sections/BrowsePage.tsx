@@ -89,7 +89,7 @@ export default function BrowsePage() {
   };
 
   return (
-    <div className="min-h-screen px-10 md:px-[162px] py-16">
+    <div className="min-h-screen px-4 md:px-12 lg:px-[162px] py-8 md:py-16">
       {/* Header */}
       <div className="flex items-center justify-between mb-10">
         <h1 className="text-3xl font-bold text-white">{genreName}</h1>

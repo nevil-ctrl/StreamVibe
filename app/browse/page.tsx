@@ -164,8 +164,7 @@ function BrowseContent() {
 
       {/* ── MOVIES SECTIONS ── */}
       <div
-        className="container mx-auto px-4 md:px-12"
-        style={{ marginTop: '180px' }}>
+        className="container mx-auto px-4 md:px-12 mt-8 md:mt-[180px]">
         <div className="mb-10">
           <span className="px-3 py-1 bg-[#E50000] text-white text-xs font-bold rounded uppercase tracking-wider">
             Movies
@@ -185,8 +184,7 @@ function BrowseContent() {
 
       {/* ── SHOWS SECTIONS ── */}
       <div
-        className="container mx-auto px-4 md:px-12"
-        style={{ marginTop: '150px' }}>
+        className="container mx-auto px-4 md:px-12 mt-12 md:mt-[150px]">
         <div className="mb-10">
           <span className="px-3 py-1 bg-[#E50000] text-white text-xs font-bold rounded uppercase tracking-wider">
             Shows
@@ -227,45 +225,48 @@ function HeroSlider({
   if (!current) return null;
 
   return (
-    <div className="relative w-full h-[65vh] sm:h-[75vh] md:h-[80vh] lg:h-[85vh] overflow-hidden px-4 md:px-12 pt-6">
-      <div className="relative w-full h-full rounded-2xl overflow-hidden border border-[#262628] bg-[#1A1A1A]">
-        <div className="absolute inset-0 bg-linear-to-t from-[#141414] via-[#141414]/40 to-transparent z-10" />
-        <div className="absolute inset-0 bg-linear-to-r from-[#141414]/70 via-transparent to-transparent z-10" />
+    <div className="relative w-full min-h-[55vh] sm:min-h-[65vh] md:h-[80vh] lg:h-[85vh] overflow-hidden px-4 md:px-12 pt-4 md:pt-6">
+      <div className="relative w-full h-full min-h-[320px] rounded-2xl overflow-hidden border border-[#262628] bg-[#1A1A1A] flex flex-col md:block">
+        <div className="relative w-full aspect-[4/3] sm:aspect-video md:absolute md:inset-0 md:aspect-auto">
+          <div className="absolute inset-0 bg-linear-to-t from-[#141414] via-[#141414]/40 to-transparent z-10 md:block" />
+          <div className="absolute inset-0 bg-linear-to-r from-[#141414]/70 via-transparent to-transparent z-10 hidden md:block" />
 
-        <Image
-          src={`${TMDB_IMAGE_URL.replace('w500', 'original')}${current.backdrop_path}`}
-          alt={current.title || current.name || 'Hero'}
-          fill
-          priority
-          className="object-cover"
-        />
+          <Image
+            src={`${TMDB_IMAGE_URL.replace('w500', 'original')}${current.backdrop_path}`}
+            alt={current.title || current.name || 'Hero'}
+            fill
+            priority
+            className="object-cover"
+            sizes="100vw"
+          />
+        </div>
 
-        <div className="absolute inset-x-0 bottom-0 z-20 flex flex-col items-center justify-end pb-10 px-6 md:px-16 text-center max-w-4xl mx-auto">
-          <h1 className="text-[26px] sm:text-[34px] md:text-[42px] font-bold text-white mb-3 drop-shadow-md tracking-tight">
+        <div className="relative z-20 flex flex-col items-center md:absolute md:inset-x-0 md:bottom-0 md:justify-end px-4 pb-6 pt-4 md:px-16 md:pb-10 text-center max-w-4xl mx-auto w-full bg-[#141414] md:bg-transparent">
+          <h1 className="text-[24px] sm:text-[34px] md:text-[42px] font-bold text-white mb-2 md:mb-3 drop-shadow-md tracking-tight">
             {current.title || current.name}
           </h1>
-          <p className="text-[13px] sm:text-[15px] text-[#e4e4e7] max-w-2xl line-clamp-2 mb-6 opacity-85 leading-relaxed">
+          <p className="text-[13px] sm:text-[15px] text-[#e4e4e7] max-w-2xl line-clamp-3 md:line-clamp-2 mb-4 md:mb-6 opacity-85 leading-relaxed">
             {current.overview || 'Описание подготавливается бэкенд-сервером.'}
           </p>
 
-          <div className="flex items-center justify-between w-full max-w-xl gap-4 mt-2">
+          <div className="flex w-full max-w-md flex-col gap-3 sm:max-w-xl">
             <button
-              onClick={onPrev}
-              className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#141414]/80 border border-[#262628] hover:bg-[#E50000] hover:border-[#E50000] transition cursor-pointer">
-              <ArrowLeft size={16} className="text-white" />
+              onClick={() =>
+                router.push(
+                  type === 'movie'
+                    ? `/watch/movie/${current.id}`
+                    : `/watch/tv/${current.id}`,
+                )
+              }
+              className="flex w-full min-h-[44px] items-center justify-center gap-2 px-6 py-3 bg-[#E50000] hover:bg-red-700 font-semibold rounded-lg text-sm transition duration-200 cursor-pointer">
+              <Play size={16} fill="currentColor" /> Play Now
             </button>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center gap-3">
               <button
-                onClick={() =>
-                  router.push(
-                    type === 'movie'
-                      ? `/movies/${current.id}`
-                      : `/shows/${current.id}`,
-                  )
-                }
-                className="flex items-center gap-2 px-6 py-3 bg-[#E50000] hover:bg-red-700 font-semibold rounded-lg text-sm transition duration-200 cursor-pointer">
-                <Play size={16} fill="currentColor" /> Play Now
+                onClick={onPrev}
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#141414]/80 border border-[#262628] hover:bg-[#E50000] hover:border-[#E50000] transition cursor-pointer">
+                <ArrowLeft size={16} className="text-white" />
               </button>
               <button className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#141414] border border-[#262628] hover:bg-[#1A1A1A] transition cursor-pointer">
                 <Plus size={18} />
@@ -276,16 +277,15 @@ function HeroSlider({
               <button className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#141414] border border-[#262628] hover:bg-[#1A1A1A] transition cursor-pointer">
                 <Volume2 size={16} />
               </button>
+              <button
+                onClick={onNext}
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#141414]/80 border border-[#262628] hover:bg-[#E50000] hover:border-[#E50000] transition cursor-pointer">
+                <ArrowRight size={16} className="text-white" />
+              </button>
             </div>
-
-            <button
-              onClick={onNext}
-              className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#141414]/80 border border-[#262628] hover:bg-[#E50000] hover:border-[#E50000] transition cursor-pointer">
-              <ArrowRight size={16} className="text-white" />
-            </button>
           </div>
 
-          <div className="flex items-center gap-1.5 mt-6">
+          <div className="flex items-center gap-1.5 mt-5">
             {items.map((_, idx) => (
               <span
                 key={idx}
@@ -366,20 +366,21 @@ function HorizontalTrack({
 
   if (items.length === 0) return null;
   const totalSlides = Math.ceil(originalLength / VISIBLE);
+  const mobileItems = items.slice(0, 10);
 
   return (
-    <div className="mb-20 last:mb-0">
-      <div className="flex items-center justify-between mb-8">
+    <div className="mb-12 md:mb-20 last:mb-0">
+      <div className="flex items-center justify-between mb-6 md:mb-8 gap-4">
         <h3
           onClick={() =>
             router.push(
               `/browse/genre?type=${type}&status=${sectionId}&name=${encodeURIComponent(title)}`,
             )
           }
-          className="text-[20px] sm:text-[24px] font-bold text-white tracking-tight cursor-pointer hover:text-[#E50000] transition">
+          className="text-[18px] sm:text-[24px] font-bold text-white tracking-tight cursor-pointer hover:text-[#E50000] transition">
           {title}
         </h3>
-        <div className="flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3 shrink-0">
           <button
             onClick={() => scroll('left')}
             className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#1A1A1A] border border-[#262628] hover:bg-[#262628] transition cursor-pointer">
@@ -403,10 +404,64 @@ function HorizontalTrack({
         </div>
       </div>
 
+      {/* Mobile: 2-column grid */}
+      <div className="grid grid-cols-2 gap-4 md:hidden">
+        {mobileItems.map((item) => {
+          const generatedMinutes = (item.id % 70) + 85;
+          const hours = Math.floor(generatedMinutes / 60);
+          const mins = generatedMinutes % 60;
+          const durationText =
+            type === 'movie'
+              ? `${hours}h ${mins}m`
+              : `${(item.id % 4) + 2} Seasons`;
+
+          return (
+            <article
+              key={item.id}
+              onClick={() =>
+                router.push(
+                  type === 'movie' ? `/movies/${item.id}` : `/shows/${item.id}`,
+                )
+              }
+              className="rounded-xl border border-[#262628] bg-[#1A1A1A] p-3 hover:border-[#E50000] transition cursor-pointer flex flex-col">
+              <div className="relative aspect-2/3 overflow-hidden rounded-lg mb-3 bg-[#262628]">
+                <Image
+                  src={
+                    item.poster_path
+                      ? `${TMDB_IMAGE_URL}${item.poster_path}`
+                      : '/no-poster.png'
+                  }
+                  alt={item.title || item.name || 'Poster'}
+                  fill
+                  sizes="(max-width: 768px) 50vw"
+                  className="object-cover"
+                />
+                {title.includes('Top 10') && (
+                  <span className="absolute top-2 left-2 px-2 py-0.5 bg-[#E50000] text-[10px] font-bold rounded text-white uppercase">
+                    Top 10
+                  </span>
+                )}
+              </div>
+              <h4 className="text-sm font-medium text-white truncate mb-1">
+                {item.title || item.name}
+              </h4>
+              <div className="flex items-center justify-between text-[11px] text-[#999999]">
+                <span>{durationText}</span>
+                <span className="flex items-center gap-1">
+                  <Star size={11} className="text-[#FFAD4B]" fill="#FFAD4B" />
+                  {item.vote_average?.toFixed(1) ?? '0.0'}
+                </span>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      {/* Desktop: horizontal carousel */}
       <div
         ref={trackRef}
         onScroll={onScroll}
-        className="flex gap-5 overflow-x-auto pb-3"
+        className="hidden md:flex gap-5 overflow-x-auto pb-3"
         style={{ scrollbarWidth: 'none' }}>
         {loopedItems.map((item, index) => {
           const generatedMinutes = (item.id % 70) + 85;

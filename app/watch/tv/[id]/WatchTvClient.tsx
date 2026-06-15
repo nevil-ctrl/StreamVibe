@@ -62,19 +62,20 @@ export default function WatchTvClient({
 
   return (
     <div className="flex flex-col h-screen bg-[#0F0F0F] overflow-hidden">
-      <div className="flex-shrink-0 px-4 py-2 md:px-6 flex items-center gap-4 border-b border-[#1A1A1A] min-h-[52px]">
-        <Link
-          href={`/shows/${showId}`}
-          className="inline-flex items-center gap-1.5 text-sm text-[#999] hover:text-white transition whitespace-nowrap shrink-0">
-          <ArrowLeft size={15} />
-          Назад
-        </Link>
+      <div className="flex-shrink-0 px-3 py-2 md:px-6 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 border-b border-[#1A1A1A] min-h-[52px]">
+        <div className="flex items-center gap-3 min-w-0">
+          <Link
+            href={`/shows/${showId}`}
+            className="inline-flex items-center gap-1.5 text-sm text-[#999] hover:text-white transition whitespace-nowrap shrink-0">
+            <ArrowLeft size={15} />
+            Назад
+          </Link>
+          <span className="text-white font-semibold text-sm truncate max-w-[140px] sm:max-w-xs">
+            {title} (S{season}E{episode})
+          </span>
+        </div>
 
-        <span className="text-white font-semibold text-sm truncate shrink-0 max-w-[180px] md:max-w-xs">
-          {title} (S{season}E{episode})
-        </span>
-
-        <div className="flex items-center gap-1.5 ml-auto flex-wrap justify-end overflow-x-auto max-w-full">
+        <div className="flex items-center gap-1.5 sm:ml-auto flex-nowrap overflow-x-auto max-w-full pb-1 sm:pb-0 scrollbar-hide">
           {ALL_PROVIDERS.map((p) => {
             const status = statuses[p.id]?.status ?? 'idle';
             return (

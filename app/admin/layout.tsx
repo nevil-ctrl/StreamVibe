@@ -21,7 +21,7 @@ export default async function AdminLayout({
     <SessionProvider>
       <div className="flex w-full h-screen overflow-hidden">
         <Sidebar variant="admin" />
-        <main className="flex-1 h-screen overflow-y-auto overflow-x-hidden bg-[#0f0f0f] p-4 md:p-8">
+        <main className="flex-1 h-screen overflow-y-auto overflow-x-hidden bg-[#0f0f0f] p-4 md:p-8 min-w-0 pt-16 lg:pt-8">
           {children}
         </main>
       </div>

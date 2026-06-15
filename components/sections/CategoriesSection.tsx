@@ -167,18 +167,19 @@ const handleCategoryClick = (id: number | string, name: string) => {
 };
 
   const totalSlides = Math.ceil(originalLength / VISIBLE);
+  const displayCategories = categories.slice(0, 12);
 
   return (
-    <section className="container  select-none">
-      <div className="flex items-start justify-between mb-10">
-        <div className="flex flex-col gap-2">
-          <span className="w-fit px-3 py-1 bg-[#E50000] text-white text-xs font-semibold rounded-md uppercase tracking-wider mb-1">
+    <section className="container select-none px-4">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-8 md:mb-10 gap-4">
+        <div className="flex flex-col gap-2 text-center md:text-left">
+          <span className="w-fit mx-auto md:mx-0 px-3 py-1 bg-[#E50000] text-white text-xs font-semibold rounded-md uppercase tracking-wider mb-1">
             {type === 'movie' ? 'Movies' : 'Shows'}
           </span>
-          <h2 className="text-[28px] font-bold text-white">
+          <h2 className="text-[24px] md:text-[28px] font-bold text-white">
             Explore our wide variety of categories
           </h2>
-          <p className="text-[18px] text-[#999999]">
+          <p className="text-[15px] md:text-[18px] text-[#999999] max-w-xl">
             Whether you&apos;re looking for a comedy to make you laugh, a drama
             to make you think, or a documentary to learn something new
           </p>
@@ -210,6 +211,49 @@ const handleCategoryClick = (id: number | string, name: string) => {
         </div>
       </div>
 
+      {/* Mobile: 2-column grid */}
+      <div className="grid grid-cols-2 gap-4 md:hidden">
+        {displayCategories.map((cat) => (
+          <article
+            key={cat.id}
+            onClick={() => handleCategoryClick(cat.id, cat.name)}
+            className="rounded-xl border border-[#262628] bg-[#1A1A1A] p-3 cursor-pointer hover:border-[#E50000] transition-all duration-300 group relative overflow-hidden">
+            <div className="relative rounded-lg overflow-hidden mb-3 bg-[#111111] p-1">
+              <div className="grid grid-cols-2 gap-1.5">
+                {cat.movies.slice(0, 4).map((movie) => (
+                  <div
+                    key={movie.id}
+                    className="relative aspect-square overflow-hidden rounded-md bg-[#262628]">
+                    {movie.poster_path ? (
+                      <Image
+                        src={`${TMDB_IMAGE_URL}${movie.poster_path}`}
+                        alt={movie.title}
+                        fill
+                        sizes="80px"
+                        className="object-cover"
+                        draggable={false}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-[#262628]" />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A1A] via-[#1A1A1A]/30 to-transparent pointer-events-none" />
+            </div>
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-sm font-semibold text-white truncate max-w-[80%]">
+                {cat.name}
+              </span>
+              <ArrowRight
+                size={16}
+                className="text-[#999999] group-hover:text-white shrink-0"
+              />
+            </div>
+          </article>
+        ))}
+      </div>
+
       <div
         ref={trackRef}
         onScroll={onScroll}
@@ -217,7 +261,7 @@ const handleCategoryClick = (id: number | string, name: string) => {
         onMouseLeave={onMouseLeave}
         onMouseUp={onMouseUp}
         onMouseMove={onMouseMove}
-        className={`flex gap-5 overflow-x-auto pb-2 ${isDown.current ? 'cursor-grabbing' : 'cursor-grab'}`}
+        className={`hidden md:flex gap-5 overflow-x-auto pb-2 ${isDown.current ? 'cursor-grabbing' : 'cursor-grab'}`}
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',

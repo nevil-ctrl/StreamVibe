@@ -270,6 +270,8 @@ export default function Navbar() {
           width={200}
           height={60}
           className="h-10 w-auto md:h-[60px]"
+          style={{ width: 'auto', height: 'auto' }}
+          priority
         />
       </Link>
 
@@ -288,7 +290,7 @@ export default function Navbar() {
         ))}
       </div>
 
-      <div className="hidden md:flex items-center gap-6">
+      <div className="hidden lg:flex items-center gap-6">
         <Link
           href="/search"
           className="cursor-pointer flex items-center justify-center w-7 h-7"
@@ -333,7 +335,7 @@ export default function Navbar() {
       <button
         type="button"
         onClick={() => setMobileOpen((prev) => !prev)}
-        className="md:hidden flex items-center justify-center w-11 h-11 rounded-lg border border-[#262626] bg-[#1A1A1A] text-white"
+        className="lg:hidden flex items-center justify-center w-11 h-11 rounded-lg border border-[#262626] bg-[#1A1A1A] text-white"
         aria-label={mobileOpen ? 'Закрыть меню' : 'Открыть меню'}>
         {mobileOpen ? <X size={22} /> : <Menu size={22} />}
       </button>
@@ -341,11 +343,11 @@ export default function Navbar() {
       {mobileOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/60 md:hidden"
+            className="fixed inset-0 z-40 bg-black/60 lg:hidden"
             onClick={() => setMobileOpen(false)}
             aria-hidden
           />
-          <div className="fixed inset-x-0 top-[72px] z-50 mx-4 rounded-2xl border border-[#262626] bg-[#0F0F0F] p-4 shadow-2xl md:hidden">
+          <div className="fixed inset-x-0 top-[72px] z-50 mx-4 rounded-2xl border border-[#262626] bg-[#0F0F0F] p-4 shadow-2xl lg:hidden">
             <div className="flex flex-col gap-1 mb-4">
               {NAV_LINKS.map(({ href, label }) => (
                 <Link

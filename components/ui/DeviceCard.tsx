@@ -57,7 +57,7 @@ export function DeviceCard({ icon, title, description }: DeviceCardProps) {
             alt={title}
             width={36}
             height={36}
-            style={{ width: 'auto', height: '36px' }}
+            className="w-auto h-9"
           />
         </div>
         <span className="text-white text-xl font-semibold">{title}</span>

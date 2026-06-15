@@ -15,7 +15,7 @@ export default async function UserLayout({
       {/* ← передаём в провайдер */}
       <div className="flex w-full h-screen overflow-hidden">
         <Sidebar />
-        <main className="flex-1 h-screen overflow-y-auto bg-black">
+        <main className="flex-1 h-screen overflow-y-auto overflow-x-hidden bg-black min-w-0 pt-16 lg:pt-0">
           {children}
         </main>
       </div>

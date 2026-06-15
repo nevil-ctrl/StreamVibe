@@ -75,8 +75,8 @@ export default async function ShowPage({ params }: PageProps) {
         initialInWatchlist={initialInWatchlist}
       />
 
-      <div className="mx-auto grid max-w-[1600px] gap-8 px-6 py-10 md:px-12 lg:grid-cols-3">
-        <div className="space-y-8 lg:col-span-2">
+      <div className="mx-auto grid max-w-[1600px] gap-8 px-4 py-8 md:px-12 md:py-10 lg:grid-cols-3">
+        <div className="space-y-8 order-2 lg:order-1 lg:col-span-2">
           <SeasonsAccordion
             showId={show.id}
             showName={show.name}
@@ -111,6 +111,7 @@ export default async function ShowPage({ params }: PageProps) {
           />
         </div>
 
+        <div className="order-1 lg:order-2">
         <MetadataSidebar
           releaseYear={releaseYear}
           languages={languages}
@@ -121,6 +122,7 @@ export default async function ShowPage({ params }: PageProps) {
           composer={composer}
           watchersCount={local?.watchersCount}
         />
+        </div>
       </div>
     </div>
   );

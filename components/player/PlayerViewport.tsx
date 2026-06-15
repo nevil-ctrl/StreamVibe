@@ -27,8 +27,8 @@ export default function PlayerViewport({
   onManualPlay,
 }: PlayerViewportProps) {
   return (
-    <div className="flex-1 relative bg-black min-h-0 w-full">
-      <div className="absolute inset-0 w-full aspect-video max-h-full mx-auto">
+    <div className="flex-1 relative bg-black min-h-0 w-full flex flex-col">
+      <div className="relative flex-1 w-full min-h-[50vh] md:min-h-0">
         {!providerUrl ? (
           <div className="absolute inset-0 flex items-center justify-center text-[#999] bg-black">
             Нет доступных источников

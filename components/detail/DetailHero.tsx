@@ -77,28 +77,30 @@ export default function DetailHero({
 
   return (
     <section className="relative w-full px-4 pt-4 md:px-12 md:pt-6">
-      <div className="relative mx-auto aspect-video w-full max-w-[1600px] min-h-[240px] overflow-hidden rounded-2xl border border-[#262628] bg-[#1A1A1A] md:aspect-auto md:h-[55vh] md:min-h-[420px] md:max-h-[65vh]">
-        {backdrop ? (
-          <Image
-            src={backdrop}
-            alt={title}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-[#141414]" />
-        )}
+      <div className="relative mx-auto w-full max-w-[1600px] overflow-hidden rounded-2xl border border-[#262628] bg-[#1A1A1A] flex flex-col md:block md:aspect-auto md:h-[55vh] md:min-h-[420px] md:max-h-[65vh]">
+        <div className="relative w-full aspect-[4/3] sm:aspect-video md:absolute md:inset-0">
+          {backdrop ? (
+            <Image
+              src={backdrop}
+              alt={title}
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-[#141414]" />
+          )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F0F] via-[#0F0F0F]/50 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0F0F0F]/60 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F0F] via-[#0F0F0F]/50 to-transparent md:block" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0F0F0F]/60 via-transparent to-transparent hidden md:block" />
+        </div>
 
-        <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center px-6 pb-10 text-center md:px-16">
-          <h1 className="mb-3 max-w-3xl text-[28px] font-bold tracking-tight text-white drop-shadow-md md:text-[42px]">
+        <div className="relative z-10 flex flex-col items-center px-4 py-6 text-center md:absolute md:inset-x-0 md:bottom-0 md:px-16 md:pb-10 bg-[#0F0F0F] md:bg-transparent">
+          <h1 className="mb-3 max-w-3xl text-[26px] font-bold tracking-tight text-white md:text-[42px]">
             {title}
           </h1>
-          <p className="mb-6 max-w-2xl line-clamp-2 text-[14px] leading-relaxed text-[#E4E4E7] opacity-90 md:text-[15px]">
+          <p className="mb-6 max-w-2xl line-clamp-3 text-[14px] leading-relaxed text-[#E4E4E7] opacity-90 md:line-clamp-2 md:text-[15px]">
             {overview || 'Описание скоро появится.'}
           </p>
 
