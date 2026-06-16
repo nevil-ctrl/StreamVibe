@@ -18,6 +18,9 @@ import {
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useLocale, useTranslations } from '@/components/providers/LocaleProvider';
+import { timeAgo } from '@/lib/i18n/formatters';
 
 interface Notification {
   id: string;
@@ -54,18 +57,9 @@ function NotifIcon({ type }: { type: string }) {
   );
 }
 
-function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'только что';
-  if (mins < 60) return `${mins} мин назад`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} ч назад`;
-  const days = Math.floor(hours / 24);
-  return `${days} д назад`;
-}
-
 function NotificationBell() {
+  const t = useTranslations();
+  const { locale } = useLocale();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -80,7 +74,7 @@ function NotificationBell() {
       const data = await res.json();
       setNotifications(data.notifications ?? []);
       setUnreadCount(data.unreadCount ?? 0);
-    } catch (err) {
+    } catch {
       setNotifications([]);
       setUnreadCount(0);
     } finally {
@@ -125,7 +119,7 @@ function NotificationBell() {
         await fetch('/api/notifications', { method: 'PATCH' });
         setUnreadCount(0);
         setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      } catch (err) {}
+      } catch {}
     }
   }
 
@@ -138,7 +132,7 @@ function NotificationBell() {
         body: JSON.stringify({ id }),
       });
       setNotifications((prev) => prev.filter((n) => n.id !== id));
-    } catch (err) {}
+    } catch {}
   }
 
   async function handleMarkAllRead() {
@@ -146,7 +140,7 @@ function NotificationBell() {
       await fetch('/api/notifications', { method: 'PATCH' });
       setUnreadCount(0);
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-    } catch (err) {}
+    } catch {}
   }
 
   return (
@@ -154,7 +148,7 @@ function NotificationBell() {
       <button
         onClick={handleOpen}
         className="relative cursor-pointer flex items-center justify-center w-7 h-7"
-        aria-label="Уведомления">
+        aria-label={t('nav.notifications')}>
         <Bell
           size={24}
           className={`transition hover:scale-110 ${open ? 'text-[#E50000]' : 'text-white'}`}
@@ -170,14 +164,14 @@ function NotificationBell() {
         <div className="absolute right-0 top-10 w-80 bg-[#0F0F0F] border border-[#1F1F1F] rounded-2xl shadow-2xl z-50 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#1F1F1F]">
             <span className="text-white font-semibold text-sm">
-              Уведомления
+              {t('nav.notifications')}
             </span>
             {notifications.some((n) => !n.isRead) && (
               <button
                 onClick={handleMarkAllRead}
                 className="flex items-center gap-1.5 text-xs text-[#666] hover:text-white transition-colors cursor-pointer">
                 <CheckCheck size={13} />
-                Прочитать все
+                {t('nav.markAllRead')}
               </button>
             )}
           </div>
@@ -190,7 +184,7 @@ function NotificationBell() {
             ) : notifications.length === 0 ? (
               <div className="py-10 text-center">
                 <Bell size={28} className="text-[#333] mx-auto mb-2" />
-                <p className="text-[#666] text-sm">Уведомлений нет</p>
+                <p className="text-[#666] text-sm">{t('nav.noNotifications')}</p>
               </div>
             ) : (
               notifications.map((notif, i) => (
@@ -216,7 +210,7 @@ function NotificationBell() {
                       {notif.message}
                     </p>
                     <p className="text-[#444] text-xs mt-1">
-                      {timeAgo(notif.createdAt)}
+                      {timeAgo(notif.createdAt, locale, t)}
                     </p>
                   </div>
                   {!notif.isRead && (
@@ -233,7 +227,7 @@ function NotificationBell() {
                 href="/user/notifications"
                 onClick={() => setOpen(false)}
                 className="text-xs text-[#666] hover:text-white transition-colors">
-                Все уведомления →
+                {t('nav.allNotifications')}
               </Link>
             </div>
           )}
@@ -247,6 +241,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const t = useTranslations();
 
   useEffect(() => {
     setMobileOpen(false);
@@ -276,7 +271,7 @@ export default function Navbar() {
       </Link>
 
       <div className="hidden lg:flex items-center rounded-[14px] border border-[#262626] bg-[#0F0F0F]/90 p-2.5 backdrop-blur-xl">
-        {NAV_LINKS.map(({ href, label }) => (
+        {NAV_LINKS.map(({ href, labelKey }) => (
           <Link
             key={href}
             href={href}
@@ -285,16 +280,18 @@ export default function Navbar() {
                 ? 'bg-[#1A1A1A] text-white'
                 : 'text-[#BFBFBF] hover:text-white'
             }`}>
-            {label}
+            {t(labelKey)}
           </Link>
         ))}
       </div>
 
-      <div className="hidden lg:flex items-center gap-6">
+      <div className="hidden lg:flex items-center gap-4">
+        <LanguageSwitcher />
+
         <Link
           href="/search"
           className="cursor-pointer flex items-center justify-center w-7 h-7"
-          aria-label="Поиск">
+          aria-label={t('nav.search')}>
           <Search size={24} className="text-white transition hover:scale-110" />
         </Link>
 
@@ -327,18 +324,21 @@ export default function Navbar() {
           <Link
             href="/auth/login"
             className="rounded-lg bg-(--red-45) hover:bg-(--red-50) text-white text-sm font-medium px-5 py-2.5 transition duration-200 min-h-[44px] inline-flex items-center">
-            Войти
+            {t('nav.login')}
           </Link>
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={() => setMobileOpen((prev) => !prev)}
-        className="lg:hidden flex items-center justify-center w-11 h-11 rounded-lg border border-[#262626] bg-[#1A1A1A] text-white"
-        aria-label={mobileOpen ? 'Закрыть меню' : 'Открыть меню'}>
-        {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-      </button>
+      <div className="flex lg:hidden items-center gap-2">
+        <LanguageSwitcher />
+        <button
+          type="button"
+          onClick={() => setMobileOpen((prev) => !prev)}
+          className="flex items-center justify-center w-11 h-11 rounded-lg border border-[#262626] bg-[#1A1A1A] text-white"
+          aria-label={mobileOpen ? t('nav.closeMenu') : t('nav.openMenu')}>
+          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+      </div>
 
       {mobileOpen && (
         <>
@@ -349,7 +349,7 @@ export default function Navbar() {
           />
           <div className="fixed inset-x-0 top-[72px] z-50 mx-4 rounded-2xl border border-[#262626] bg-[#0F0F0F] p-4 shadow-2xl lg:hidden">
             <div className="flex flex-col gap-1 mb-4">
-              {NAV_LINKS.map(({ href, label }) => (
+              {NAV_LINKS.map(({ href, labelKey }) => (
                 <Link
                   key={href}
                   href={href}
@@ -359,7 +359,7 @@ export default function Navbar() {
                       ? 'bg-[#1A1A1A] text-white'
                       : 'text-[#BFBFBF] hover:text-white hover:bg-[#1A1A1A]'
                   }`}>
-                  {label}
+                  {t(labelKey)}
                 </Link>
               ))}
             </div>
@@ -370,7 +370,7 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(false)}
                 className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-[#262628] bg-[#1A1A1A] px-4 py-3 text-sm text-white min-h-[44px]">
                 <Search size={18} />
-                Поиск
+                {t('nav.search')}
               </Link>
 
               {session ? (
@@ -379,14 +379,14 @@ export default function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-(--red-45) px-4 py-3 text-sm font-medium text-white min-h-[44px]">
                   <User size={18} />
-                  Профиль
+                  {t('nav.profile')}
                 </Link>
               ) : (
                 <Link
                   href="/auth/login"
                   onClick={() => setMobileOpen(false)}
                   className="flex flex-1 items-center justify-center rounded-lg bg-(--red-45) px-4 py-3 text-sm font-medium text-white min-h-[44px]">
-                  Войти
+                  {t('nav.login')}
                 </Link>
               )}
             </div>

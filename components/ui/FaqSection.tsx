@@ -10,10 +10,17 @@ interface FaqItem {
 
 interface FaqSectionProps {
   items: FaqItem[];
+  title?: string;
+  subtitle?: string;
   actionButton?: React.ReactNode;
 }
 
-export default function FaqSection({ items, actionButton }: FaqSectionProps) {
+export default function FaqSection({
+  items,
+  title = 'Frequently Asked Questions',
+  subtitle = 'Got questions? We have got answers.',
+  actionButton,
+}: FaqSectionProps) {
   const [openFaq, setOpenFaq] = useState<string | null>(items[0]?.id ?? null);
 
   const toggle = (id: string) => setOpenFaq(openFaq === id ? null : id);
@@ -26,15 +33,12 @@ export default function FaqSection({ items, actionButton }: FaqSectionProps) {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="space-y-2">
           <h2 className="text-2xl md:text-4xl font-bold tracking-tight">
-            Frequently Asked Questions
+            {title}
           </h2>
           <p className="text-[#999999] text-sm md:text-base max-w-3xl">
-            Got questions? Weve got answers! Check out our FAQ section to find
-            answers to the most common questions about StreamVibe.
+            {subtitle}
           </p>
         </div>
-
-        {/* ← слот для кнопки, рендерится только если передали */}
         {actionButton}
       </div>
 

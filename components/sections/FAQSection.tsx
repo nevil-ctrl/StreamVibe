@@ -1,63 +1,26 @@
 import FaqSection from '@/components/ui/FaqSection';
 import AskQuestionButton from '@/components/ui/AskQuestionButton';
+import { getServerTranslations } from '@/lib/i18n/get-locale';
 
-const faqs = [
-  {
-    id: '01',
-    question: 'What is StreamVibe?',
-    answer:
-      'StreamVibe is a streaming service that allows you to watch movies and shows on demand.',
-  },
-  {
-    id: '02',
-    question: 'How much does StreamVibe cost?',
-    answer:
-      'We offer various plans tailored to your budget. Check our Subscriptions page for details.',
-  },
-  {
-    id: '03',
-    question: 'What content is available on StreamVibe?',
-    answer:
-      'Thousands of movies, series, documentaries, and exclusive originals available anytime.',
-  },
-  {
-    id: '04',
-    question: 'How can I watch StreamVibe?',
-    answer:
-      'You can watch via any smartphone, tablet, smart TV, laptop, or streaming device.',
-  },
-  {
-    id: '05',
-    question: 'How do I sign up for StreamVibe?',
-    answer:
-      'Click the Sign Up button, choose your plan, enter your details, and start streaming instantly.',
-  },
-  {
-    id: '06',
-    question: 'What is the StreamVibe free trial?',
-    answer:
-      'New users get a 7-day free trial to explore all features and content without limits.',
-  },
-  {
-    id: '07',
-    question: 'How do I contact StreamVibe customer support?',
-    answer:
-      'Fill out the contact form on our support page or use the live chat.',
-  },
-  {
-    id: '08',
-    question: 'What are the StreamVibe payment methods?',
-    answer: 'We accept major credit cards, PayPal, Apple Pay, and Google Pay.',
-  },
-];
+export default async function FAQSection() {
+  const { t } = await getServerTranslations();
 
-export default function SupportPage() {
+  const faqs = [
+    { id: '01', question: t('faq.q1'), answer: t('faq.a1') },
+    { id: '02', question: t('faq.q2'), answer: t('faq.a2') },
+    { id: '03', question: t('faq.q3'), answer: t('faq.a3') },
+    { id: '04', question: t('faq.q4'), answer: t('faq.a4') },
+    { id: '05', question: t('faq.q5'), answer: t('faq.a5') },
+    { id: '06', question: t('faq.q6'), answer: t('faq.a6') },
+    { id: '07', question: t('faq.q7'), answer: t('faq.a7') },
+    { id: '08', question: t('faq.q8'), answer: t('faq.a8') },
+  ];
+
   return (
     <section className="py-16">
-      {/* форма выше */}
-      <div id="contact-form">{/* твоя контактная форма */}</div>
-
       <FaqSection
+        title={t('faq.title')}
+        subtitle={t('faq.subtitle')}
         items={faqs}
         actionButton={<AskQuestionButton href="/support" />}
       />

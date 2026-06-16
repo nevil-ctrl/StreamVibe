@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { useTranslations } from '@/components/providers/LocaleProvider';
 
 export default function Error({
   error,
@@ -10,6 +11,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations();
+
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -17,7 +20,6 @@ export default function Error({
   return (
     <div className="min-h-screen bg-[#0F0F0F] flex items-center justify-center px-4">
       <div className="max-w-lg w-full text-center">
-        {/* Glitch number */}
         <div className="relative mb-8 select-none">
           <span
             className="text-[120px] font-bold leading-none text-[#E50000] opacity-10 absolute inset-0 flex items-center justify-center"
@@ -36,7 +38,6 @@ export default function Error({
           </span>
         </div>
 
-        {/* Icon */}
         <div className="flex justify-center mb-6">
           <div className="w-16 h-16 rounded-2xl bg-[#1A1A1A] border border-[#262628] flex items-center justify-center">
             <svg
@@ -55,11 +56,10 @@ export default function Error({
         </div>
 
         <h1 className="text-2xl font-bold text-white mb-3">
-          Что-то пошло не так
+          {t('errors.title500')}
         </h1>
         <p className="text-[#999999] text-sm leading-relaxed mb-2">
-          На сервере произошла непредвиденная ошибка. Мы уже работаем над её
-          исправлением.
+          {t('errors.desc500')}
         </p>
 
         {error?.digest && (
@@ -74,16 +74,15 @@ export default function Error({
           <button
             onClick={reset}
             className="px-5 py-3 bg-[#E50000] hover:bg-[#FF1919] text-white text-sm font-semibold rounded-lg transition-colors duration-200 cursor-pointer">
-            Попробовать снова
+            {t('errors.tryAgain')}
           </button>
           <Link
             href="/"
             className="px-5 py-3 bg-[#1A1A1A] hover:bg-[#262628] border border-[#262628] text-white text-sm font-semibold rounded-lg transition-colors duration-200">
-            На главную
+            {t('errors.backHome')}
           </Link>
         </div>
 
-        {/* Film strip decoration */}
         <div
           className="mt-16 flex items-center gap-2 justify-center opacity-20"
           aria-hidden="true">

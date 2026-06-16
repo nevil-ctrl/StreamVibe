@@ -1,48 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import type { ConsentPreferences } from '@/lib/consent/types';
+import { useTranslations } from '@/components/providers/LocaleProvider';
 import './cookie-consent.css';
-
-interface CategoryConfig {
-  id: keyof Pick<
-    ConsentPreferences,
-    'functional' | 'analytics' | 'personalization'
-  >;
-  title: string;
-  description: string;
-  items: string[];
-  locked?: boolean;
-}
-
-const CATEGORIES: CategoryConfig[] = [
-  {
-    id: 'essential' as never,
-    title: 'Необходимые',
-    description: 'Обязательные для работы сайта. Нельзя отключить.',
-    items: ['Авторизация', 'Безопасность', 'Работа сайта'],
-    locked: true,
-  },
-  {
-    id: 'functional',
-    title: 'Функциональные',
-    description: 'Улучшают работу с контентом и интерфейсом.',
-    items: ['Избранное', 'История просмотров', 'Настройки интерфейса'],
-  },
-  {
-    id: 'analytics',
-    title: 'Аналитические',
-    description: 'Помогают понять, как используется платформа.',
-    items: ['PageView трекинг', 'Поведенческая аналитика', 'PostHog events'],
-  },
-  {
-    id: 'personalization',
-    title: 'Персонализация',
-    description: 'Персональные рекомендации на основе просмотров.',
-    items: ['Рекомендации фильмов', 'Анализ просмотров'],
-  },
-];
 
 interface CookieConsentModalProps {
   open: boolean;
@@ -88,9 +50,45 @@ export default function CookieConsentModal({
   onAcceptAll,
   onClose,
 }: CookieConsentModalProps) {
+  const t = useTranslations();
   const [functional, setFunctional] = useState(false);
   const [analytics, setAnalytics] = useState(false);
   const [personalization, setPersonalization] = useState(false);
+
+  const categories = useMemo(
+    () => [
+      {
+        id: 'essential' as const,
+        title: t('consent.essential'),
+        description: t('consent.essentialLocked'),
+        items: [
+          t('consent.authItem'),
+          t('consent.securityItem'),
+          t('consent.siteItem'),
+        ],
+        locked: true,
+      },
+      {
+        id: 'functional' as const,
+        title: t('consent.functional'),
+        description: t('consent.functionalDesc'),
+        items: t('consent.functionalItems').split(','),
+      },
+      {
+        id: 'analytics' as const,
+        title: t('consent.analytics'),
+        description: t('consent.analyticsDesc'),
+        items: t('consent.analyticsItems').split(','),
+      },
+      {
+        id: 'personalization' as const,
+        title: t('consent.personalization'),
+        description: t('consent.personalizationDesc'),
+        items: t('consent.personalizationItems').split(','),
+      },
+    ],
+    [t],
+  );
 
   useEffect(() => {
     if (open) {
@@ -115,23 +113,23 @@ export default function CookieConsentModal({
             <h2
               id="cookie-settings-title"
               className="text-lg font-bold text-white md:text-xl">
-              Настройки cookie
+              {t('consent.modalTitle')}
             </h2>
             <p className="mt-1 text-sm text-[#999999]">
-              Выберите, какие данные мы можем использовать
+              {t('consent.modalSubtitle')}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="shrink-0 rounded-lg p-1 text-[#999999] transition hover:bg-[#262628] hover:text-white"
-            aria-label="Закрыть">
+            aria-label={t('consent.close')}>
             <X size={20} />
           </button>
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4 md:px-6">
-          {CATEGORIES.map((cat) => {
+          {categories.map((cat) => {
             const isLocked = cat.locked;
             const stateMap = {
               functional: [functional, setFunctional] as const,
@@ -176,7 +174,7 @@ export default function CookieConsentModal({
             type="button"
             onClick={onClose}
             className="rounded-lg border border-[#262628] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#262628]">
-            Отмена
+            {t('consent.cancel')}
           </button>
           <button
             type="button"
@@ -184,13 +182,13 @@ export default function CookieConsentModal({
               onSave({ functional, analytics, personalization })
             }
             className="rounded-lg border border-[#262628] bg-[#262628] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#333333]">
-            Сохранить выбор
+            {t('consent.saveChoice')}
           </button>
           <button
             type="button"
             onClick={onAcceptAll}
             className="rounded-lg bg-[#E50000] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700">
-            Принять все
+            {t('consent.acceptAll')}
           </button>
         </div>
       </div>

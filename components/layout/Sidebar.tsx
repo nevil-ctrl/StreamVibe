@@ -25,13 +25,10 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
-import { MAIN_MENU, SETTINGS_MENU } from '@/lib/constants';
-
-interface MenuItem {
-  name: string;
-  icon: LucideIcon;
-  path: string;
-}
+import { MAIN_MENU, SETTINGS_MENU, ADMIN_MENU } from '@/lib/constants';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useTranslations } from '@/components/providers/LocaleProvider';
+import type { MessageKey } from '@/lib/i18n/types';
 
 const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
@@ -43,15 +40,10 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Bell,
   LifeBuoy,
   Settings,
+  Users,
+  MessageSquare,
+  BarChart2,
 };
-
-const ADMIN_MENU: MenuItem[] = [
-  { name: 'Дашборд', icon: LayoutDashboard, path: '/admin/dashboard' },
-  { name: 'Пользователи', icon: Users, path: '/admin/users' },
-  { name: 'Тикеты', icon: MessageSquare, path: '/admin/tickets' },
-  { name: 'Рассылки', icon: Bell, path: '/admin/notifications' },
-  { name: 'Аналитика', icon: BarChart2, path: '/admin/analytics' },
-];
 
 interface SidebarProps {
   variant?: 'user' | 'admin';
@@ -77,6 +69,7 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const isMobile = useIsMobile();
+  const t = useTranslations();
 
   const isOpen = isMobile ? mobileOpen : !desktopCollapsed;
   const currentRole = session?.user?.role as string;
@@ -97,8 +90,13 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
     };
   }, [mobileOpen]);
 
-  const renderLink = (item: MenuItem) => {
+  const renderLink = (item: {
+    nameKey: MessageKey;
+    icon: LucideIcon;
+    path: string;
+  }) => {
     const Icon = item.icon;
+    const label = t(item.nameKey);
     const isActive =
       pathname === item.path || pathname.startsWith(item.path + '/');
     return (
@@ -106,24 +104,25 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
         key={item.path}
         href={item.path}
         onClick={() => isMobile && setMobileOpen(false)}
-        title={!isOpen ? item.name : ''}
+        title={!isOpen ? label : ''}
         className={`flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-all duration-200 min-h-[44px] ${
           isActive
             ? 'bg-[#E50000] text-white shadow-lg shadow-red-900/20'
             : 'text-[#999999] hover:bg-[#1A1A1A] hover:text-white'
         }`}>
         <Icon size={20} className="w-5 h-5 shrink-0" />
-        {isOpen && <span>{item.name}</span>}
+        {isOpen && <span>{label}</span>}
       </Link>
     );
   };
 
   const renderUserLink = (item: {
-    name: string;
+    nameKey: MessageKey;
     icon: string;
     path: string;
   }) => {
     const Icon = ICON_MAP[item.icon] ?? LayoutDashboard;
+    const label = t(item.nameKey);
     const isActive =
       pathname === item.path || pathname.startsWith(item.path + '/');
     return (
@@ -131,17 +130,22 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
         key={item.path}
         href={item.path}
         onClick={() => isMobile && setMobileOpen(false)}
-        title={!isOpen ? item.name : ''}
+        title={!isOpen ? label : ''}
         className={`flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-all duration-200 min-h-[44px] ${
           isActive
             ? 'bg-[#E50000] text-white shadow-lg shadow-red-900/20'
             : 'text-[#999999] hover:bg-[#1A1A1A] hover:text-white'
         }`}>
         <Icon size={20} className="w-5 h-5 shrink-0" />
-        {isOpen && <span>{item.name}</span>}
+        {isOpen && <span>{label}</span>}
       </Link>
     );
   };
+
+  const adminMenuItems = ADMIN_MENU.map((item) => ({
+    ...item,
+    icon: ICON_MAP[item.icon] ?? LayoutDashboard,
+  }));
 
   const sidebarContent = (
     <>
@@ -156,18 +160,18 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
               desktopCollapsed ? 'rotate-180' : ''
             }`}
           />
-          {isOpen && <span className="font-medium">Меню</span>}
+          {isOpen && <span className="font-medium">{t('sidebar.menu')}</span>}
         </button>
       )}
 
       {isMobile && (
         <div className="flex items-center justify-between mb-4 lg:hidden">
-          <span className="font-semibold text-white">Меню</span>
+          <span className="font-semibold text-white">{t('sidebar.menu')}</span>
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
             className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#262628] bg-[#1A1A1A] text-white"
-            aria-label="Закрыть меню">
+            aria-label={t('nav.closeMenu')}>
             <X size={18} />
           </button>
         </div>
@@ -179,7 +183,7 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
             <Film className="text-[#E50000] shrink-0" size={20} />
             <span className="text-white font-bold">StreamVibe</span>
             <span className="text-xs bg-[#E50000]/20 text-[#E50000] px-2 py-0.5 rounded-full ml-auto">
-              Admin
+              {t('sidebar.admin')}
             </span>
           </div>
         ) : (
@@ -197,7 +201,9 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
             size={18}
             className="shrink-0 group-hover:-translate-x-0.5 transition-transform duration-200"
           />
-          {isOpen && <span className="text-sm font-medium">На главную</span>}
+          {isOpen && (
+            <span className="text-sm font-medium">{t('sidebar.backToHome')}</span>
+          )}
         </Link>
       )}
 
@@ -208,17 +214,17 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
           <nav className="space-y-1">
             {isOpen && (
               <p className="px-3 text-[10px] uppercase tracking-widest text-[#666666] font-bold mb-2">
-                Управление
+                {t('sidebar.management')}
               </p>
             )}
-            {ADMIN_MENU.map(renderLink)}
+            {adminMenuItems.map(renderLink)}
           </nav>
         ) : (
           <>
             <nav className="space-y-1">
               {isOpen && (
                 <p className="px-3 text-[10px] uppercase tracking-widest text-[#666666] font-bold mb-2">
-                  Основное
+                  {t('sidebar.main')}
                 </p>
               )}
               {MAIN_MENU.map(renderUserLink)}
@@ -227,7 +233,7 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
             <nav className="space-y-1">
               {isOpen && (
                 <p className="px-3 text-[10px] uppercase tracking-widest text-[#666666] font-bold mb-2">
-                  Аккаунт
+                  {t('sidebar.account')}
                 </p>
               )}
               {SETTINGS_MENU.map(renderUserLink)}
@@ -245,7 +251,7 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
                   />
                   {isOpen && (
                     <span className="text-sm font-medium tracking-wide">
-                      Панель управления
+                      {t('sidebar.adminPanel')}
                     </span>
                   )}
                 </Link>
@@ -269,12 +275,20 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
             onClick={() => isMobile && setMobileOpen(false)}
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-[#999999] hover:text-white hover:bg-[#1A1A1A] transition-all min-h-[44px]">
             <ArrowLeft size={18} className="shrink-0" />
-            {isOpen && <span className="text-sm font-medium">На сайт</span>}
+            {isOpen && (
+              <span className="text-sm font-medium">{t('sidebar.backToSite')}</span>
+            )}
           </Link>
         </div>
       )}
 
-      <div className="mt-auto border-t border-[#262628] pt-4">
+      <div className="mt-auto border-t border-[#262628] pt-4 space-y-3">
+        {isOpen && <LanguageSwitcher className="w-full justify-center" />}
+        {!isOpen && (
+          <div className="flex justify-center">
+            <LanguageSwitcher />
+          </div>
+        )}
         <button
           type="button"
           onClick={() =>
@@ -282,7 +296,7 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
           }
           className="flex items-center gap-3 px-4 py-3 text-[#E50000] hover:bg-[#E50000]/10 w-full rounded-xl transition-colors cursor-pointer min-h-[44px]">
           <LogOut size={20} className="shrink-0" />
-          {isOpen && <span className="font-medium">Выйти</span>}
+          {isOpen && <span className="font-medium">{t('sidebar.logout')}</span>}
         </button>
       </div>
     </>
@@ -290,12 +304,11 @@ export default function Sidebar({ variant = 'user' }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile hamburger */}
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
         className="lg:hidden fixed top-4 left-4 z-40 flex h-11 w-11 items-center justify-center rounded-lg border border-[#262628] bg-[#1A1A1A] text-white shadow-lg"
-        aria-label="Открыть меню">
+        aria-label={t('nav.openMenu')}>
         <Menu size={22} />
       </button>
 

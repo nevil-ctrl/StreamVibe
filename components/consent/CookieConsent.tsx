@@ -4,11 +4,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { Cookie } from 'lucide-react';
 import { consentManager } from '@/lib/consent/consent-manager';
 import type { ConsentPreferences } from '@/lib/consent/types';
+import { useTranslations } from '@/components/providers/LocaleProvider';
 import CookieConsentModal from './CookieConsentModal';
 import './cookie-consent.css';
 
 interface CookieConsentProps {
-  /** Принудительно открыть настройки (из футера). */
   forceSettings?: boolean;
   onSettingsClose?: () => void;
 }
@@ -17,6 +17,7 @@ export default function CookieConsent({
   forceSettings = false,
   onSettingsClose,
 }: CookieConsentProps) {
+  const t = useTranslations();
   const [visible, setVisible] = useState(false);
   const [exiting, setExiting] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -83,7 +84,7 @@ export default function CookieConsent({
       {visible && (
         <div
           role="region"
-          aria-label="Уведомление о cookie"
+          aria-label={t('consent.ariaLabel')}
           className={`cookie-consent-banner fixed inset-x-0 bottom-0 z-50 border-t border-[#262628] bg-[#141414]/95 px-4 py-4 shadow-[0_-8px_32px_rgba(0,0,0,0.5)] backdrop-blur-md md:px-8 md:py-5 ${
             exiting ? 'cookie-consent-banner--exit' : ''
           }`}>
@@ -93,10 +94,7 @@ export default function CookieConsent({
                 <Cookie size={18} />
               </div>
               <p className="text-sm leading-relaxed text-[#B3B3B3] md:text-[15px]">
-                Мы используем файлы cookie для обеспечения работы сайта,
-                авторизации пользователей, сохранения избранного и истории
-                просмотров, а также анализа посещаемости и улучшения
-                рекомендаций.
+                {t('consent.description')}
               </p>
             </div>
 
@@ -105,19 +103,19 @@ export default function CookieConsent({
                 type="button"
                 onClick={() => setModalOpen(true)}
                 className="rounded-lg border border-[#262628] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#262628]">
-                Настроить
+                {t('consent.customize')}
               </button>
               <button
                 type="button"
                 onClick={handleEssentialOnly}
                 className="rounded-lg border border-[#262628] bg-[#262628] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#333333]">
-                Только необходимые
+                {t('consent.essentialOnly')}
               </button>
               <button
                 type="button"
                 onClick={handleAcceptAll}
                 className="rounded-lg bg-[#E50000] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700">
-                Принять все
+                {t('consent.acceptAll')}
               </button>
             </div>
           </div>
@@ -135,8 +133,8 @@ export default function CookieConsent({
   );
 }
 
-/** Кнопка «Управление cookie» для футера. */
 export function ManageCookiesButton() {
+  const t = useTranslations();
   const [openSettings, setOpenSettings] = useState(false);
 
   return (
@@ -145,7 +143,7 @@ export function ManageCookiesButton() {
         type="button"
         onClick={() => setOpenSettings(true)}
         className="hover:text-white transition text-left">
-        Управление cookie
+        {t('consent.manageCookies')}
       </button>
       {openSettings && (
         <CookieConsent

@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { getPopularMovies } from '@/services/movies.service';
 import { TMDB_IMAGE_URL } from '@/lib/tmdb';
 import { Play } from 'lucide-react';
+import { getServerTranslations } from '@/lib/i18n/get-locale';
+
 type Movie = {
   poster_path: string;
   title: string;
@@ -39,18 +41,19 @@ w-[200px] h-[230px]">
 }
 
 export default async function Hero() {
+  const { t } = await getServerTranslations();
   const data = await getPopularMovies();
-
   const movies = data?.results ?? [];
 
   if (!movies.length) {
-    return <div className="text-white">No movies loaded</div>;
+    return <div className="text-white">{t('hero.noMovies')}</div>;
   }
 
   const row1 = movies.slice(0, 10);
   const row2 = movies.slice(0, 10);
   const row3 = movies.slice(0, 10);
   const row4 = movies.slice(0, 10);
+
   return (
     <section className="relative min-h-[85vh] md:min-h-screen pt-[72px] md:pt-[80px] overflow-hidden">
       <div className="absolute inset-0 flex flex-col gap-5 overflow-hidden">
@@ -64,9 +67,7 @@ export default async function Hero() {
       <div className="absolute inset-0 z-[2] bg-gradient-to-b from-[var(--black-06)]/80 via-[var(--black-06)]/10 to-[var(--black-06)]/85" />
 
       <div className="absolute left-0 top-0 z-[2] hidden md:block h-full w-[180px] bg-gradient-to-r from-[var(--black-06)] to-transparent" />
-
       <div className="absolute right-0 top-0 z-[2] hidden md:block h-full w-[180px] bg-gradient-to-l from-[var(--black-06)] to-transparent" />
-
       <div className="absolute bottom-0 left-0 z-[3] h-[220px] w-full bg-gradient-to-t from-[var(--black-06)]/95 via-[var(--black-06)]/70 to-transparent" />
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center gap-10 md:gap-[131px] pb-12">
@@ -79,7 +80,6 @@ export default async function Hero() {
               height={470}
               className="brightness-150 w-[220px] h-auto md:w-[470px]"
             />
-
             <Image
               src="/svg/banner_1/pluse.svg"
               alt="plus"
@@ -92,15 +92,10 @@ export default async function Hero() {
 
         <div className="flex flex-col items-center gap-4 md:gap-[24px]">
           <h1 className="max-w-[1000px] text-white text-center text-[28px] md:text-[58px] font-bold leading-[150%]">
-            The Best Streaming Experience
+            {t('hero.title')}
           </h1>
           <p className="max-w-[1100px] text-center text-[14px] md:text-[18px] font-normal leading-[150%] text-[var(--grey-60)]">
-            StreamVibe is the best streaming experience for watching your
-            favorite movies and shows on demand, anytime, anywhere. With
-            StreamVibe, you can enjoy a wide variety of content, including the
-            latest blockbusters, classic movies, popular TV shows, and more. You
-            can also create your own watchlists, so you can easily find the
-            content you want to watch.
+            {t('hero.subtitle')}
           </p>
 
           <div className="relative z-10">
@@ -108,7 +103,7 @@ export default async function Hero() {
               href="/browse"
               className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-[#E50000] px-6 py-4 min-h-[44px] text-base md:text-lg font-semibold text-white transition hover:bg-[#FF0000]">
               <Play size={20} fill="white" />
-              Start Watching Now
+              {t('hero.cta')}
             </Link>
           </div>
         </div>

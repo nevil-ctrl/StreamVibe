@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { TMDB_IMAGE_URL } from '@/lib/tmdb';
+import { useTranslations } from '@/components/providers/LocaleProvider';
 
 type Movie = { id: number; poster_path: string; title: string };
 type Category = { id: number | string; name: string; movies: Movie[] };
@@ -23,6 +24,7 @@ export default function CategoriesSection({
   type,
 }: CategoriesSectionProps) {
   const router = useRouter();
+  const t = useTranslations();
   const trackRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -174,14 +176,17 @@ const handleCategoryClick = (id: number | string, name: string) => {
       <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-8 md:mb-10 gap-4">
         <div className="flex flex-col gap-2 text-center md:text-left">
           <span className="w-fit mx-auto md:mx-0 px-3 py-1 bg-[#E50000] text-white text-xs font-semibold rounded-md uppercase tracking-wider mb-1">
-            {type === 'movie' ? 'Movies' : 'Shows'}
+            {type === 'movie' ? t('footer.movies') : t('footer.shows')}
           </span>
           <h2 className="text-[24px] md:text-[28px] font-bold text-white">
-            Explore our wide variety of categories
+            {type === 'movie'
+              ? t('categories.moviesTitle')
+              : t('categories.showsTitle')}
           </h2>
           <p className="text-[15px] md:text-[18px] text-[#999999] max-w-xl">
-            Whether you&apos;re looking for a comedy to make you laugh, a drama
-            to make you think, or a documentary to learn something new
+            {type === 'movie'
+              ? t('categories.moviesSubtitle')
+              : t('categories.showsSubtitle')}
           </p>
         </div>
 

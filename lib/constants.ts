@@ -1,20 +1,41 @@
-export const NAV_LINKS = [
-  { href: '/', label: 'Home' },
-  { href: '/browse', label: 'Movies & Shows' },
-  { href: '/search', label: 'Search' },
-  { href: '/support', label: 'Support' },
-  { href: '/subscriptions', label: 'Subscriptions' },
+import type { MessageKey } from '@/lib/i18n/types';
+
+export const NAV_LINKS: { href: string; labelKey: MessageKey }[] = [
+  { href: '/', labelKey: 'nav.home' },
+  { href: '/browse', labelKey: 'nav.moviesShows' },
+  { href: '/search', labelKey: 'nav.search' },
+  { href: '/support', labelKey: 'nav.support' },
+  { href: '/subscriptions', labelKey: 'nav.subscriptions' },
 ];
-export const MAIN_MENU = [
-  { name: 'Дашборд', icon: 'LayoutDashboard', path: '/user/profile' },
-  { name: 'История', icon: 'History', path: '/user/history' },
-  { name: 'Просмотры', icon: 'Film', path: '/user/watched' },
-  { name: 'Избранное', icon: 'Heart', path: '/user/favorites' },
-  { name: 'Мой список', icon: 'ListPlus', path: '/user/my-list' },
-  { name: 'Подписка', icon: 'CreditCard', path: '/user/subscription' },
-  { name: 'Уведомления', icon: 'Bell', path: '/user/notifications' },
-  { name: 'Поддержка', icon: 'LifeBuoy', path: '/user/support' },
+
+export const MAIN_MENU: {
+  nameKey: MessageKey;
+  icon: string;
+  path: string;
+}[] = [
+  { nameKey: 'sidebar.dashboard', icon: 'LayoutDashboard', path: '/user/profile' },
+  { nameKey: 'sidebar.history', icon: 'History', path: '/user/history' },
+  { nameKey: 'sidebar.watched', icon: 'Film', path: '/user/watched' },
+  { nameKey: 'sidebar.favorites', icon: 'Heart', path: '/user/favorites' },
+  { nameKey: 'sidebar.myList', icon: 'ListPlus', path: '/user/my-list' },
+  { nameKey: 'sidebar.subscription', icon: 'CreditCard', path: '/user/subscription' },
+  { nameKey: 'sidebar.notifications', icon: 'Bell', path: '/user/notifications' },
+  { nameKey: 'sidebar.support', icon: 'LifeBuoy', path: '/user/support' },
 ];
-export const SETTINGS_MENU = [
-  { name: 'Настройки', icon: 'Settings', path: '/user/settings' },
+
+export const SETTINGS_MENU: {
+  nameKey: MessageKey;
+  icon: string;
+  path: string;
+}[] = [
+  { nameKey: 'sidebar.settings', icon: 'Settings', path: '/user/settings' },
 ];
+
+export const ADMIN_MENU: { nameKey: MessageKey; icon: string; path: string }[] =
+  [
+    { nameKey: 'sidebar.dashboard', icon: 'LayoutDashboard', path: '/admin/dashboard' },
+    { nameKey: 'sidebar.users', icon: 'Users', path: '/admin/users' },
+    { nameKey: 'sidebar.tickets', icon: 'MessageSquare', path: '/admin/tickets' },
+    { nameKey: 'sidebar.broadcasts', icon: 'Bell', path: '/admin/notifications' },
+    { nameKey: 'sidebar.analytics', icon: 'BarChart2', path: '/admin/analytics' },
+  ];
