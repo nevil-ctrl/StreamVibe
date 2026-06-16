@@ -290,4 +290,106 @@ export const en = {
     yes: 'Yes',
     no: 'No',
   },
+  terms: {
+    title: 'Terms of Use',
+    lastUpdated: 'Last Updated: {date}',
+    section1: {
+      title: '1. Acceptance of Terms',
+      content:
+        'By accessing and using StreamVibe, you accept and agree to be bound by the terms and provision of this agreement.',
+    },
+    section2: {
+      title: '2. Use License',
+      content:
+        'Permission is granted to temporarily download one copy of the materials (information or software) on StreamVibe for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:',
+      items: [
+        'Modify or copy the materials',
+        'Use the materials for any commercial purpose',
+        'Attempt to decompile or reverse engineer any software contained on StreamVibe',
+        'Remove any copyright or other proprietary notations from the materials',
+        'Transfer the materials to another person or replicate the materials on any medium',
+      ],
+    },
+    section3: {
+      title: '3. Disclaimer',
+      content:
+        'The materials on StreamVibe are provided on an "as-is" basis. StreamVibe makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.',
+    },
+    section4: {
+      title: '4. Limitations',
+      content:
+        'In no event shall StreamVibe or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on StreamVibe.',
+    },
+    section5: {
+      title: '5. Accuracy of Materials',
+      content:
+        'The materials appearing on StreamVibe could include technical, typographical, or photographic errors. StreamVibe does not warrant that any of the materials on the website are accurate, complete, or current.',
+    },
+    section6: {
+      title: '6. Links',
+      content:
+        'StreamVibe has not reviewed all of the sites linked to its website and is not responsible for the contents of any such linked site. The inclusion of any link does not imply endorsement by StreamVibe of the site.',
+    },
+    section7: {
+      title: '7. Modifications',
+      content:
+        'StreamVibe may revise these terms of service at any time without notice. By using this website, you are agreeing to be bound by the then current version of these terms of service.',
+    },
+    section8: {
+      title: '8. Governing Law',
+      content:
+        'These terms and conditions are governed by and construed in accordance with the laws of the United States, and you irrevocably submit to the exclusive jurisdiction of the courts in that location.',
+    },
+  },
+  privacy: {
+    title: 'Privacy Policy',
+    lastUpdated: 'Last Updated: {date}',
+    intro:
+      'StreamVibe ("we", "us", "our" or "Company") operates the StreamVibe website. This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service and the choices you have associated with that data.',
+    section1: {
+      title: 'Information Collection and Use',
+      content:
+        'We collect several different types of information for various purposes to provide and improve our Service to you.',
+      subsections: [
+        {
+          title: 'Personal Data:',
+          content:
+            'While using our Service, we may ask you to provide us with certain personally identifiable information that can be used to contact or identify you ("Personal Data"). This may include: Email address, First name and last name, Phone number, Cookies and Usage Data.',
+        },
+        {
+          title: 'Usage Data:',
+          content:
+            'We may also collect information on how the Service is accessed and used ("Usage Data"). This may include information such as your computer\'s Internet Protocol address, browser type, browser version, the pages you visit, the time and date of your visit, and other diagnostic data.',
+        },
+      ],
+    },
+    section2: {
+      title: 'Use of Data',
+      content: 'StreamVibe uses the collected data for various purposes:',
+      items: [
+        'To provide and maintain the Service',
+        'To notify you about changes to our Service',
+        'To allow you to participate in interactive features of our Service',
+        'To provide customer support',
+        'To gather analysis or valuable information so that we can improve the Service',
+        'To monitor the usage of the Service',
+        'To detect, prevent and address technical issues',
+      ],
+    },
+    section3: {
+      title: 'Security of Data',
+      content:
+        'The security of your data is important to us, but remember that no method of transmission over the Internet or method of electronic storage is 100% secure. While we strive to use commercially acceptable means to protect your Personal Data, we cannot guarantee its absolute security.',
+    },
+    section4: {
+      title: 'Changes to This Privacy Policy',
+      content:
+        'We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date at the top of this Privacy Policy.',
+    },
+    section5: {
+      title: 'Contact Us',
+      content:
+        'If you have any questions about this Privacy Policy, please contact us via the Support page.',
+    },
+  },
 } as const;
