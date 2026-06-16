@@ -6,6 +6,7 @@ export interface SearchMoviesParams {
   genreId?: number;
   sortBy?: MovieSortBy;
   page?: number;
+  year?: number;
 }
 
 export type { Movie, MovieResponse };

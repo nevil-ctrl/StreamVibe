@@ -64,14 +64,23 @@ export async function searchMoviesByTitle({
   genreId,
   sortBy = DEFAULT_MOVIE_SORT,
   page = 1,
+  year,
 }: {
   query: string;
   genreId?: number;
   sortBy?: MovieSortBy;
   page?: number;
+  year?: number;
 }): Promise<MovieResponse> {
+  const params = new URLSearchParams({
+    query: query.trim(),
+    page: String(page),
+  });
+
+  if (year) params.set('year', String(year));
+
   const data = await fetchTMDB<MovieResponse>(
-    `/search/movie?query=${encodeURIComponent(query.trim())}&page=${page}`,
+    `/search/movie?${params.toString()}`,
   );
 
   let results = filterByGenre(data.results ?? [], genreId);
@@ -97,6 +106,7 @@ export async function searchMovies(
     genreId,
     sortBy = DEFAULT_MOVIE_SORT,
     page = 1,
+    year,
   } = params;
 
   const trimmed = query?.trim();
@@ -107,6 +117,7 @@ export async function searchMovies(
       genreId,
       sortBy,
       page,
+      year,
     });
   }
 

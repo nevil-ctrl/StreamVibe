@@ -25,16 +25,23 @@ export async function GET(req: Request) {
   const genreRaw = searchParams.get('genre');
   const sortBy = parseSort(searchParams.get('sort'));
   const page = Math.max(1, Number(searchParams.get('page') ?? '1') || 1);
+  const yearRaw = searchParams.get('year');
 
   const genreId =
     genreRaw && genreRaw !== 'all' ? Number(genreRaw) : undefined;
+  const year =
+    yearRaw && yearRaw !== 'all' ? Number(yearRaw) : undefined;
 
   if (genreId !== undefined && Number.isNaN(genreId)) {
     return Response.json({ error: 'Invalid genre' }, { status: 400 });
   }
 
+  if (year !== undefined && Number.isNaN(year)) {
+    return Response.json({ error: 'Invalid year' }, { status: 400 });
+  }
+
   try {
-    const data = await searchMovies({ query, genreId, sortBy, page });
+    const data = await searchMovies({ query, genreId, sortBy, page, year });
     const totalPages = Math.min(data.total_pages ?? 1, 20);
 
     return Response.json({
