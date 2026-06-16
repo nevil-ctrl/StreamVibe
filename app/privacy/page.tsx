@@ -7,12 +7,16 @@ export const metadata = {
 };
 
 export default async function PrivacyPage() {
-  const { t } = await getServerTranslations();
+  const { t, messages } = await getServerTranslations();
   const currentDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
+
+  const privacyData = (messages as any).privacy;
+  const section1Subsections = privacyData.section1.subsections || [];
+  const section2Items = privacyData.section2.items || [];
 
   return (
     <div className="min-h-screen bg-[#0F0F11] text-white">
@@ -49,14 +53,12 @@ export default async function PrivacyPage() {
 
             {/* Subsections */}
             <div className="space-y-6">
-              {(t('privacy.section1.subsections') as Array<{ title: string; content: string }>).map(
-                (subsection, index) => (
-                  <div key={index} className="pl-4 border-l-2 border-[#E50000]">
-                    <h3 className="font-semibold text-white mb-2">{subsection.title}</h3>
-                    <p className="text-[#999999] leading-7">{subsection.content}</p>
-                  </div>
-                )
-              )}
+              {section1Subsections.map((subsection: any, index: number) => (
+                <div key={index} className="pl-4 border-l-2 border-[#E50000]">
+                  <h3 className="font-semibold text-white mb-2">{subsection.title}</h3>
+                  <p className="text-[#999999] leading-7">{subsection.content}</p>
+                </div>
+              ))}
             </div>
           </section>
 
@@ -67,7 +69,7 @@ export default async function PrivacyPage() {
             </h2>
             <p className="text-[#999999] leading-7 mb-4">{t('privacy.section2.content')}</p>
             <ul className="space-y-3">
-              {(t('privacy.section2.items') as string[]).map((item, index) => (
+              {section2Items.map((item: string, index: number) => (
                 <li key={index} className="flex gap-3 text-[#999999]">
                   <span className="text-[#E50000] font-bold mt-1">•</span>
                   <span>{item}</span>

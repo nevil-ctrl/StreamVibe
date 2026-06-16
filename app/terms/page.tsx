@@ -7,12 +7,15 @@ export const metadata = {
 };
 
 export default async function TermsPage() {
-  const { t } = await getServerTranslations();
+  const { t, messages } = await getServerTranslations();
   const currentDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
+
+  const termsData = (messages as any).terms;
+  const section2Items = termsData.section2.items || [];
 
   return (
     <div className="min-h-screen bg-[#0F0F11] text-white">
@@ -50,7 +53,7 @@ export default async function TermsPage() {
             </h2>
             <p className="text-[#999999] leading-7 mb-4">{t('terms.section2.content')}</p>
             <ul className="space-y-3">
-              {(t('terms.section2.items') as string[]).map((item, index) => (
+              {section2Items.map((item: string, index: number) => (
                 <li key={index} className="flex gap-3 text-[#999999]">
                   <span className="text-[#E50000] font-bold mt-1">•</span>
                   <span>{item}</span>
