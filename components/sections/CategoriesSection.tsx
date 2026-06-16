@@ -211,48 +211,6 @@ const handleCategoryClick = (id: number | string, name: string) => {
         </div>
       </div>
 
-      {/* Mobile: 2-column grid */}
-      <div className="grid grid-cols-2 gap-4 md:hidden">
-        {displayCategories.map((cat) => (
-          <article
-            key={cat.id}
-            onClick={() => handleCategoryClick(cat.id, cat.name)}
-            className="rounded-xl border border-[#262628] bg-[#1A1A1A] p-3 cursor-pointer hover:border-[#E50000] transition-all duration-300 group relative overflow-hidden">
-            <div className="relative rounded-lg overflow-hidden mb-3 bg-[#111111] p-1">
-              <div className="grid grid-cols-2 gap-1.5">
-                {cat.movies.slice(0, 4).map((movie) => (
-                  <div
-                    key={movie.id}
-                    className="relative aspect-square overflow-hidden rounded-md bg-[#262628]">
-                    {movie.poster_path ? (
-                      <Image
-                        src={`${TMDB_IMAGE_URL}${movie.poster_path}`}
-                        alt={movie.title}
-                        fill
-                        sizes="80px"
-                        className="object-cover"
-                        draggable={false}
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-[#262628]" />
-                    )}
-                  </div>
-                ))}
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A1A] via-[#1A1A1A]/30 to-transparent pointer-events-none" />
-            </div>
-            <div className="flex items-center justify-between pt-1">
-              <span className="text-sm font-semibold text-white truncate max-w-[80%]">
-                {cat.name}
-              </span>
-              <ArrowRight
-                size={16}
-                className="text-[#999999] group-hover:text-white shrink-0"
-              />
-            </div>
-          </article>
-        ))}
-      </div>
 
       <div
         ref={trackRef}
@@ -261,7 +219,7 @@ const handleCategoryClick = (id: number | string, name: string) => {
         onMouseLeave={onMouseLeave}
         onMouseUp={onMouseUp}
         onMouseMove={onMouseMove}
-        className={`hidden md:flex gap-5 overflow-x-auto pb-2 ${isDown.current ? 'cursor-grabbing' : 'cursor-grab'}`}
+        className={`flex gap-4 md:gap-5 overflow-x-auto pb-2 ${isDown.current ? 'cursor-grabbing' : 'cursor-grab'}`}
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
@@ -323,6 +281,18 @@ const handleCategoryClick = (id: number | string, name: string) => {
             </article>
           );
         })}
+      </div>
+
+      {/* Mobile Navigation Dots */}
+      <div className="flex md:hidden items-center justify-center gap-1.5 mt-6">
+        {Array.from({ length: totalSlides }).map((_, i) => (
+          <span
+            key={i}
+            className={`h-1.5 rounded-full transition-all duration-300 ${
+              i === activeIndex ? 'w-6 bg-[#E50000]' : 'w-2 bg-[#333]'
+            }`}
+          />
+        ))}
       </div>
     </section>
   );

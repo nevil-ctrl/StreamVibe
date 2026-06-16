@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense, useRef } from 'react';
+import { useEffect, useState, Suspense, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
@@ -48,10 +48,8 @@ export default function BrowsePage() {
 
 function BrowseContent() {
   const [loading, setLoading] = useState(true);
-
   const [movieHero, setMovieHero] = useState<IMedia[]>([]);
   const [currentMovieHeroIndex, setCurrentMovieHeroIndex] = useState(0);
-
   const [movieSections, setMovieSections] = useState<ICategory[]>([]);
   const [showSections, setShowSections] = useState<ICategory[]>([]);
 
@@ -132,6 +130,14 @@ function BrowseContent() {
     loadAllContent();
   }, []);
 
+  const handlePrev = useCallback(() => {
+    setCurrentMovieHeroIndex((p) => (p === 0 ? movieHero.length - 1 : p - 1));
+  }, [movieHero.length]);
+
+  const handleNext = useCallback(() => {
+    setCurrentMovieHeroIndex((p) => (p === movieHero.length - 1 ? 0 : p + 1));
+  }, [movieHero.length]);
+
   if (loading) {
     return (
       <div className="bg-[#141414] min-h-screen text-white flex items-center justify-center">
@@ -148,23 +154,14 @@ function BrowseContent() {
       <HeroSlider
         items={movieHero}
         currentIndex={currentMovieHeroIndex}
-        onPrev={() =>
-          setCurrentMovieHeroIndex((p) =>
-            p === 0 ? movieHero.length - 1 : p - 1,
-          )
-        }
-        onNext={() =>
-          setCurrentMovieHeroIndex((p) =>
-            p === movieHero.length - 1 ? 0 : p + 1,
-          )
-        }
+        onPrev={handlePrev}
+        onNext={handleNext}
         onDot={setCurrentMovieHeroIndex}
         type="movie"
       />
 
       {/* ── MOVIES SECTIONS ── */}
-      <div
-        className="container mx-auto px-4 md:px-12 mt-8 md:mt-[180px]">
+      <div className="container mx-auto px-4 md:px-12 mt-16 md:mt-20">
         <div className="mb-10">
           <span className="px-3 py-1 bg-[#E50000] text-white text-xs font-bold rounded uppercase tracking-wider">
             Movies
@@ -183,14 +180,12 @@ function BrowseContent() {
       </div>
 
       {/* ── SHOWS SECTIONS ── */}
-      <div
-        className="container mx-auto px-4 md:px-12 mt-12 md:mt-[150px]">
+      <div className=" translate-y-10 container mx-auto px-4 md:px-12 mt-16 md:mt-20">
         <div className="mb-10">
           <span className="px-3 py-1 bg-[#E50000] text-white text-xs font-bold rounded uppercase tracking-wider">
             Shows
           </span>
         </div>
-
         {showSections.map((section) => (
           <HorizontalTrack
             key={section.id}
@@ -204,7 +199,6 @@ function BrowseContent() {
     </div>
   );
 }
-
 function HeroSlider({
   items,
   currentIndex,
@@ -217,39 +211,43 @@ function HeroSlider({
   currentIndex: number;
   onPrev: () => void;
   onNext: () => void;
-  onDot: (i: number) => void;
+  onDot: (index: number) => void;
   type: 'movie' | 'tv';
 }) {
   const router = useRouter();
   const current = items[currentIndex];
+
+  useEffect(() => {
+    if (items.length === 0) return;
+    const timer = setInterval(onNext, 5000);
+    return () => clearInterval(timer);
+  }, [items.length, onNext]);
+
   if (!current) return null;
 
   return (
-    <div className="relative w-full min-h-[55vh] sm:min-h-[65vh] md:h-[80vh] lg:h-[85vh] overflow-hidden px-4 md:px-12 pt-4 md:pt-6">
-      <div className="relative w-full h-full min-h-[320px] rounded-2xl overflow-hidden border border-[#262628] bg-[#1A1A1A] flex flex-col md:block">
-        <div className="relative w-full aspect-[4/3] sm:aspect-video md:absolute md:inset-0 md:aspect-auto">
-          <div className="absolute inset-0 bg-linear-to-t from-[#141414] via-[#141414]/40 to-transparent z-10 md:block" />
-          <div className="absolute inset-0 bg-linear-to-r from-[#141414]/70 via-transparent to-transparent z-10 hidden md:block" />
+    <div className="px-4 md:px-12 pt-4 md:pt-6">
+      {/* Карточка */}
+      <div className="relative w-full h-[500px] md:h-[600px] rounded-2xl overflow-hidden border border-[#262628]">
+        <Image
+          src={`${TMDB_IMAGE_URL.replace('w500', 'original')}${current.backdrop_path}`}
+          alt={current.title || current.name || 'Hero'}
+          fill
+          priority
+          className="object-cover object-top"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent z-10" />
 
-          <Image
-            src={`${TMDB_IMAGE_URL.replace('w500', 'original')}${current.backdrop_path}`}
-            alt={current.title || current.name || 'Hero'}
-            fill
-            priority
-            className="object-cover"
-            sizes="100vw"
-          />
-        </div>
-
-        <div className="relative z-20 flex flex-col items-center md:absolute md:inset-x-0 md:bottom-0 md:justify-end px-4 pb-6 pt-4 md:px-16 md:pb-10 text-center max-w-4xl mx-auto w-full bg-[#141414] md:bg-transparent">
-          <h1 className="text-[24px] sm:text-[34px] md:text-[42px] font-bold text-white mb-2 md:mb-3 drop-shadow-md tracking-tight">
+        <div className="absolute inset-x-0 bottom-0 z-20 flex flex-col items-center text-center px-6 pb-10">
+          <h1 className="text-[28px] md:text-[42px] font-bold text-white mb-3 drop-shadow-lg tracking-tight leading-tight">
             {current.title || current.name}
           </h1>
-          <p className="text-[13px] sm:text-[15px] text-[#e4e4e7] max-w-2xl line-clamp-3 md:line-clamp-2 mb-4 md:mb-6 opacity-85 leading-relaxed">
-            {current.overview || 'Описание подготавливается бэкенд-сервером.'}
+          <p className="text-[13px] md:text-[15px] text-[#cccccc] max-w-2xl line-clamp-2 mb-7 leading-relaxed">
+            {current.overview}
           </p>
 
-          <div className="flex w-full max-w-md flex-col gap-3 sm:max-w-xl">
+          <div className="flex items-center gap-3">
             <button
               onClick={() =>
                 router.push(
@@ -258,45 +256,45 @@ function HeroSlider({
                     : `/watch/tv/${current.id}`,
                 )
               }
-              className="flex w-full min-h-[44px] items-center justify-center gap-2 px-6 py-3 bg-[#E50000] hover:bg-red-700 font-semibold rounded-lg text-sm transition duration-200 cursor-pointer">
-              <Play size={16} fill="currentColor" /> Play Now
+              className="flex items-center gap-2 px-7 py-3 bg-[#E50000] hover:bg-red-700 font-semibold rounded-lg text-[15px] transition text-white cursor-pointer">
+              <Play size={15} fill="currentColor" /> Play Now
             </button>
-
-            <div className="flex items-center justify-center gap-3">
-              <button
-                onClick={onPrev}
-                className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#141414]/80 border border-[#262628] hover:bg-[#E50000] hover:border-[#E50000] transition cursor-pointer">
-                <ArrowLeft size={16} className="text-white" />
-              </button>
-              <button className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#141414] border border-[#262628] hover:bg-[#1A1A1A] transition cursor-pointer">
-                <Plus size={18} />
-              </button>
-              <button className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#141414] border border-[#262628] hover:bg-[#1A1A1A] transition cursor-pointer">
-                <ThumbsUp size={16} />
-              </button>
-              <button className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#141414] border border-[#262628] hover:bg-[#1A1A1A] transition cursor-pointer">
-                <Volume2 size={16} />
-              </button>
-              <button
-                onClick={onNext}
-                className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#141414]/80 border border-[#262628] hover:bg-[#E50000] hover:border-[#E50000] transition cursor-pointer">
-                <ArrowRight size={16} className="text-white" />
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 mt-5">
-            {items.map((_, idx) => (
-              <span
-                key={idx}
-                onClick={() => onDot(idx)}
-                className={`h-[4px] rounded-full transition-all duration-300 cursor-pointer ${
-                  idx === currentIndex ? 'w-6 bg-[#E50000]' : 'w-3 bg-[#333]'
-                }`}
-              />
-            ))}
+            <button className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#1A1A1A]/80 border border-[#333] hover:bg-[#262628] transition cursor-pointer">
+              <Plus size={18} className="text-white" />
+            </button>
+            <button className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#1A1A1A]/80 border border-[#333] hover:bg-[#262628] transition cursor-pointer">
+              <ThumbsUp size={16} className="text-white" />
+            </button>
+            <button className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#1A1A1A]/80 border border-[#333] hover:bg-[#262628] transition cursor-pointer">
+              <Volume2 size={16} className="text-white" />
+            </button>
           </div>
         </div>
+      </div>
+
+      {/* Навигация СНАРУЖИ карточки */}
+      <div className="flex items-center justify-center gap-4 mt-5">
+        <button
+          onClick={onPrev}
+          className="w-9 h-9 flex items-center justify-center rounded-lg bg-[#1A1A1A] border border-[#333] hover:bg-[#262628] transition cursor-pointer">
+          <ArrowLeft size={15} className="text-white" />
+        </button>
+        <div className="flex items-center gap-1.5">
+          {items.map((_, idx) => (
+            <span
+              key={idx}
+              onClick={() => onDot(idx)}
+              className={`h-[4px] rounded-full transition-all duration-300 cursor-pointer ${
+                idx === currentIndex ? 'w-6 bg-[#E50000]' : 'w-3 bg-[#444]'
+              }`}
+            />
+          ))}
+        </div>
+        <button
+          onClick={onNext}
+          className="w-9 h-9 flex items-center justify-center rounded-lg bg-[#1A1A1A] border border-[#333] hover:bg-[#262628] transition cursor-pointer">
+          <ArrowRight size={15} className="text-white" />
+        </button>
       </div>
     </div>
   );
@@ -404,64 +402,12 @@ function HorizontalTrack({
         </div>
       </div>
 
-      {/* Mobile: 2-column grid */}
-      <div className="grid grid-cols-2 gap-4 md:hidden">
-        {mobileItems.map((item) => {
-          const generatedMinutes = (item.id % 70) + 85;
-          const hours = Math.floor(generatedMinutes / 60);
-          const mins = generatedMinutes % 60;
-          const durationText =
-            type === 'movie'
-              ? `${hours}h ${mins}m`
-              : `${(item.id % 4) + 2} Seasons`;
 
-          return (
-            <article
-              key={item.id}
-              onClick={() =>
-                router.push(
-                  type === 'movie' ? `/movies/${item.id}` : `/shows/${item.id}`,
-                )
-              }
-              className="rounded-xl border border-[#262628] bg-[#1A1A1A] p-3 hover:border-[#E50000] transition cursor-pointer flex flex-col">
-              <div className="relative aspect-2/3 overflow-hidden rounded-lg mb-3 bg-[#262628]">
-                <Image
-                  src={
-                    item.poster_path
-                      ? `${TMDB_IMAGE_URL}${item.poster_path}`
-                      : '/no-poster.png'
-                  }
-                  alt={item.title || item.name || 'Poster'}
-                  fill
-                  sizes="(max-width: 768px) 50vw"
-                  className="object-cover"
-                />
-                {title.includes('Top 10') && (
-                  <span className="absolute top-2 left-2 px-2 py-0.5 bg-[#E50000] text-[10px] font-bold rounded text-white uppercase">
-                    Top 10
-                  </span>
-                )}
-              </div>
-              <h4 className="text-sm font-medium text-white truncate mb-1">
-                {item.title || item.name}
-              </h4>
-              <div className="flex items-center justify-between text-[11px] text-[#999999]">
-                <span>{durationText}</span>
-                <span className="flex items-center gap-1">
-                  <Star size={11} className="text-[#FFAD4B]" fill="#FFAD4B" />
-                  {item.vote_average?.toFixed(1) ?? '0.0'}
-                </span>
-              </div>
-            </article>
-          );
-        })}
-      </div>
-
-      {/* Desktop: horizontal carousel */}
+      {/* Desktop & Mobile: horizontal carousel */}
       <div
         ref={trackRef}
         onScroll={onScroll}
-        className="hidden md:flex gap-5 overflow-x-auto pb-3"
+        className="flex gap-4 md:gap-5 overflow-x-auto pb-4"
         style={{ scrollbarWidth: 'none' }}>
         {loopedItems.map((item, index) => {
           const generatedMinutes = (item.id % 70) + 85;
@@ -476,7 +422,6 @@ function HorizontalTrack({
             <article
               key={`${item.id}-${index}`}
               onClick={(e) => {
-               
                 if ((e.target as HTMLElement).closest('h3')) return;
                 router.push(
                   type === 'movie' ? `/movies/${item.id}` : `/shows/${item.id}`,
@@ -527,6 +472,19 @@ function HorizontalTrack({
           );
         })}
       </div>
+
+      {/* Mobile Navigation Dots */}
+      <div className="flex md:hidden items-center justify-center gap-1.5 mt-2">
+        {Array.from({ length: totalSlides }).map((_, i) => (
+          <span
+            key={i}
+            className={`h-1.5 rounded-full transition-all duration-300 ${
+              i === activeIndex ? 'w-6 bg-[#E50000]' : 'w-2 bg-[#333]'
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 }
+  

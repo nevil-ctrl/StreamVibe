@@ -19,7 +19,7 @@ function FooterPosterRow({
 }) {
   return (
     <div
-      suppressHydrationWarning
+      suppressHydrationWarning 
       className={`flex w-max gap-4 ${
         direction === 'right' ? 'animate-scroll-right' : 'animate-scroll-left'
       }`}>

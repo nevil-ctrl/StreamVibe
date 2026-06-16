@@ -24,7 +24,7 @@ interface ProviderState {
   status: 'idle' | 'loading' | 'ok' | 'error';
 }
 
-const PROVIDER_LOAD_TIMEOUT_MS = 8000;
+const PROVIDER_LOAD_TIMEOUT_MS = 15000;
 
 export function useProviderManager({
   providers,
@@ -46,6 +46,7 @@ export function useProviderManager({
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const loadingProviderIdRef = useRef<string | null>(null);
   const mountedRef = useRef(true);
+  const isManualSelectionRef = useRef(false);
   const onProgressRef = useRef(onProgress);
 
   onProgressRef.current = onProgress;
@@ -91,6 +92,14 @@ export function useProviderManager({
           return;
         }
 
+        if (isManualSelectionRef.current) {
+          setStatuses((prev) => {
+            if (prev[providerId]?.status !== 'loading') return prev;
+            return { ...prev, [providerId]: { status: 'error' } };
+          });
+          return;
+        }
+
         setStatuses((prev) => {
           if (prev[providerId]?.status !== 'loading') return prev;
           return { ...prev, [providerId]: { status: 'error' } };
@@ -106,6 +115,7 @@ export function useProviderManager({
     (id: string) => {
       const idx = safeProviders.findIndex((p) => p.id === id);
       if (idx < 0) return;
+      isManualSelectionRef.current = true;
       setCurrentIndex(idx);
     },
     [safeProviders],
@@ -140,6 +150,7 @@ export function useProviderManager({
 
   useEffect(() => {
     mountedRef.current = true;
+    isManualSelectionRef.current = false;
     setCurrentIndex(0);
     setPlayerReady(false);
     setNeedsInteraction(false);

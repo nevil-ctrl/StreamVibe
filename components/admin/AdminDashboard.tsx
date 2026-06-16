@@ -80,10 +80,14 @@ function StatCard({
 
 function MiniChart({
   data,
+  labels,
   color = '#ef4444',
+  formatter = (v) => v.toString(),
 }: {
   data: number[];
+  labels?: string[];
   color?: string;
+  formatter?: (v: number) => string;
 }) {
   if (!data.length)
     return (
@@ -97,13 +101,18 @@ function MiniChart({
       {data.map((v, i) => (
         <div
           key={i}
-          className="flex-1 rounded-sm opacity-80 hover:opacity-100 transition-opacity"
+          className="flex-1 rounded-sm opacity-80 hover:opacity-100 transition-opacity relative group"
           style={{
             height: `${(v / max) * 100}%`,
             backgroundColor: color,
             minHeight: 2,
           }}
-        />
+        >
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-[#262628] text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap z-10 pointer-events-none">
+            {labels?.[i] && <div className="text-white/50 mb-0.5">{labels[i]}</div>}
+            <div className="font-bold">{formatter(v)}</div>
+          </div>
+        </div>
       ))}
     </div>
   );
@@ -233,17 +242,17 @@ export default function AdminDashboard({ adminName }: { adminName: string }) {
         <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-5">
           <h3 className="text-white font-medium mb-1">Просмотры страниц</h3>
           <p className="text-white/30 text-xs mb-4">Последние 30 дней</p>
-          <MiniChart data={viewsData} color="#a855f7" />
+          <MiniChart data={viewsData} labels={last30Days} color="#a855f7" formatter={(v) => `${v.toLocaleString()} просмотров`} />
         </div>
         <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-5">
           <h3 className="text-white font-medium mb-1">Новые пользователи</h3>
           <p className="text-white/30 text-xs mb-4">Последние 30 дней</p>
-          <MiniChart data={usersData} color="#3b82f6" />
+          <MiniChart data={usersData} labels={last30Days} color="#3b82f6" formatter={(v) => `+${v.toLocaleString()} пользователей`} />
         </div>
         <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-5">
           <h3 className="text-white font-medium mb-1">Выручка ($)</h3>
           <p className="text-white/30 text-xs mb-4">Последние 30 дней</p>
-          <MiniChart data={revenueData} color="#22c55e" />
+          <MiniChart data={revenueData} labels={last30Days} color="#22c55e" formatter={(v) => `$${v.toFixed(2)}`} />
         </div>
       </div>
 
