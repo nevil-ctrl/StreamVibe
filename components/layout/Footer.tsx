@@ -107,16 +107,16 @@ export default async function Footer() {
               {t('footer.home')}
             </h4>
             <div className="flex flex-col gap-2.5 text-[14px] text-[#999999]">
-              <Link href="#" className="hover:text-white transition">
+              <Link href="/browse" className="hover:text-white transition">
                 {t('footer.categories')}
               </Link>
-              <Link href="#" className="hover:text-white transition">
+              <Link href="/browse" className="hover:text-white transition">
                 {t('footer.devices')}
               </Link>
-              <Link href="#" className="hover:text-white transition">
+              <Link href="/subscriptions" className="hover:text-white transition">
                 {t('footer.pricing')}
               </Link>
-              <Link href="#" className="hover:text-white transition">
+              <Link href="/support" className="hover:text-white transition">
                 {t('footer.faq')}
               </Link>
             </div>
@@ -127,16 +127,16 @@ export default async function Footer() {
               {t('footer.movies')}
             </h4>
             <div className="flex flex-col gap-2.5 text-[14px] text-[#999999]">
-              <Link href="#" className="hover:text-white transition">
+              <Link href="/browse" className="hover:text-white transition">
                 {t('footer.genres')}
               </Link>
-              <Link href="#" className="hover:text-white transition">
+              <Link href="/browse" className="hover:text-white transition">
                 {t('footer.trending')}
               </Link>
-              <Link href="#" className="hover:text-white transition">
+              <Link href="/browse" className="hover:text-white transition">
                 {t('footer.newRelease')}
               </Link>
-              <Link href="#" className="hover:text-white transition">
+              <Link href="/browse" className="hover:text-white transition">
                 {t('footer.popular')}
               </Link>
             </div>
@@ -147,16 +147,16 @@ export default async function Footer() {
               {t('footer.shows')}
             </h4>
             <div className="flex flex-col gap-2.5 text-[14px] text-[#999999]">
-              <Link href="#" className="hover:text-white transition">
+              <Link href="/shows" className="hover:text-white transition">
                 {t('footer.genres')}
               </Link>
-              <Link href="#" className="hover:text-white transition">
+              <Link href="/shows" className="hover:text-white transition">
                 {t('footer.trending')}
               </Link>
-              <Link href="#" className="hover:text-white transition">
+              <Link href="/shows" className="hover:text-white transition">
                 {t('footer.newRelease')}
               </Link>
-              <Link href="#" className="hover:text-white transition">
+              <Link href="/shows" className="hover:text-white transition">
                 {t('footer.popular')}
               </Link>
             </div>
@@ -193,7 +193,9 @@ export default async function Footer() {
             </h4>
             <div className="flex gap-3">
               <a
-                href="#"
+                href="https://www.facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#141414] border border-[#262628] hover:bg-[#E50000] hover:border-[#E50000] transition duration-200">
                 <svg
                   className="w-4 h-4 text-white"
@@ -203,7 +205,9 @@ export default async function Footer() {
                 </svg>
               </a>
               <a
-                href="#"
+                href="https://www.x.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#141414] border border-[#262628] hover:bg-[#E50000] hover:border-[#E50000] transition duration-200">
                 <svg
                   className="w-4 h-4 text-white"
@@ -213,7 +217,9 @@ export default async function Footer() {
                 </svg>
               </a>
               <a
-                href="#"
+                href="https://www.linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-11 h-11 flex items-center justify-center rounded-lg bg-[#141414] border border-[#262628] hover:bg-[#E50000] hover:border-[#E50000] transition duration-200">
                 <svg
                   className="w-4 h-4 text-white"
@@ -229,15 +235,15 @@ export default async function Footer() {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 py-8 text-[14px] text-[#666666]">
           <span>{t('footer.copyright')}</span>
           <div className="flex items-center gap-6">
-            <Link href="#" className="hover:text-white transition">
+            <Link href="/terms" className="hover:text-white transition">
               {t('footer.termsOfUse')}
             </Link>
-            <Link href="#" className="hover:text-white transition">
+            <Link href="/privacy" className="hover:text-white transition">
               {t('footer.privacyPolicy')}
             </Link>
-            <Link href="#" className="hover:text-white transition">
+            <button className="hover:text-white transition">
               {t('footer.cookiePolicy')}
-            </Link>
+            </button>
             <ManageCookiesButton />
           </div>
         </div>
