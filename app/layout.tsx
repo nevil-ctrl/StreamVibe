@@ -1,27 +1,30 @@
 import './globals.css';
 import { Manrope } from 'next/font/google';
-// import Header from '@/components/layout/Header';
 import HeaderController from '@/components/layout/HeaderController';
 import Footer from '@/components/layout/Footer';
-import { Providers } from '@/components/Providers'; // Твой обновленный провайдер
+import { Providers } from '@/components/Providers';
 import FooterController from '@/components/layout/FooterController';
 import { Suspense } from 'react';
 import MainWrapper from '@/components/layout/MainWrapper';
+import { getLocale } from '@/lib/i18n/get-locale';
+
 const manrope = Manrope({
-  subsets: ['latin'],
+  subsets: ['latin', 'cyrillic'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-manrope',
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
+
   return (
-    <html lang="en" suppressHydrationWarning className={manrope.variable}>
+    <html lang={locale} suppressHydrationWarning className={manrope.variable}>
       <body className={manrope.className} suppressHydrationWarning>
-        <Providers>
+        <Providers initialLocale={locale}>
           <HeaderController />
           <MainWrapper>{children}</MainWrapper>
           <FooterController>

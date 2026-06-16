@@ -11,8 +11,12 @@ import {
   CheckCircle,
   AlertCircle,
   Loader2,
+  Globe,
 } from 'lucide-react';
 import { useUploadThing } from '@/lib/uploadthing';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useLocale, useTranslations } from '@/components/providers/LocaleProvider';
+import { formatDate } from '@/lib/i18n/formatters';
 
 interface UserData {
   id: string;
@@ -42,6 +46,8 @@ function StatusMsg({ msg }: { msg: MsgState }) {
 
 export default function SettingsClient({ user }: { user: UserData }) {
   const { update } = useSession();
+  const { locale } = useLocale();
+  const t = useTranslations();
   const [isPending, startTransition] = useTransition();
   const [isPasswordPending, startPasswordTransition] = useTransition();
   const [currentImage, setCurrentImage] = useState(user.image);
@@ -52,22 +58,14 @@ export default function SettingsClient({ user }: { user: UserData }) {
   const { startUpload, isUploading } = useUploadThing('avatarUploader', {
     onClientUploadComplete: async (res) => {
       const url = res[0].url;
-
       setCurrentImage(url);
       await updateAvatar(url);
-
-      await update({
-        image: url,
-        user: {
-          image: url,
-        },
-      });
-
-      setAvatarMsg({ type: 'success', text: 'Аватар обновлён' });
+      await update({ image: url, user: { image: url } });
+      setAvatarMsg({ type: 'success', text: t('settings.avatarUpdated') });
       setTimeout(() => setAvatarMsg(null), 3000);
     },
     onUploadError: () => {
-      setAvatarMsg({ type: 'error', text: 'Ошибка загрузки аватара' });
+      setAvatarMsg({ type: 'error', text: t('settings.avatarUploadError') });
     },
   });
 
@@ -81,10 +79,10 @@ export default function SettingsClient({ user }: { user: UserData }) {
     startTransition(async () => {
       try {
         await updateProfile(formData);
-        setProfileMsg({ type: 'success', text: 'Профиль успешно обновлён' });
+        setProfileMsg({ type: 'success', text: t('settings.profileUpdated') });
         setTimeout(() => setProfileMsg(null), 3000);
       } catch {
-        setProfileMsg({ type: 'error', text: 'Ошибка при обновлении' });
+        setProfileMsg({ type: 'error', text: t('settings.profileUpdateError') });
       }
     });
   }
@@ -93,13 +91,13 @@ export default function SettingsClient({ user }: { user: UserData }) {
     const newPassword = formData.get('newPassword') as string;
     const confirmPassword = formData.get('confirmPassword') as string;
     if (newPassword !== confirmPassword) {
-      setPasswordMsg({ type: 'error', text: 'Пароли не совпадают' });
+      setPasswordMsg({ type: 'error', text: t('settings.passwordsMismatch') });
       return;
     }
     if (newPassword.length < 6) {
       setPasswordMsg({
         type: 'error',
-        text: 'Пароль должен быть не менее 6 символов',
+        text: t('settings.passwordMinLength'),
       });
       return;
     }
@@ -107,18 +105,21 @@ export default function SettingsClient({ user }: { user: UserData }) {
       try {
         const result = await updatePassword(formData);
         if (result.success) {
-          setPasswordMsg({ type: 'success', text: 'Пароль успешно изменён' });
+          setPasswordMsg({ type: 'success', text: t('settings.passwordChanged') });
           setTimeout(() => setPasswordMsg(null), 3000);
         } else {
-          setPasswordMsg({ type: 'error', text: result.message ?? 'Ошибка' });
+          setPasswordMsg({
+            type: 'error',
+            text: result.message ?? t('settings.error'),
+          });
         }
       } catch {
-        setPasswordMsg({ type: 'error', text: 'Ошибка при смене пароля' });
+        setPasswordMsg({ type: 'error', text: t('settings.passwordChangeError') });
       }
     });
   }
 
-  const joinDate = new Date(user.createdAt).toLocaleDateString('ru-RU', {
+  const joinDate = formatDate(user.createdAt, locale, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -128,8 +129,10 @@ export default function SettingsClient({ user }: { user: UserData }) {
     <div className="min-h-screen bg-[#0A0A0A] text-white p-6 md:p-10">
       <div className="max-w-2xl mx-auto space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">Настройки профиля</h1>
-          <p className="text-[#666] mt-1 text-sm">С нами с {joinDate}</p>
+          <h1 className="text-3xl font-bold text-white">{t('settings.title')}</h1>
+          <p className="text-[#666] mt-1 text-sm">
+            {t('settings.memberSince', { date: joinDate })}
+          </p>
         </div>
 
         <div className="flex items-center gap-5 p-6 bg-[#111] rounded-2xl border border-[#222]">
@@ -166,11 +169,13 @@ export default function SettingsClient({ user }: { user: UserData }) {
             </label>
           </div>
           <div className="flex-1">
-            <p className="font-semibold text-lg">{user.name || 'Без имени'}</p>
+            <p className="font-semibold text-lg">
+              {user.name || t('settings.noName')}
+            </p>
             <p className="text-[#666] text-sm">{user.email}</p>
             {!user.hasPassword && (
               <span className="text-xs text-[#E50000] bg-[#E50000]/10 px-2 py-0.5 rounded-full mt-1 inline-block">
-                Вход через Google
+                {t('settings.googleSignIn')}
               </span>
             )}
             {avatarMsg && (
@@ -183,21 +188,35 @@ export default function SettingsClient({ user }: { user: UserData }) {
 
         <div className="bg-[#111] rounded-2xl border border-[#222] overflow-hidden">
           <div className="flex items-center gap-3 px-6 py-4 border-b border-[#222]">
+            <Globe className="w-5 h-5 text-[#E50000]" />
+            <h2 className="font-semibold">{t('language.label')}</h2>
+          </div>
+          <div className="p-6">
+            <LanguageSwitcher variant="full" />
+          </div>
+        </div>
+
+        <div className="bg-[#111] rounded-2xl border border-[#222] overflow-hidden">
+          <div className="flex items-center gap-3 px-6 py-4 border-b border-[#222]">
             <User className="w-5 h-5 text-[#E50000]" />
-            <h2 className="font-semibold">Личные данные</h2>
+            <h2 className="font-semibold">{t('settings.personalData')}</h2>
           </div>
           <form action={handleProfile} className="p-6 space-y-4">
             <div>
-              <label className="block text-sm text-[#666] mb-2">Имя</label>
+              <label className="block text-sm text-[#666] mb-2">
+                {t('settings.name')}
+              </label>
               <input
                 name="name"
                 defaultValue={user.name}
-                placeholder="Ваше имя"
+                placeholder={t('settings.namePlaceholder')}
                 className="w-full bg-[#0A0A0A] border border-[#2a2a2a] text-white p-3 rounded-xl focus:border-[#E50000] outline-none transition placeholder:text-[#444]"
               />
             </div>
             <div>
-              <label className="block text-sm text-[#666] mb-2">Email</label>
+              <label className="block text-sm text-[#666] mb-2">
+                {t('settings.email')}
+              </label>
               <input
                 name="email"
                 type="email"
@@ -211,7 +230,7 @@ export default function SettingsClient({ user }: { user: UserData }) {
               type="submit"
               disabled={isPending}
               className="bg-[#E50000] hover:bg-[#cc0000] text-white px-6 py-2.5 rounded-xl font-medium transition disabled:opacity-50">
-              {isPending ? 'Сохранение...' : 'Сохранить'}
+              {isPending ? t('settings.saving') : t('settings.save')}
             </button>
           </form>
         </div>
@@ -219,13 +238,13 @@ export default function SettingsClient({ user }: { user: UserData }) {
         <div className="bg-[#111] rounded-2xl border border-[#222] overflow-hidden">
           <div className="flex items-center gap-3 px-6 py-4 border-b border-[#222]">
             <Lock className="w-5 h-5 text-[#E50000]" />
-            <h2 className="font-semibold">Смена пароля</h2>
+            <h2 className="font-semibold">{t('settings.changePassword')}</h2>
           </div>
           <form action={handlePassword} className="p-6 space-y-4">
             {user.hasPassword && (
               <div>
                 <label className="block text-sm text-[#666] mb-2">
-                  Текущий пароль
+                  {t('settings.currentPassword')}
                 </label>
                 <input
                   name="currentPassword"
@@ -237,7 +256,7 @@ export default function SettingsClient({ user }: { user: UserData }) {
             )}
             <div>
               <label className="block text-sm text-[#666] mb-2">
-                Новый пароль
+                {t('settings.newPassword')}
               </label>
               <input
                 name="newPassword"
@@ -248,7 +267,7 @@ export default function SettingsClient({ user }: { user: UserData }) {
             </div>
             <div>
               <label className="block text-sm text-[#666] mb-2">
-                Подтвердить пароль
+                {t('settings.confirmPassword')}
               </label>
               <input
                 name="confirmPassword"
@@ -262,7 +281,9 @@ export default function SettingsClient({ user }: { user: UserData }) {
               type="submit"
               disabled={isPasswordPending}
               className="bg-[#E50000] hover:bg-[#cc0000] text-white px-6 py-2.5 rounded-xl font-medium transition disabled:opacity-50">
-              {isPasswordPending ? 'Сохранение...' : 'Изменить пароль'}
+              {isPasswordPending
+                ? t('settings.saving')
+                : t('settings.changePasswordBtn')}
             </button>
           </form>
         </div>

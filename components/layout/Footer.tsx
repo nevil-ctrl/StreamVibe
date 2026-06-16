@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { getPopularMovies } from '@/services/movies.service';
 import { TMDB_IMAGE_URL } from '@/lib/tmdb';
 import { ManageCookiesButton } from '@/components/consent/CookieConsent';
+import { getServerTranslations } from '@/lib/i18n/get-locale';
 
 type Movie = {
   id: number;
@@ -25,7 +26,7 @@ function FooterPosterRow({
       }`}>
       {[...items, ...items, ...items, ...items].map((movie, i) => (
         <div
-          key={`${movie.id || i}-${i}`} // Надежный ключ для дублированного массива
+          key={`${movie.id || i}-${i}`}
           className="relative shrink-0 overflow-hidden rounded-[10px] w-[140px] h-[90px]">
           <Image
             src={`${TMDB_IMAGE_URL}${movie.poster_path}`}
@@ -41,12 +42,13 @@ function FooterPosterRow({
 }
 
 export default async function Footer() {
+  const { t } = await getServerTranslations();
   let movies: Movie[] = [];
   try {
     const data = await getPopularMovies();
     movies = data.results || [];
   } catch (error) {
-    console.error('Ошибка загрузки постеров для футера:', error);
+    console.error('Footer poster load error:', error);
   }
 
   const row1 = movies.slice(0, 10);
@@ -56,7 +58,6 @@ export default async function Footer() {
 
   return (
     <footer className="w-full bg-[#0F0F11] text-white border-t border-[#262628] select-none pt-20">
-      {/* 1. БАННЕР БЕСПЛАТНОГО ПЕРИОДА */}
       <div className="container mx-auto px-4 md:px-12">
         <div className="relative w-full rounded-2xl overflow-hidden border border-[#262628] bg-black py-16 px-8 md:px-16 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl h-[320px] md:h-[240px]">
           <div
@@ -82,11 +83,10 @@ export default async function Footer() {
 
           <div className="relative z-10 text-center md:text-left flex flex-col gap-3">
             <h2 className="text-[28px] md:text-[36px] font-bold text-white tracking-tight">
-              Start your free trial today!
+              {t('footer.trialTitle')}
             </h2>
             <p className="text-[14px] md:text-[16px] text-[#999999] leading-relaxed">
-              This is a clear and concise call to action that encourages users
-              to sign up for a free trial of StreamVibe.
+              {t('footer.trialDescription')}
             </p>
           </div>
 
@@ -94,7 +94,7 @@ export default async function Footer() {
             <Link
               href="/subscriptions"
               className="px-6 py-4 bg-[#E50000] hover:bg-red-700 text-white font-semibold rounded-lg text-sm transition duration-200 shadow-lg shadow-red-900/30 cursor-pointer whitespace-nowrap">
-              Start a Free Trial
+              {t('footer.trialCta')}
             </Link>
           </div>
         </div>
@@ -103,85 +103,93 @@ export default async function Footer() {
       <div className="container mx-auto px-4 md:px-12 pt-32">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 pb-16 border-b border-[#262628]">
           <div className="flex flex-col gap-4">
-            <h4 className="text-[17px] font-semibold text-white">Home</h4>
-            <div className="flex flex-col gap-2.5 text-[14px] text-[#999999]">
-              <Link href="#" className="hover:text-white transition">
-                Categories
-              </Link>
-              <Link href="#" className="hover:text-white transition">
-                Devices
-              </Link>
-              <Link href="#" className="hover:text-white transition">
-                Pricing
-              </Link>
-              <Link href="#" className="hover:text-white transition">
-                FAQ
-              </Link>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <h4 className="text-[17px] font-semibold text-white">Movies</h4>
-            <div className="flex flex-col gap-2.5 text-[14px] text-[#999999]">
-              <Link href="#" className="hover:text-white transition">
-                Genres
-              </Link>
-              <Link href="#" className="hover:text-white transition">
-                Trending
-              </Link>
-              <Link href="#" className="hover:text-white transition">
-                New Release
-              </Link>
-              <Link href="#" className="hover:text-white transition">
-                Popular
-              </Link>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <h4 className="text-[17px] font-semibold text-white">Shows</h4>
-            <div className="flex flex-col gap-2.5 text-[14px] text-[#999999]">
-              <Link href="#" className="hover:text-white transition">
-                Genres
-              </Link>
-              <Link href="#" className="hover:text-white transition">
-                Trending
-              </Link>
-              <Link href="#" className="hover:text-white transition">
-                New Release
-              </Link>
-              <Link href="#" className="hover:text-white transition">
-                Popular
-              </Link>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <h4 className="text-[17px] font-semibold text-white">Support</h4>
-            <div className="flex flex-col gap-2.5 text-[14px] text-[#999999]">
-              <Link href="#" className="hover:text-white transition">
-                Contact Us
-              </Link>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4">
             <h4 className="text-[17px] font-semibold text-white">
-              Subscription
+              {t('footer.home')}
             </h4>
             <div className="flex flex-col gap-2.5 text-[14px] text-[#999999]">
               <Link href="#" className="hover:text-white transition">
-                Plans
+                {t('footer.categories')}
               </Link>
               <Link href="#" className="hover:text-white transition">
-                Features
+                {t('footer.devices')}
+              </Link>
+              <Link href="#" className="hover:text-white transition">
+                {t('footer.pricing')}
+              </Link>
+              <Link href="#" className="hover:text-white transition">
+                {t('footer.faq')}
               </Link>
             </div>
           </div>
 
           <div className="flex flex-col gap-4">
             <h4 className="text-[17px] font-semibold text-white">
-              Connect With Us
+              {t('footer.movies')}
+            </h4>
+            <div className="flex flex-col gap-2.5 text-[14px] text-[#999999]">
+              <Link href="#" className="hover:text-white transition">
+                {t('footer.genres')}
+              </Link>
+              <Link href="#" className="hover:text-white transition">
+                {t('footer.trending')}
+              </Link>
+              <Link href="#" className="hover:text-white transition">
+                {t('footer.newRelease')}
+              </Link>
+              <Link href="#" className="hover:text-white transition">
+                {t('footer.popular')}
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <h4 className="text-[17px] font-semibold text-white">
+              {t('footer.shows')}
+            </h4>
+            <div className="flex flex-col gap-2.5 text-[14px] text-[#999999]">
+              <Link href="#" className="hover:text-white transition">
+                {t('footer.genres')}
+              </Link>
+              <Link href="#" className="hover:text-white transition">
+                {t('footer.trending')}
+              </Link>
+              <Link href="#" className="hover:text-white transition">
+                {t('footer.newRelease')}
+              </Link>
+              <Link href="#" className="hover:text-white transition">
+                {t('footer.popular')}
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <h4 className="text-[17px] font-semibold text-white">
+              {t('nav.support')}
+            </h4>
+            <div className="flex flex-col gap-2.5 text-[14px] text-[#999999]">
+              <Link href="/support" className="hover:text-white transition">
+                {t('footer.contactUs')}
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <h4 className="text-[17px] font-semibold text-white">
+              {t('footer.subscription')}
+            </h4>
+            <div className="flex flex-col gap-2.5 text-[14px] text-[#999999]">
+              <Link href="/subscriptions" className="hover:text-white transition">
+                {t('footer.plans')}
+              </Link>
+              <Link href="/subscriptions" className="hover:text-white transition">
+                {t('footer.features')}
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <h4 className="text-[17px] font-semibold text-white">
+              {t('footer.connectWithUs')}
             </h4>
             <div className="flex gap-3">
               <a
@@ -219,16 +227,16 @@ export default async function Footer() {
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 py-8 text-[14px] text-[#666666]">
-          <span>@2023 streamvib, All Rights Reserved</span>
+          <span>{t('footer.copyright')}</span>
           <div className="flex items-center gap-6">
             <Link href="#" className="hover:text-white transition">
-              Terms of Use
+              {t('footer.termsOfUse')}
             </Link>
             <Link href="#" className="hover:text-white transition">
-              Privacy Policy
+              {t('footer.privacyPolicy')}
             </Link>
             <Link href="#" className="hover:text-white transition">
-              Cookie Policy
+              {t('footer.cookiePolicy')}
             </Link>
             <ManageCookiesButton />
           </div>

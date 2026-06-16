@@ -1,5 +1,6 @@
 'use client';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from '@/components/providers/LocaleProvider';
 
 interface AskQuestionButtonProps {
   onClick?: () => void;
@@ -13,6 +14,7 @@ export default function AskQuestionButton({
   href,
 }: AskQuestionButtonProps) {
   const router = useRouter();
+  const t = useTranslations();
 
   const handleClick = () => {
     if (onClick) {
@@ -30,7 +32,7 @@ export default function AskQuestionButton({
     <button
       onClick={handleClick}
       className=" cursor-pointer bg-[#E50000] hover:bg-[#FF1919] text-white px-5 py-3 rounded-md font-medium text-sm whitespace-nowrap self-start sm:self-auto transition-colors">
-      Ask a Question
+      {t('faq.askQuestion')}
     </button>
   );
 }

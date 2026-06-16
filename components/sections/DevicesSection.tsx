@@ -1,62 +1,61 @@
 import { DeviceCard } from '../ui/DeviceCard';
+import { getServerTranslations } from '@/lib/i18n/get-locale';
 
-const devices = [
-  {
-    icon: '/svg/phone.svg',
-    title: 'Smartphones',
-    description:
-      'StreamVibe is optimized for both Android and iOS smartphones. Download our app from the Google Play Store or the Apple App Store',
-  },
-  {
-    icon: '/svg/tablet.svg',
-    title: 'Tablet',
-    description:
-      'StreamVibe is optimized for both Android and iOS smartphones. Download our app from the Google Play Store or the Apple App Store',
-  },
-  {
-    icon: '/svg/smart_tv.svg',
-    title: 'Smart TV',
-    description:
-      'StreamVibe is optimized for both Android and iOS smartphones. Download our app from the Google Play Store or the Apple App Store',
-  },
-  {
-    icon: '/svg/laptop.svg',
-    title: 'Laptops',
-    description:
-      'StreamVibe is optimized for both Android and iOS smartphones. Download our app from the Google Play Store or the Apple App Store',
-  },
-  {
-    icon: '/svg/console.svg',
-    title: 'Gaming Consoles',
-    description:
-      'StreamVibe is optimized for both Android and iOS smartphones. Download our app from the Google Play Store or the Apple App Store',
-  },
-  {
-    icon: '/svg/vt.svg',
-    title: 'VR Headsets',
-    description:
-      'StreamVibe is optimized for both Android and iOS smartphones. Download our app from the Google Play Store or the Apple App Store',
-  },
-];
+export default async function DevicesSection() {
+  const { t } = await getServerTranslations();
 
-export default function DevicesSection() {
+  const devices = [
+    {
+      icon: '/svg/phone.svg',
+      title: t('devices.smartphones'),
+      description: t('devices.smartphonesDesc'),
+    },
+    {
+      icon: '/svg/tablet.svg',
+      title: t('devices.tablet'),
+      description: t('devices.tabletDesc'),
+    },
+    {
+      icon: '/svg/smart_tv.svg',
+      title: t('devices.smartTv'),
+      description: t('devices.smartTvDesc'),
+    },
+    {
+      icon: '/svg/laptop.svg',
+      title: t('devices.laptops'),
+      description: t('devices.laptopsDesc'),
+    },
+    {
+      icon: '/svg/console.svg',
+      title: t('devices.gamingConsoles'),
+      description: t('devices.gamingConsolesDesc'),
+    },
+    {
+      icon: '/svg/vt.svg',
+      title: t('devices.vrHeadsets'),
+      description: t('devices.vrHeadsetsDesc'),
+    },
+  ];
+
   return (
     <section className="container mx-auto w-full flex flex-col px-4 py-12">
       <div className="mb-16">
         <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-          We Provide you streaming experience across various devices.
+          {t('devices.title')}
         </h2>
         <p className="text-[#999999] text-base max-w-[600px] leading-relaxed">
-          With StreamVibe, you can enjoy your favorite movies and TV shows
-          anytime, anywhere. Our platform is designed to be compatible with a
-          wide range of devices, ensuring that you never miss a moment of
-          entertainment.
+          {t('devices.subtitle')}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[30px]">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {devices.map((device) => (
-          <DeviceCard key={device.title} {...device} />
+          <DeviceCard
+            key={device.title}
+            icon={device.icon}
+            title={device.title}
+            description={device.description}
+          />
         ))}
       </div>
     </section>

@@ -3,54 +3,53 @@
 import { useState } from 'react';
 import { Check, X, Crown, Zap, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from '@/components/providers/LocaleProvider';
+import type { MessageKey } from '@/lib/i18n/types';
 
 type BillingCycle = 'monthly' | 'yearly';
 
-const PLANS = [
+const PLAN_CONFIG = [
   {
     id: 'BASIC',
-    name: 'Basic Plan',
+    nameKey: 'pricing.basicPlan' as MessageKey,
+    descKey: 'pricing.basicDesc' as MessageKey,
     monthlyPrice: 0.25,
-    description:
-      'Enjoy an extensive library of movies and shows, featuring a range of content, including recently released titles.',
     icon: <Zap size={16} />,
     color: '#B3B3B3',
-    features: [
-      { text: '1 device simultaneously', included: true },
-      { text: 'SD quality', included: true },
-      { text: 'No HDR / Dolby Atmos', included: false },
-      { text: 'Ads included', included: false },
+    featureKeys: [
+      { key: 'pricing.feat1Device' as MessageKey, included: true },
+      { key: 'pricing.featSd' as MessageKey, included: true },
+      { key: 'pricing.featNoHdr' as MessageKey, included: false },
+      { key: 'pricing.featAds' as MessageKey, included: false },
     ],
   },
   {
     id: 'STANDARD',
-    name: 'Standard Plan',
+    nameKey: 'pricing.standardPlan' as MessageKey,
+    descKey: 'pricing.standardDesc' as MessageKey,
     monthlyPrice: 0.25,
-    description:
-      'Access to a wider selection of movies and shows, including most new releases and exclusive content',
     popular: true,
     icon: <Star size={16} />,
     color: '#E50000',
-    features: [
-      { text: '2 devices simultaneously', included: true },
-      { text: 'HD + HDR quality', included: true },
-      { text: 'Ad-free', included: true },
-      { text: 'Offline (select titles)', included: true },
+    featureKeys: [
+      { key: 'pricing.feat2Devices' as MessageKey, included: true },
+      { key: 'pricing.featHdHdr' as MessageKey, included: true },
+      { key: 'pricing.featAdFree' as MessageKey, included: true },
+      { key: 'pricing.featOfflineSelect' as MessageKey, included: true },
     ],
   },
   {
     id: 'PREMIUM',
-    name: 'Premium Plan',
+    nameKey: 'pricing.premiumPlan' as MessageKey,
+    descKey: 'pricing.premiumDesc' as MessageKey,
     monthlyPrice: 0.25,
-    description:
-      'Access to a widest selection of movies and shows, including all new releases and Offline Viewing',
     icon: <Crown size={16} />,
     color: '#FFB800',
-    features: [
-      { text: '4 devices simultaneously', included: true },
-      { text: '4K + Dolby Atmos', included: true },
-      { text: 'Ad-free', included: true },
-      { text: 'Offline (all titles) + Family sharing', included: true },
+    featureKeys: [
+      { key: 'pricing.feat4Devices' as MessageKey, included: true },
+      { key: 'pricing.feat4k' as MessageKey, included: true },
+      { key: 'pricing.featAdFree' as MessageKey, included: true },
+      { key: 'pricing.featOfflineAll' as MessageKey, included: true },
     ],
   },
 ];
@@ -62,6 +61,7 @@ function getYearlyPrice(monthly: number) {
 export default function PricingSection() {
   const [billing, setBilling] = useState<BillingCycle>('monthly');
   const router = useRouter();
+  const t = useTranslations();
 
   return (
     <section className="py-16">
@@ -70,12 +70,10 @@ export default function PricingSection() {
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
             <div className="flex-1">
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-3 leading-tight">
-                Choose the plan that&apos;s right for you
+                {t('pricing.title')}
               </h2>
               <p className="text-[#999] text-sm leading-relaxed">
-                Join StreamVibe and select from our flexible subscription
-                options tailored to suit your viewing preferences. Get ready for
-                non-stop entertainment!
+                {t('pricing.subtitle')}
               </p>
             </div>
 
@@ -84,12 +82,12 @@ export default function PricingSection() {
                 <button
                   key={cycle}
                   onClick={() => setBilling(cycle)}
-                  className={`px-5 py-2 rounded-md text-sm font-medium transition-all capitalize cursor-pointer ${
+                  className={`px-5 py-2 rounded-md text-sm font-medium transition-all cursor-pointer ${
                     billing === cycle
                       ? 'bg-[#262628] text-white'
                       : 'text-[#999] hover:text-white'
                   }`}>
-                  {cycle.charAt(0).toUpperCase() + cycle.slice(1)}
+                  {cycle === 'monthly' ? t('pricing.monthly') : t('pricing.yearly')}
                 </button>
               ))}
             </div>
@@ -97,7 +95,7 @@ export default function PricingSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {PLANS.map((plan) => {
+          {PLAN_CONFIG.map((plan) => {
             const price =
               billing === 'monthly'
                 ? plan.monthlyPrice.toFixed(2)
@@ -114,7 +112,7 @@ export default function PricingSection() {
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="bg-[#E50000] text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg">
-                      Popular
+                      {t('pricing.mostPopular')}
                     </span>
                   </div>
                 )}
@@ -123,11 +121,11 @@ export default function PricingSection() {
                   <div className="flex items-center gap-2 mb-2">
                     <span style={{ color: plan.color }}>{plan.icon}</span>
                     <h3 className="text-lg font-semibold text-white">
-                      {plan.name}
+                      {t(plan.nameKey)}
                     </h3>
                   </div>
                   <p className="text-[#999] text-sm leading-relaxed">
-                    {plan.description}
+                    {t(plan.descKey)}
                   </p>
                 </div>
 
@@ -136,21 +134,23 @@ export default function PricingSection() {
                     ${price}
                   </span>
                   <span className="text-[#999] text-sm">
-                    /{billing === 'monthly' ? 'month' : 'year'}
+                    {billing === 'monthly'
+                      ? t('pricing.perMonth')
+                      : t('pricing.perYear')}
                   </span>
                 </div>
 
                 <ul className="flex flex-col gap-2">
-                  {plan.features.map((f) => (
+                  {plan.featureKeys.map((f) => (
                     <li
-                      key={f.text}
+                      key={f.key}
                       className={`flex items-center gap-2 text-sm ${f.included ? 'text-[#B3B3B3]' : 'text-[#4C4C4C]'}`}>
                       {f.included ? (
                         <Check size={13} className="text-[#E50000] shrink-0" />
                       ) : (
                         <X size={13} className="shrink-0" />
                       )}
-                      {f.text}
+                      {t(f.key)}
                     </li>
                   ))}
                 </ul>
@@ -159,12 +159,12 @@ export default function PricingSection() {
                   <button
                     onClick={() => router.push('/subscriptions')}
                     className="flex-1 py-2.5 rounded-lg border border-[#333] text-white text-sm font-medium hover:bg-[#262628] transition-colors cursor-pointer">
-                    Start Free Trial
+                    {t('pricing.startFreeTrial')}
                   </button>
                   <button
                     onClick={() => router.push('/subscriptions')}
                     className="flex-1 py-2.5 rounded-lg bg-[#E50000] hover:bg-[#FF0000] text-white text-sm font-semibold transition-colors cursor-pointer">
-                    Choose Plan
+                    {t('pricing.choosePlan')}
                   </button>
                 </div>
               </div>
