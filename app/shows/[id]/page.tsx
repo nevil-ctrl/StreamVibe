@@ -44,12 +44,10 @@ export default async function ShowPage({ params }: PageProps) {
   const [show, local, watchEntry, userOwnReview] = await Promise.all([
     getShowDetail(showId).catch(() => null),
     getLocalShow(id).catch(() => null),
-    session?.user?.id
-      ? getWatchEntry(session.user.id, { showId: id })
-      : Promise.resolve(null),
+    session?.user?.id ? getWatchEntry(session.user.id, { showId: id }) : null,
     session?.user?.id
       ? getUserReviewForMedia(session.user.id, { showId: id })
-      : Promise.resolve(null),
+      : null,
   ]);
 
   if (!show) notFound();
@@ -62,8 +60,22 @@ export default async function ShowPage({ params }: PageProps) {
   const director = pickDirector(show.credits?.crew ?? []);
   const composer = pickComposer(show.credits?.crew ?? []);
 
+  // Переменная для сайдбара, чтобы не дублировать верстку
+  const Sidebar = () => (
+    <MetadataSidebar
+      releaseYear={releaseYear}
+      languages={languages}
+      rating={show.vote_average}
+      voteCount={show.vote_count}
+      genres={show.genres ?? []}
+      director={director}
+      composer={composer}
+      watchersCount={local?.watchersCount}
+    />
+  );
+
   return (
-    <div className="pb-20">
+    <div className="min-h-screen bg-[#141414] text-white pb-20">
       <DetailHero
         id={show.id}
         title={show.name}
@@ -75,16 +87,26 @@ export default async function ShowPage({ params }: PageProps) {
         initialInWatchlist={initialInWatchlist}
       />
 
-      <div className="mx-auto grid max-w-[1600px] gap-8 px-4 py-8 md:px-12 md:py-10 lg:grid-cols-3">
-        <div className="space-y-8 order-2 lg:order-1 lg:col-span-2">
+      {/* Адаптивная трехколоночная сетка */}
+      <div className="mx-auto grid max-w-[1600px] gap-6 px-4 py-8 md:px-12 md:gap-10 lg:grid-cols-3">
+        {/* Левая часть (Аккордеон сезонов, описание, каст, комменты) */}
+        <div className="flex flex-col gap-6 lg:col-span-2 md:gap-8">
           <SeasonsAccordion
             showId={show.id}
             showName={show.name}
             posterPath={show.poster_path}
             seasons={show.seasons ?? []}
           />
+
           <DescriptionBlock overview={show.overview} />
+
+          {/* Сайдбар: виден на мобилках и планшетах, падает строго под описание */}
+          <div className="block lg:hidden">
+            <Sidebar />
+          </div>
+
           <CastCarousel cast={show.credits?.cast ?? []} />
+
           <ReviewsSection
             tmdbReviews={show.reviews?.results ?? []}
             localComments={local?.comments}
@@ -96,32 +118,15 @@ export default async function ShowPage({ params }: PageProps) {
             }}
             currentUserId={session?.user?.id}
             currentUserRole={session?.user?.role}
-            userOwnReview={
-              userOwnReview
-                ? {
-                    id: userOwnReview.id,
-                    content: userOwnReview.content,
-                    userId: userOwnReview.userId,
-                    createdAt: userOwnReview.createdAt,
-                    updatedAt: userOwnReview.updatedAt,
-                    user: userOwnReview.user,
-                  }
-                : null
-            }
+            userOwnReview={userOwnReview}
           />
         </div>
 
-        <div className="order-1 lg:order-2">
-        <MetadataSidebar
-          releaseYear={releaseYear}
-          languages={languages}
-          rating={show.vote_average}
-          voteCount={show.vote_count}
-          genres={show.genres ?? []}
-          director={director}
-          composer={composer}
-          watchersCount={local?.watchersCount}
-        />
+        {/* Правая часть: сайдбар только на десктопе */}
+        <div className="hidden lg:block">
+          <div className="sticky top-24">
+            <Sidebar />
+          </div>
         </div>
       </div>
     </div>

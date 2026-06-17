@@ -11,7 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { TMDB_IMAGE_URL, TMDB_BASE_URL } from '@/lib/tmdb';
+import { TMDB_IMAGE_URL } from '@/lib/tmdb';
 
 interface Movie {
   id: number;
@@ -22,30 +22,25 @@ interface Movie {
 }
 
 const STATUS_MAP: Record<string, string> = {
-  genres_movie: `/movie/popular`,
-  top10_movie: `/movie/top_rated`,
-  trending_movie: `/trending/movie/week`,
-  new_movie: `/movie/upcoming`,
-  must_movie: `/movie/now_playing`,
-  genres_tv: `/tv/popular`,
-  top10_tv: `/tv/top_rated`,
-  trending_tv: `/trending/tv/week`,
-  new_tv: `/tv/airing_today`,
-  must_tv: `/tv/on_the_air`,
-  trending: `/trending/movie/week`,
-  popular: `/movie/popular`,
-  top_rated: `/movie/top_rated`,
-  now_playing: `/movie/now_playing`,
-  upcoming: `/movie/upcoming`,
-  airing_today: `/tv/airing_today`,
-  on_the_air: `/tv/on_the_air`,
+  genres_movie: '/movie/popular',
+  top10_movie: '/movie/top_rated',
+  trending_movie: '/trending/movie/week',
+  new_movie: '/movie/upcoming',
+  must_movie: '/movie/now_playing',
+  genres_tv: '/tv/popular',
+  top10_tv: '/tv/top_rated',
+  trending_tv: '/trending/tv/week',
+  new_tv: '/tv/airing_today',
+  must_tv: '/tv/on_the_air',
 };
 
 export default function GenrePage() {
   return (
     <Suspense
       fallback={
-        <div className="container py-12 min-h-screen text-[#999]">Загрузка...</div>
+        <div className="container py-12 min-h-screen text-[#999]">
+          Загрузка...
+        </div>
       }>
       <GenrePageContent />
     </Suspense>
@@ -74,32 +69,34 @@ function GenrePageContent() {
     async function load() {
       setLoading(true);
       try {
-        let url = '';
+        let path = '';
+
         if (genre) {
-          url =
+          path =
             type === 'tv'
-              ? `${TMDB_BASE_URL}/discover/tv?with_genres=${genre}&sort_by=popularity.desc&page=${page}`
-              : `${TMDB_BASE_URL}/discover/movie?with_genres=${genre}&sort_by=popularity.desc&page=${page}`;
+              ? `/discover/tv?with_genres=${genre}&sort_by=popularity.desc&page=${page}`
+              : `/discover/movie?with_genres=${genre}&sort_by=popularity.desc&page=${page}`;
         } else if (status) {
-          const path = STATUS_MAP[status];
-          if (!path) {
+          const basePath = STATUS_MAP[status];
+          if (!basePath) {
             setLoading(false);
             return;
           }
-          const sep = path.includes('?') ? '&' : '?';
-          url = `${TMDB_BASE_URL}${path}${sep}page=${page}`;
+          const sep = basePath.includes('?') ? '&' : '?';
+          path = `${basePath}${sep}page=${page}`;
         } else {
           setLoading(false);
           return;
         }
 
-        const encodedUrl = encodeURIComponent(url);
-        const res = await fetch(`/api/tmdb?path=${encodedUrl}`);
+        const res = await fetch(`/api/tmdb?path=${encodeURIComponent(path)}`);
+        if (!res.ok) throw new Error('fetch failed');
         const data = await res.json();
         setMovies(data.results ?? []);
-        setTotalPages(Math.min(data.total_pages ?? 1, 20)); // TMDB лимит
+        setTotalPages(Math.min(data.total_pages ?? 1, 20));
       } catch (e) {
         console.error(e);
+        setMovies([]);
       } finally {
         setLoading(false);
       }
@@ -143,8 +140,8 @@ function GenrePageContent() {
                 key={movie.id}
                 href={
                   type === 'movie'
-                    ? `/movies/${movie.id}`
-                    : `/shows/${movie.id}`
+                    ? `/watch/movie/${movie.id}`
+                    : `/watch/tv/${movie.id}`
                 }
                 className="group rounded-xl border border-[#262628] bg-[#1A1A1A] p-3 hover:border-[#E50000] transition flex flex-col">
                 <div className="relative aspect-2/3 overflow-hidden rounded-lg mb-3 bg-[#262628]">
@@ -179,7 +176,6 @@ function GenrePageContent() {
         </div>
       )}
 
-      {/* Пагинация */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-12">
           <button
@@ -188,7 +184,6 @@ function GenrePageContent() {
             className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#1A1A1A] border border-[#262628] hover:bg-[#262628] disabled:opacity-30 transition cursor-pointer">
             <ChevronLeft size={16} />
           </button>
-
           {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
             const p = page <= 4 ? i + 1 : page - 3 + i;
             if (p < 1 || p > totalPages) return null;
@@ -205,7 +200,6 @@ function GenrePageContent() {
               </button>
             );
           })}
-
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}

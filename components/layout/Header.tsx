@@ -18,12 +18,10 @@ export default function Header() {
 
   return (
     <header
-      className={`
-      sticky top-0 left-0 z-50 w-full
-      transition-all duration-300
-      ${scrolled ? 'bg-black/60 backdrop-blur-sm' : ''}
-    `}>
-      <div className="container px-4 pt-4 md:pt-8 md:px-auto">
+      className={`sticky top-0 left-0 z-50 w-full transition-all 
+      duration-300 ${scrolled ? 'bg-black/60 backdrop-blur-sm' : 'bg-transparent'}`}>
+      <div
+        className="container px-4 py-3 md:py-4 md:px-8">
         <Navbar />
       </div>
     </header>

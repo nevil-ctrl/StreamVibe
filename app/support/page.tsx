@@ -341,9 +341,9 @@ export default function SupportPage() {
               </p>
             </div>
 
-            <div className="relative rounded-2xl border border-[#262628] bg-[#0A0A0A] p-3 h-120 overflow-hidden opacity-70 hover:opacity-90 transition-opacity duration-300 pointer-events-none hidden sm:block">
-              <div className="absolute inset-x-0 top-0 h-16 bg-linear-to-b from-[#0A0A0A] to-transparent z-10" />
-              <div className="absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-[#0A0A0A] to-transparent z-10" />
+            <div className="relative rounded-2xl border border-[#262628] bg-[#0A0A0A] p-3 h-[300px] sm:h-120 overflow-hidden opacity-70 hover:opacity-90 transition-opacity duration-300 pointer-events-none block">
+              <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#0A0A0A] to-transparent z-10" />
+              <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0A0A0A] to-transparent z-10" />
               <div className="grid grid-cols-4 gap-2 h-full">
                 {movies.length > 0
                   ? [

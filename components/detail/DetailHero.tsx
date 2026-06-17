@@ -77,8 +77,8 @@ export default function DetailHero({
 
   return (
     <section className="relative w-full px-4 pt-4 md:px-12 md:pt-6">
-      <div className="relative mx-auto w-full max-w-[1600px] overflow-hidden rounded-2xl border border-[#262628] bg-[#1A1A1A] flex flex-col md:block md:aspect-auto md:h-[55vh] md:min-h-[420px] md:max-h-[65vh]">
-        <div className="relative w-full aspect-[4/3] sm:aspect-video md:absolute md:inset-0">
+      <div className="relative mx-auto w-full max-w-[1600px] h-[550px] sm:h-[600px] md:h-[55vh] md:min-h-[420px] md:max-h-[65vh] overflow-hidden rounded-2xl border border-[#262628] bg-[#1A1A1A]">
+        <div className="absolute inset-0 w-full h-full">
           {backdrop ? (
             <Image
               src={backdrop}
@@ -86,21 +86,21 @@ export default function DetailHero({
               fill
               priority
               sizes="100vw"
-              className="object-cover"
+              className="object-cover object-top"
             />
           ) : (
             <div className="absolute inset-0 bg-[#141414]" />
           )}
 
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F0F] via-[#0F0F0F]/50 to-transparent md:block" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F0F] via-[#0F0F0F]/50 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0F0F0F]/60 via-transparent to-transparent hidden md:block" />
         </div>
 
-        <div className="relative z-10 flex flex-col items-center px-4 py-6 text-center md:absolute md:inset-x-0 md:bottom-0 md:px-16 md:pb-10 bg-[#0F0F0F] md:bg-transparent">
-          <h1 className="mb-3 max-w-3xl text-[26px] font-bold tracking-tight text-white md:text-[42px]">
+        <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center px-4 pb-8 text-center md:px-16 md:pb-10">
+          <h1 className="mb-3 max-w-3xl text-[28px] font-bold tracking-tight text-white md:text-[42px] drop-shadow-lg">
             {title}
           </h1>
-          <p className="mb-6 max-w-2xl line-clamp-3 text-[14px] leading-relaxed text-[#E4E4E7] opacity-90 md:line-clamp-2 md:text-[15px]">
+          <p className="mb-6 max-w-2xl line-clamp-3 text-[14px] leading-relaxed text-[#E4E4E7] opacity-90 md:line-clamp-2 md:text-[15px] drop-shadow-md">
             {overview || 'Описание скоро появится.'}
           </p>
 

@@ -81,8 +81,22 @@ const [movie, local, watchEntry, userOwnReview] = await Promise.all([
       />
 
       <div className="mx-auto grid max-w-[1600px] gap-8 px-4 py-8 md:px-12 md:py-10 lg:grid-cols-3">
-        <div className="space-y-8 order-2 lg:order-1 lg:col-span-2">
+        <div className="flex flex-col gap-8 lg:col-span-2">
           <DescriptionBlock overview={movie.overview} />
+          
+          <div className="block lg:hidden">
+            <MetadataSidebar
+              releaseYear={releaseYear}
+              languages={languages}
+              rating={movie.vote_average}
+              voteCount={movie.vote_count}
+              genres={movie.genres ?? []}
+              director={director}
+              composer={composer}
+              watchersCount={local?.watchersCount}
+            />
+          </div>
+
           <CastCarousel cast={movie.credits?.cast ?? []} />
           <ReviewsSection
             tmdbReviews={movie.reviews?.results ?? []}
@@ -110,17 +124,17 @@ const [movie, local, watchEntry, userOwnReview] = await Promise.all([
           />
         </div>
 
-        <div className="order-1 lg:order-2">
-        <MetadataSidebar
-          releaseYear={releaseYear}
-          languages={languages}
-          rating={movie.vote_average}
-          voteCount={movie.vote_count}
-          genres={movie.genres ?? []}
-          director={director}
-          composer={composer}
-          watchersCount={local?.watchersCount}
-        />
+        <div className="hidden lg:block">
+          <MetadataSidebar
+            releaseYear={releaseYear}
+            languages={languages}
+            rating={movie.vote_average}
+            voteCount={movie.vote_count}
+            genres={movie.genres ?? []}
+            director={director}
+            composer={composer}
+            watchersCount={local?.watchersCount}
+          />
         </div>
       </div>
     </div>
