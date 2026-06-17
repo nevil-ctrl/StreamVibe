@@ -12,6 +12,9 @@ export interface Provider {
   ) => string;
 }
 
+// Провайдеры проверены: 17 июня 2026
+// ❌ Удалены мёртвые: kinobox.tv (404), voidboost.tv (SSL/сертификат), moviesapi.club (DNS не существует)
+// ✅ Добавлены рабочие: vidsrc.me, 2embed.cc, videasy.net
 export const PROVIDERS: Provider[] = [
   {
     id: 'superembed',
@@ -24,40 +27,44 @@ export const PROVIDERS: Provider[] = [
       `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1&s=${s}&e=${e}`,
   },
   {
-    id: 'kinobox',
-    label: 'Плеер 2',
-    lang: 'ru',
-    priority: 2,
-    getMovieUrl: (tmdbId, imdbId) =>
-      `https://kinobox.tv/embed/vod?${imdbId ? `imdb=${imdbId}` : `tmdb=${tmdbId}`}`,
-    getTvUrl: (tmdbId, s, e, imdbId) =>
-      `https://kinobox.tv/embed/vod?${imdbId ? `imdb=${imdbId}` : `tmdb=${tmdbId}`}&s=${s}&e=${e}`,
-  },
-  {
     id: 'vidsrc',
-    label: 'Плеер 3',
+    label: 'Плеер 2',
     lang: 'en',
-    priority: 3,
+    priority: 2,
     getMovieUrl: (tmdbId, imdbId) =>
       `https://vidsrc.to/embed/movie/${imdbId || tmdbId}`,
     getTvUrl: (tmdbId, s, e, imdbId) =>
       `https://vidsrc.to/embed/tv/${imdbId || tmdbId}/${s}/${e}`,
   },
   {
-    id: 'voidboost',
+    id: 'vidsrcme',
+    label: 'Плеер 3',
+    lang: 'en',
+    priority: 3,
+    getMovieUrl: (tmdbId) =>
+      `https://vidsrc.me/embed/movie?tmdb=${tmdbId}`,
+    getTvUrl: (tmdbId, s, e) =>
+      `https://vidsrc.me/embed/tv?tmdb=${tmdbId}&season=${s}&episode=${e}`,
+  },
+  {
+    id: '2embed',
     label: 'Плеер 4',
     lang: 'multi',
     priority: 4,
-    getMovieUrl: (tmdbId) => `https://voidboost.tv/embed/${tmdbId}`,
-    getTvUrl: (tmdbId, s, e) => `https://voidboost.tv/embed/${tmdbId}/${s}/${e}`,
+    getMovieUrl: (tmdbId) =>
+      `https://www.2embed.cc/embed/${tmdbId}`,
+    getTvUrl: (tmdbId, s, e) =>
+      `https://www.2embed.cc/embedtv/${tmdbId}&s=${s}&e=${e}`,
   },
   {
-    id: 'moviesapi',
+    id: 'videasy',
     label: 'Плеер 5',
     lang: 'multi',
     priority: 5,
-    getMovieUrl: (tmdbId) => `https://moviesapi.club/movie/${tmdbId}`,
-    getTvUrl: (tmdbId, s, e) => `https://moviesapi.club/tv/${tmdbId}-${s}-${e}`,
+    getMovieUrl: (tmdbId) =>
+      `https://player.videasy.net/movie/${tmdbId}`,
+    getTvUrl: (tmdbId, s, e) =>
+      `https://player.videasy.net/tv/${tmdbId}/${s}/${e}`,
   },
 ];
 

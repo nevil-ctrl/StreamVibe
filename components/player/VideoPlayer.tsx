@@ -242,19 +242,17 @@ export default function VideoPlayer({
 
   const getEmbedUrl = () => {
     if (playerLang === 'ru') {
-      const base = 'https://kinobox.tv/embed/vod?';
-      const idParam = imdbId ? `imdb=${imdbId}` : `tmdb=${tmdbId}`;
+      // vidsrc.me — рабочий провайдер с поддержкой TMDB ID (kinobox.tv недоступен с 2026)
       if (season !== undefined && episode !== undefined) {
-        return `${base}${idParam}&s=${season}&e=${episode}`;
+        return `https://vidsrc.me/embed/tv?tmdb=${tmdbId}&season=${season}&episode=${episode}`;
       }
-      return `${base}${idParam}`;
+      return `https://vidsrc.me/embed/movie?tmdb=${tmdbId}`;
     } else {
-      const base = 'https://vidsrc.to/embed';
-      const id = imdbId || tmdbId;
+      // 2embed.cc — надёжный EN провайдер
       if (season !== undefined && episode !== undefined) {
-        return `${base}/tv/${id}/${season}/${episode}`;
+        return `https://www.2embed.cc/embedtv/${imdbId || tmdbId}&s=${season}&e=${episode}`;
       }
-      return `${base}/movie/${id}`;
+      return `https://www.2embed.cc/embed/${imdbId || tmdbId}`;
     }
   };
 
