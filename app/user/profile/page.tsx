@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { auth } from '@/auth';
-import { prisma } from '@/lib/prisma';
+import { prisma, withRetry } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import {
   Film,
@@ -64,40 +64,43 @@ function getBadges(
   return badges;
 }
 
+const emptyStats = { totalWatched: 0, favorites: 0, watchlist: 0, completed: 0, inProgress: 0 };
+
 export default async function ProfileDashboard() {
   const session = await auth();
   if (!session?.user?.email) redirect('/auth/login');
 
   const userEmail = session.user.email;
 
-  // Run both DB queries in parallel to cut latency in half
+  // Run both DB queries in parallel with retry for Neon cold-start resilience
   const [user, stats] = await Promise.all([
-    prisma.user.findUnique({
-      where: { email: userEmail },
-      include: {
-        subscription: true,
-        notifications: {
-          where: { isRead: false },
-          orderBy: { createdAt: 'desc' },
-          take: 4,
-          select: {
-            id: true,
-            title: true,
-            message: true,
-            createdAt: true,
+    withRetry(() =>
+      prisma.user.findUnique({
+        where: { email: userEmail },
+        include: {
+          subscription: true,
+          notifications: {
+            where: { isRead: false },
+            orderBy: { createdAt: 'desc' },
+            take: 4,
+            select: {
+              id: true,
+              title: true,
+              message: true,
+              createdAt: true,
+            },
+          },
+          tickets: {
+            orderBy: { createdAt: 'desc' },
+            take: 3,
+            include: { replies: { orderBy: { createdAt: 'desc' }, take: 1 } },
           },
         },
-        tickets: {
-          orderBy: { createdAt: 'desc' },
-          take: 3,
-          include: { replies: { orderBy: { createdAt: 'desc' }, take: 1 } },
-        },
-      },
-    }),
-    // getUserWatchStats needs userId, but we can use session.user.id
+      }),
+    ),
     session.user.id
-      ? getUserWatchStats(session.user.id)
-      : Promise.resolve({ totalWatched: 0, favorites: 0, watchlist: 0, completed: 0, inProgress: 0 }),
+      ? withRetry(() => getUserWatchStats(session.user.id!))
+      : Promise.resolve(emptyStats),
   ]);
 
   if (!user) redirect('/auth/login');
