@@ -8,7 +8,7 @@ import { prisma } from './lib/prisma';
 import { hasActiveSubscription } from './lib/subscription';
 import { Role } from '@/types/role';
 
-const JWT_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
+const JWT_REFRESH_INTERVAL_MS = 30 * 60 * 1000;
 
 function isBanActive(isBanned: boolean, banExpiresAt: Date | null) {
   if (!isBanned) return false;
@@ -138,25 +138,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const userId = (token.id as string) || token.sub;
       if (!userId) return token;
 
-      const dbUser = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          role: true,
-          isBanned: true,
-          banExpiresAt: true,
-          image: true,
-          ...subscriptionSelect,
-        },
-      });
-      if (!dbUser) return token;
+      try {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            role: true,
+            isBanned: true,
+            banExpiresAt: true,
+            image: true,
+            ...subscriptionSelect,
+          },
+        });
+        if (!dbUser) return token;
 
-      token.id = userId;
-      token.role = dbUser.role;
-      token.isBanned = isBanActive(dbUser.isBanned, dbUser.banExpiresAt);
-      token.banExpiresAt = dbUser.banExpiresAt ?? null;
-      token.picture = dbUser.image;
-      token.hasActiveSubscription = hasActiveSubscription(dbUser.subscription);
-      token._lastRefresh = Date.now();
+        token.id = userId;
+        token.role = dbUser.role;
+        token.isBanned = isBanActive(dbUser.isBanned, dbUser.banExpiresAt);
+        token.banExpiresAt = dbUser.banExpiresAt ?? null;
+        token.picture = dbUser.image;
+        token.hasActiveSubscription = hasActiveSubscription(dbUser.subscription);
+        token._lastRefresh = Date.now();
+      } catch (err) {
+        console.error('JWT refresh DB query failed, using cached token:', err);
+        // Return stale token rather than crashing with 500
+      }
 
       return token;
     },

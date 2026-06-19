@@ -38,10 +38,10 @@ function createPoolConfig(): PoolConfig {
 
   return {
     connectionString,
-    max: Number(process.env.DATABASE_POOL_MAX) || 10,
+    max: Number(process.env.DATABASE_POOL_MAX) || 5,
     connectionTimeoutMillis:
-      Number(process.env.DATABASE_CONNECT_TIMEOUT_MS) || 5000,
-    idleTimeoutMillis: 30000,
+      Number(process.env.DATABASE_CONNECT_TIMEOUT_MS) || 10000,
+    idleTimeoutMillis: 20000,
     ssl: resolveSsl(connectionString),
   };
 }

@@ -68,33 +68,40 @@ export default async function ProfileDashboard() {
   const session = await auth();
   if (!session?.user?.email) redirect('/auth/login');
 
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    include: {
-      subscription: true,
-      notifications: {
-        where: { isRead: false },
-        orderBy: { createdAt: 'desc' },
-        take: 4,
-        // Исправлено: Запрашиваем необходимые поля для отображения контента на главной
-        select: {
-          id: true,
-          title: true,
-          message: true,
-          createdAt: true,
+  const userEmail = session.user.email;
+
+  // Run both DB queries in parallel to cut latency in half
+  const [user, stats] = await Promise.all([
+    prisma.user.findUnique({
+      where: { email: userEmail },
+      include: {
+        subscription: true,
+        notifications: {
+          where: { isRead: false },
+          orderBy: { createdAt: 'desc' },
+          take: 4,
+          select: {
+            id: true,
+            title: true,
+            message: true,
+            createdAt: true,
+          },
+        },
+        tickets: {
+          orderBy: { createdAt: 'desc' },
+          take: 3,
+          include: { replies: { orderBy: { createdAt: 'desc' }, take: 1 } },
         },
       },
-      tickets: {
-        orderBy: { createdAt: 'desc' },
-        take: 3,
-        include: { replies: { orderBy: { createdAt: 'desc' }, take: 1 } },
-      },
-    },
-  });
+    }),
+    // getUserWatchStats needs userId, but we can use session.user.id
+    session.user.id
+      ? getUserWatchStats(session.user.id)
+      : Promise.resolve({ totalWatched: 0, favorites: 0, watchlist: 0, completed: 0, inProgress: 0 }),
+  ]);
 
   if (!user) redirect('/auth/login');
 
-  const stats = await getUserWatchStats(user.id);
   const displayName =
     user.name?.trim() || session.user.name?.trim() || user.email.split('@')[0];
   const avatarUrl = user.image || session.user.image;
