@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { prisma, withRetry } from '@/lib/prisma';
 import {
   encodeReviewContent,
   parseReviewContent,
@@ -32,29 +32,37 @@ export async function listMediaReviews(opts: {
     ? { movieId: opts.movieId }
     : { showId: opts.showId! };
 
-  return prisma.comment.findMany({
-    where,
-    orderBy: { createdAt: 'desc' },
-    take: opts.limit ?? 24,
-    include: {
-      user: { select: { id: true, name: true, image: true, role: true } },
-    },
-  });
+  return withRetry(
+    () =>
+      prisma.comment.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: opts.limit ?? 24,
+        include: {
+          user: { select: { id: true, name: true, image: true, role: true } },
+        },
+      }),
+    3,
+  );
 }
 
 export async function getUserReviewForMedia(
   userId: string,
   opts: { movieId?: string; showId?: string },
 ) {
-  return prisma.comment.findFirst({
-    where: {
-      userId,
-      ...(opts.movieId ? { movieId: opts.movieId } : { showId: opts.showId }),
-    },
-    include: {
-      user: { select: { id: true, name: true, image: true, role: true } },
-    },
-  });
+  return withRetry(
+    () =>
+      prisma.comment.findFirst({
+        where: {
+          userId,
+          ...(opts.movieId ? { movieId: opts.movieId } : { showId: opts.showId }),
+        },
+        include: {
+          user: { select: { id: true, name: true, image: true, role: true } },
+        },
+      }),
+    3,
+  );
 }
 
 export async function createReview(
@@ -99,17 +107,21 @@ export async function createReview(
     body: parsed.body,
   });
 
-  return prisma.comment.create({
-    data: {
-      userId,
-      content,
-      movieId: media.type === 'movie' ? mediaId : null,
-      showId: media.type === 'tv' ? mediaId : null,
-    },
-    include: {
-      user: { select: { id: true, name: true, image: true, role: true } },
-    },
-  });
+  return withRetry(
+    () =>
+      prisma.comment.create({
+        data: {
+          userId,
+          content,
+          movieId: media.type === 'movie' ? mediaId : null,
+          showId: media.type === 'tv' ? mediaId : null,
+        },
+        include: {
+          user: { select: { id: true, name: true, image: true, role: true } },
+        },
+      }),
+    3,
+  );
 }
 
 export async function updateReview(
@@ -119,7 +131,10 @@ export async function updateReview(
   input: ReviewFormInput,
 ) {
   const parsed = reviewFormSchema.parse(input);
-  const review = await prisma.comment.findUnique({ where: { id: reviewId } });
+  const review = await withRetry(
+    () => prisma.comment.findUnique({ where: { id: reviewId } }),
+    3,
+  );
 
   if (!review) throw new Error('Отзыв не найден');
   if (!canModify(actorId, actorRole, review.userId)) {
@@ -132,13 +147,17 @@ export async function updateReview(
     body: parsed.body,
   });
 
-  return prisma.comment.update({
-    where: { id: reviewId },
-    data: { content },
-    include: {
-      user: { select: { id: true, name: true, image: true, role: true } },
-    },
-  });
+  return withRetry(
+    () =>
+      prisma.comment.update({
+        where: { id: reviewId },
+        data: { content },
+        include: {
+          user: { select: { id: true, name: true, image: true, role: true } },
+        },
+      }),
+    3,
+  );
 }
 
 export async function deleteReview(
@@ -146,14 +165,20 @@ export async function deleteReview(
   actorId: string,
   actorRole: Role,
 ) {
-  const review = await prisma.comment.findUnique({ where: { id: reviewId } });
+  const review = await withRetry(
+    () => prisma.comment.findUnique({ where: { id: reviewId } }),
+    3,
+  );
 
   if (!review) throw new Error('Отзыв не найден');
   if (!canModify(actorId, actorRole, review.userId)) {
     throw new ReviewAuthError();
   }
 
-  await prisma.comment.delete({ where: { id: reviewId } });
+  await withRetry(
+    () => prisma.comment.delete({ where: { id: reviewId } }),
+    3,
+  );
   return { ok: true };
 }
 

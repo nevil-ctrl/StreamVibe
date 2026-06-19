@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { prisma, withRetry } from '@/lib/prisma';
 import {
   encodeEpisodeMeta,
   episodeIdOnPlayStart,
@@ -144,14 +144,22 @@ export async function getWatchEntry(
   opts: { movieId?: string; showId?: string },
 ): Promise<WatchHistory | null> {
   if (opts.movieId) {
-    return prisma.watchHistory.findUnique({
-      where: { userId_movieId: { userId, movieId: opts.movieId } },
-    });
+    return withRetry(
+      () =>
+        prisma.watchHistory.findUnique({
+          where: { userId_movieId: { userId, movieId: opts.movieId! } },
+        }),
+      3,
+    );
   }
   if (opts.showId) {
-    return prisma.watchHistory.findUnique({
-      where: { userId_showId: { userId, showId: opts.showId } },
-    });
+    return withRetry(
+      () =>
+        prisma.watchHistory.findUnique({
+          where: { userId_showId: { userId, showId: opts.showId! } },
+        }),
+      3,
+    );
   }
   return null;
 }

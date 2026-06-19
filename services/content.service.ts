@@ -1,25 +1,29 @@
-import { prisma } from '@/lib/prisma';
+import { prisma, withRetry } from '@/lib/prisma';
 import { episodeIdOnPlayStart } from '@/lib/watch-constants';
 import type { LocalMediaData } from '@/types/media-detail';
 
 export async function getLocalMovie(
   tmdbId: string,
 ): Promise<LocalMediaData | null> {
-  const movie = await prisma.movie.findUnique({
-    where: { id: tmdbId },
-    include: {
-      comments: {
-        take: 12,
-        orderBy: { createdAt: 'desc' },
+  const movie = await withRetry(
+    () =>
+      prisma.movie.findUnique({
+        where: { id: tmdbId },
         include: {
-          user: {
-            select: { id: true, name: true, image: true, role: true },
+          comments: {
+            take: 12,
+            orderBy: { createdAt: 'desc' },
+            include: {
+              user: {
+                select: { id: true, name: true, image: true, role: true },
+              },
+            },
           },
+          _count: { select: { watchedBy: true } },
         },
-      },
-      _count: { select: { watchedBy: true } },
-    },
-  });
+      }),
+    3,
+  );
 
   if (!movie) return null;
 
@@ -32,21 +36,25 @@ export async function getLocalMovie(
 export async function getLocalShow(
   tmdbId: string,
 ): Promise<LocalMediaData | null> {
-  const show = await prisma.show.findUnique({
-    where: { id: tmdbId },
-    include: {
-      comments: {
-        take: 12,
-        orderBy: { createdAt: 'desc' },
+  const show = await withRetry(
+    () =>
+      prisma.show.findUnique({
+        where: { id: tmdbId },
         include: {
-          user: {
-            select: { id: true, name: true, image: true, role: true },
+          comments: {
+            take: 12,
+            orderBy: { createdAt: 'desc' },
+            include: {
+              user: {
+                select: { id: true, name: true, image: true, role: true },
+              },
+            },
           },
+          _count: { select: { watchedBy: true } },
         },
-      },
-      _count: { select: { watchedBy: true } },
-    },
-  });
+      }),
+    3,
+  );
 
   if (!show) return null;
 
@@ -61,15 +69,19 @@ export async function ensureMovieInDb(data: {
   title: string;
   poster_path?: string | null;
 }) {
-  return prisma.movie.upsert({
-    where: { id: String(data.id) },
-    update: {},
-    create: {
-      id: String(data.id),
-      title: data.title,
-      posterPath: data.poster_path ?? null,
-    },
-  });
+  return withRetry(
+    () =>
+      prisma.movie.upsert({
+        where: { id: String(data.id) },
+        update: {},
+        create: {
+          id: String(data.id),
+          title: data.title,
+          posterPath: data.poster_path ?? null,
+        },
+      }),
+    3,
+  );
 }
 
 export async function ensureShowInDb(data: {
@@ -77,30 +89,42 @@ export async function ensureShowInDb(data: {
   name: string;
   poster_path?: string | null;
 }) {
-  return prisma.show.upsert({
-    where: { id: String(data.id) },
-    update: {},
-    create: {
-      id: String(data.id),
-      name: data.name,
-      posterPath: data.poster_path ?? null,
-    },
-  });
+  return withRetry(
+    () =>
+      prisma.show.upsert({
+        where: { id: String(data.id) },
+        update: {},
+        create: {
+          id: String(data.id),
+          name: data.name,
+          posterPath: data.poster_path ?? null,
+        },
+      }),
+    3,
+  );
 }
 
 export async function recordMovieWatch(userId: string, movieId: string) {
-  const existing = await prisma.watchHistory.findUnique({
-    where: { userId_movieId: { userId, movieId } },
-  });
+  const existing = await withRetry(
+    () =>
+      prisma.watchHistory.findUnique({
+        where: { userId_movieId: { userId, movieId } },
+      }),
+    3,
+  );
 
-  return prisma.watchHistory.upsert({
-    where: { userId_movieId: { userId, movieId } },
-    update: {
-      watchedAt: new Date(),
-      episodeId: episodeIdOnPlayStart(existing?.episodeId ?? null),
-    },
-    create: { userId, movieId, progress: 0 },
-  });
+  return withRetry(
+    () =>
+      prisma.watchHistory.upsert({
+        where: { userId_movieId: { userId, movieId } },
+        update: {
+          watchedAt: new Date(),
+          episodeId: episodeIdOnPlayStart(existing?.episodeId ?? null),
+        },
+        create: { userId, movieId, progress: 0 },
+      }),
+    3,
+  );
 }
 
 export async function recordShowWatch(
@@ -108,26 +132,34 @@ export async function recordShowWatch(
   showId: string,
   episodeId?: string,
 ) {
-  const existing = await prisma.watchHistory.findUnique({
-    where: { userId_showId: { userId, showId } },
-  });
+  const existing = await withRetry(
+    () =>
+      prisma.watchHistory.findUnique({
+        where: { userId_showId: { userId, showId } },
+      }),
+    3,
+  );
 
   const nextEpisodeId = episodeIdOnPlayStart(
     existing?.episodeId ?? null,
     episodeId ?? undefined,
   );
 
-  return prisma.watchHistory.upsert({
-    where: { userId_showId: { userId, showId } },
-    update: {
-      watchedAt: new Date(),
-      episodeId: nextEpisodeId,
-    },
-    create: {
-      userId,
-      showId,
-      progress: 0,
-      episodeId: nextEpisodeId,
-    },
-  });
+  return withRetry(
+    () =>
+      prisma.watchHistory.upsert({
+        where: { userId_showId: { userId, showId } },
+        update: {
+          watchedAt: new Date(),
+          episodeId: nextEpisodeId,
+        },
+        create: {
+          userId,
+          showId,
+          progress: 0,
+          episodeId: nextEpisodeId,
+        },
+      }),
+    3,
+  );
 }

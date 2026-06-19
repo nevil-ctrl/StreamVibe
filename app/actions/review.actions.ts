@@ -4,6 +4,14 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { Role } from '@/types/role';
+
+function isRedirect(e: unknown): boolean {
+  if (e instanceof Error) {
+    return e.message === 'NEXT_REDIRECT' || 
+      (typeof (e as any).digest === 'string' && (e as any).digest.startsWith('NEXT_REDIRECT'));
+  }
+  return false;
+}
 import {
   createReview,
   deleteReview,
@@ -45,6 +53,7 @@ export async function submitReviewAction(
     revalidatePath(mediaPath(media));
     return { ok: true };
   } catch (e) {
+    if (isRedirectError(e)) throw e;
     return {
       ok: false,
       error: e instanceof Error ? e.message : 'Не удалось сохранить отзыв',
@@ -64,6 +73,7 @@ export async function updateReviewAction(
     revalidatePath(mediaPath(media));
     return { ok: true };
   } catch (e) {
+    if (isRedirectError(e)) throw e;
     if (e instanceof ReviewAuthError) {
       return { ok: false, error: 'Вы можете редактировать только свои отзывы' };
     }
@@ -85,6 +95,7 @@ export async function deleteReviewAction(
     revalidatePath(mediaPath(media));
     return { ok: true };
   } catch (e) {
+    if (isRedirectError(e)) throw e;
     if (e instanceof ReviewAuthError) {
       return { ok: false, error: 'Вы можете удалять только свои отзывы' };
     }
