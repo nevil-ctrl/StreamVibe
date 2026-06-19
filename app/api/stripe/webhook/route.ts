@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
-import { prisma } from '@/lib/prisma';
+import { prisma, withRetry } from '@/lib/prisma';
 import Stripe from 'stripe';
 
 export async function POST(req: NextRequest) {
@@ -31,107 +31,170 @@ export async function POST(req: NextRequest) {
         const userId = session.metadata?.userId;
         const plan = session.metadata?.plan as 'BASIC' | 'STANDARD' | 'PREMIUM';
 
-        if (!userId || !plan) break;
+        if (!userId || !plan) {
+          console.warn('[WEBHOOK] Missing userId or plan in metadata', { userId, plan });
+          break;
+        }
+
+        // Verify user exists
+        const user = await withRetry(
+          () =>
+            prisma.user.findUnique({
+              where: { id: userId },
+              select: { id: true, email: true },
+            }),
+          3,
+        );
+
+        if (!user) {
+          console.warn('[WEBHOOK] User not found', { userId });
+          break;
+        }
 
         const expiresAt = new Date();
         expiresAt.setMonth(expiresAt.getMonth() + 1);
 
         const amount = session.amount_total ?? 25;
 
-        // Платёж
-        await prisma.payment.create({
-          data: {
-            userId,
-            amount,
-            currency: session.currency?.toUpperCase() ?? 'USD',
-            plan,
-            status: 'SUCCESS',
-          },
-        });
+        try {
+          // Платёж
+          await withRetry(
+            () =>
+              prisma.payment.create({
+                data: {
+                  userId,
+                  amount,
+                  currency: session.currency?.toUpperCase() ?? 'USD',
+                  plan,
+                  status: 'SUCCESS',
+                },
+              }),
+            3,
+          );
 
-        // Подписка
-        await prisma.subscription.upsert({
-          where: { userId },
-          update: { plan, status: 'ACTIVE', expiresAt },
-          create: { userId, plan, status: 'ACTIVE', expiresAt },
-        });
+          // Подписка
+          await withRetry(
+            () =>
+              prisma.subscription.upsert({
+                where: { userId },
+                update: { plan, status: 'ACTIVE', expiresAt },
+                create: { userId, plan, status: 'ACTIVE', expiresAt },
+              }),
+            3,
+          );
 
-        const planLabel = plan.charAt(0) + plan.slice(1).toLowerCase();
-        const amountFormatted = `$${(amount / 100).toFixed(2)}`;
+          const planLabel = plan.charAt(0) + plan.slice(1).toLowerCase();
+          const amountFormatted = `$${(amount / 100).toFixed(2)}`;
 
-        // Уведомление об оплате
-        await prisma.notification.create({
-          data: {
-            userId,
-            type: 'PAYMENT_SUCCESS',
-            title: 'Оплата прошла успешно',
-            message: `${planLabel} Plan активирован. Списано ${amountFormatted}. Следующее продление: ${expiresAt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}.`,
-          },
-        });
+          // Уведомление об оплате - ТОЛЬКО для пользователя, который купил
+          await withRetry(
+            () =>
+              prisma.notification.create({
+                data: {
+                  userId,
+                  type: 'PAYMENT_SUCCESS',
+                  title: 'Оплата прошла успешно',
+                  message: `${planLabel} Plan активирован. Списано ${amountFormatted}. Следующее продление: ${expiresAt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}.`,
+                },
+              }),
+            3,
+          );
 
-        console.log(
-          `[WEBHOOK] Subscription activated: user=${userId} plan=${plan}`,
-        );
+          console.log(
+            `[WEBHOOK] Subscription activated: user=${userId} plan=${plan}`,
+          );
+        } catch (error) {
+          console.error('[WEBHOOK] Error processing subscription', { userId, error });
+        }
         break;
       }
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
-        const customer = (await stripe.customers.retrieve(
-          customerId,
-        )) as Stripe.Customer;
-        if (!customer.email) break;
 
-        const user = await prisma.user.findUnique({
-          where: { email: customer.email },
-        });
-        if (!user) break;
+        try {
+          const customer = (await stripe.customers.retrieve(
+            customerId,
+          )) as Stripe.Customer;
+          
+          if (!customer.email) {
+            console.warn('[WEBHOOK] No email in customer object');
+            break;
+          }
 
-        await prisma.subscription.updateMany({
-          where: { userId: user.id },
-          data: { status: 'EXPIRED' },
-        });
+          const user = await prisma.user.findUnique({
+            where: { email: customer.email },
+            select: { id: true },
+          });
 
-        await prisma.notification.create({
-          data: {
-            userId: user.id,
-            type: 'PAYMENT_FAILED',
-            title: 'Ошибка оплаты',
-            message:
-              'Не удалось продлить подписку. Проверьте платёжные данные и попробуйте снова.',
-          },
-        });
+          if (!user) {
+            console.warn('[WEBHOOK] User not found by email', { email: customer.email });
+            break;
+          }
+
+          await prisma.subscription.updateMany({
+            where: { userId: user.id },
+            data: { status: 'EXPIRED' },
+          });
+
+          await prisma.notification.create({
+            data: {
+              userId: user.id,
+              type: 'PAYMENT_FAILED',
+              title: 'Ошибка оплаты',
+              message:
+                'Не удалось продлить подписку. Проверьте платёжные данные и попробуйте снова.',
+            },
+          });
+        } catch (error) {
+          console.error('[WEBHOOK] Error processing payment failed', { customerId, error });
+        }
 
         break;
       }
 
       case 'customer.subscription.deleted': {
         const sub = event.data.object as Stripe.Subscription;
-        const customer = (await stripe.customers.retrieve(
-          sub.customer as string,
-        )) as Stripe.Customer;
-        if (!customer.email) break;
+        const customerId = sub.customer as string;
 
-        const user = await prisma.user.findUnique({
-          where: { email: customer.email },
-        });
-        if (!user) break;
+        try {
+          const customer = (await stripe.customers.retrieve(
+            customerId,
+          )) as Stripe.Customer;
+          
+          if (!customer.email) {
+            console.warn('[WEBHOOK] No email in customer object for subscription deleted');
+            break;
+          }
 
-        await prisma.subscription.updateMany({
-          where: { userId: user.id },
-          data: { status: 'CANCELLED' },
-        });
+          const user = await prisma.user.findUnique({
+            where: { email: customer.email },
+            select: { id: true },
+          });
 
-        await prisma.notification.create({
-          data: {
-            userId: user.id,
-            type: 'SUBSCRIPTION_CANCELLED',
-            title: 'Подписка отменена',
-            message:
-              'Ваша подписка была отменена. Вы можете оформить новую в любое время.',
-          },
-        });
+          if (!user) {
+            console.warn('[WEBHOOK] User not found by email for subscription deleted', { email: customer.email });
+            break;
+          }
+
+          await prisma.subscription.updateMany({
+            where: { userId: user.id },
+            data: { status: 'CANCELLED' },
+          });
+
+          await prisma.notification.create({
+            data: {
+              userId: user.id,
+              type: 'SUBSCRIPTION_CANCELLED',
+              title: 'Подписка отменена',
+              message:
+                'Ваша подписка была отменена. Вы можете оформить новую в любое время.',
+            },
+          });
+        } catch (error) {
+          console.error('[WEBHOOK] Error processing subscription deleted', { customerId, error });
+        }
 
         break;
       }

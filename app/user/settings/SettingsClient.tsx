@@ -87,22 +87,53 @@ export default function SettingsClient({ user }: { user: UserData }) {
 
   const { startUpload, isUploading } = useUploadThing('avatarUploader', {
     onClientUploadComplete: async (res) => {
-      const url = res[0].url;
-      setCurrentImage(url);
-      await updateAvatar(url);
-      await update({ image: url, user: { image: url } });
-      setAvatarMsg({ type: 'success', text: t('settings.avatarUpdated') });
-      setTimeout(() => setAvatarMsg(null), 3000);
+      try {
+        const url = res[0]?.url;
+        if (!url) throw new Error('No URL returned from upload');
+        setCurrentImage(url);
+        await updateAvatar(url);
+        await update({ image: url, user: { image: url } });
+        setAvatarMsg({ type: 'success', text: t('settings.avatarUpdated') });
+        setTimeout(() => setAvatarMsg(null), 3000);
+      } catch (error) {
+        console.error('[Avatar Upload Complete Error]', error);
+        setAvatarMsg({ type: 'error', text: t('settings.avatarUploadError') });
+        setTimeout(() => setAvatarMsg(null), 5000);
+      }
     },
-    onUploadError: () => {
-      setAvatarMsg({ type: 'error', text: t('settings.avatarUploadError') });
+    onUploadError: (error) => {
+      console.error('[Avatar Upload Error]', error);
+      const errorMsg = error?.message || t('settings.avatarUploadError');
+      setAvatarMsg({ type: 'error', text: errorMsg });
+      setTimeout(() => setAvatarMsg(null), 5000);
     },
   });
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    await startUpload([file]);
+    
+    // Validate file size
+    if (file.size > 2 * 1024 * 1024) {
+      setAvatarMsg({ type: 'error', text: t('settings.fileTooLarge') });
+      setTimeout(() => setAvatarMsg(null), 5000);
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setAvatarMsg({ type: 'error', text: t('settings.invalidFileType') });
+      setTimeout(() => setAvatarMsg(null), 5000);
+      return;
+    }
+
+    try {
+      await startUpload([file]);
+    } catch (error) {
+      console.error('[Avatar Upload Start Error]', error);
+      setAvatarMsg({ type: 'error', text: t('settings.avatarUploadError') });
+      setTimeout(() => setAvatarMsg(null), 5000);
+    }
   };
 
   function handleProfile(formData: FormData) {

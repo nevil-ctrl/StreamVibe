@@ -55,10 +55,16 @@ const [movie, local, watchEntry, userOwnReview] = await Promise.all([
     return null;
   }),
   session?.user?.id
-    ? getWatchEntry(session.user.id, { movieId: id })
+    ? getWatchEntry(session.user.id, { movieId: id }).catch((e) => {
+        console.error('Watch entry error:', e);
+        return null;
+      })
     : Promise.resolve(null),
   session?.user?.id
-    ? getUserReviewForMedia(session.user.id, { movieId: id })
+    ? getUserReviewForMedia(session.user.id, { movieId: id }).catch((e) => {
+        console.error('Review error:', e);
+        return null;
+      })
     : Promise.resolve(null),
 ]);
 

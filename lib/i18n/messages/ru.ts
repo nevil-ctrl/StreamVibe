@@ -191,6 +191,8 @@ export const ru = {
     passwordMinLength: 'Пароль должен быть не менее 6 символов',
     passwordChanged: 'Пароль успешно изменён',
     passwordChangeError: 'Ошибка при смене пароля',
+    fileTooLarge: 'Файл слишком большой (макс. 2МБ)',
+    invalidFileType: 'Неверный тип файла. Разрешены только изображения',
     error: 'Ошибка',
   },
   auth: {

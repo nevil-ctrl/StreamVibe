@@ -4,7 +4,7 @@ import Credentials from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
 
-import { prisma } from './lib/prisma';
+import { prisma, withRetry } from './lib/prisma';
 import { hasActiveSubscription } from './lib/subscription';
 import { Role } from '@/types/role';
 
@@ -96,10 +96,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!user?.id) return false;
       if (account?.provider === 'credentials') return true;
 
-      const dbUser = await prisma.user.findUnique({
-        where: { id: user.id },
-        select: { isBanned: true, banExpiresAt: true, emailVerified: true },
-      });
+      const dbUser = await withRetry(
+        () =>
+          prisma.user.findUnique({
+            where: { id: user.id },
+            select: { isBanned: true, banExpiresAt: true, emailVerified: true },
+          }),
+        2,
+      );
       if (!dbUser) return true;
 
       if (isBanActive(dbUser.isBanned, dbUser.banExpiresAt)) return false;
@@ -108,7 +112,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return true;
     },
 
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
@@ -120,10 +124,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (typeof user.hasActiveSubscription === 'boolean') {
           token.hasActiveSubscription = user.hasActiveSubscription;
         } else {
-          const dbUser = await prisma.user.findUnique({
-            where: { id: user.id as string },
-            select: subscriptionSelect,
-          });
+          const dbUser = await withRetry(
+            () =>
+              prisma.user.findUnique({
+                where: { id: user.id as string },
+                select: subscriptionSelect,
+              }),
+            2,
+          );
           token.hasActiveSubscription = hasActiveSubscription(
             dbUser?.subscription ?? null,
           );
@@ -132,23 +140,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return token;
       }
 
+      const forceRefresh = trigger === 'update';
       const lastRefresh = (token._lastRefresh as number) ?? 0;
-      if (Date.now() - lastRefresh < JWT_REFRESH_INTERVAL_MS) return token;
+      if (!forceRefresh && Date.now() - lastRefresh < JWT_REFRESH_INTERVAL_MS) {
+        return token;
+      }
 
       const userId = (token.id as string) || token.sub;
       if (!userId) return token;
 
       try {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: userId },
-          select: {
-            role: true,
-            isBanned: true,
-            banExpiresAt: true,
-            image: true,
-            ...subscriptionSelect,
-          },
-        });
+        const dbUser = await withRetry(
+          () =>
+            prisma.user.findUnique({
+              where: { id: userId },
+              select: {
+                role: true,
+                isBanned: true,
+                banExpiresAt: true,
+                image: true,
+                ...subscriptionSelect,
+              },
+            }),
+          2,
+        );
         if (!dbUser) return token;
 
         token.id = userId;

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { fetchUserHasActiveSubscription } from '@/lib/subscription';
 
 const STATIC_EXTENSIONS =
   /\.(svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|map)$/i;
@@ -53,7 +54,14 @@ export async function proxy(req: NextRequest) {
     if (pathname.startsWith('/watch')) {
       const role = String(user?.role).toUpperCase();
       const isAdmin = role === 'ADMIN' || role === 'SUPERADMIN';
-      const hasSubscription = token?.hasActiveSubscription === true;
+      let hasSubscription = token?.hasActiveSubscription === true;
+
+      // JWT can be stale after Stripe checkout — verify against DB when token says no.
+      if (!isAdmin && !hasSubscription && token?.id) {
+        hasSubscription = await fetchUserHasActiveSubscription(
+          token.id as string,
+        );
+      }
 
       if (!isAdmin && !hasSubscription) {
         return NextResponse.redirect(new URL('/subscriptions', req.url));

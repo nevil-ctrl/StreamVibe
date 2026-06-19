@@ -52,13 +52,13 @@ function createPoolConfig(): PoolConfig {
 
   return {
     connectionString,
-    max: Number(process.env.DATABASE_POOL_MAX) || 5,
+    max: Number(process.env.DATABASE_POOL_MAX) || 10,
     connectionTimeoutMillis:
-      Number(process.env.DATABASE_CONNECT_TIMEOUT_MS) || 30000,
-    idleTimeoutMillis: 30000,
+      Number(process.env.DATABASE_CONNECT_TIMEOUT_MS) || 60000,
+    idleTimeoutMillis: 60000,
     allowExitOnIdle: false,
     keepAlive: true,
-    keepAliveInitialDelayMillis: 10000,
+    keepAliveInitialDelayMillis: 5000,
     ssl: resolveSsl(connectionString),
   };
 }
@@ -85,12 +85,12 @@ if (!globalForPrisma.prisma) {
 
 /**
  * Retry wrapper for critical database operations.
- * Retries once after a short delay if the first attempt fails with a
+ * Retries twice after delays if the first attempt fails with a
  * connection error, which is common with Neon cold-starts.
  */
 export async function withRetry<T>(
   fn: () => Promise<T>,
-  retries = 1,
+  retries = 3,
 ): Promise<T> {
   try {
     return await fn();
@@ -102,13 +102,21 @@ export async function withRetry<T>(
       msg.includes('timeout') ||
       msg.includes('Connection terminated') ||
       msg.includes('connection') ||
-      msg.includes('ECONNREFUSED');
+      msg.includes('ECONNREFUSED') ||
+      msg.includes('ENOTFOUND') ||
+      msg.includes('getaddrinfo');
 
     if (!isConnectionError) throw err;
 
-    console.warn(`[prisma] Connection error, retrying (${retries} left):`, msg);
-    // Brief pause to let Neon compute spin up
-    await new Promise((r) => setTimeout(r, 1000));
+    console.warn(
+      `[prisma] Connection error, retrying (${retries} left):`,
+      msg,
+    );
+    // Exponential backoff: 2s, 4s, 6s
+    const maxRetries = retries + (3 - retries); // original count
+    const attempt = 4 - retries; // 1, 2, 3
+    const delay = attempt * 2000;
+    await new Promise((r) => setTimeout(r, delay));
     return withRetry(fn, retries - 1);
   }
 }

@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { getShowDetail } from '@/services/media-detail.service';
 import { parsePlaybackEpisodeId } from '@/lib/player-utils';
 import { parseEpisodeMeta } from '@/lib/watch-constants';
+import { fetchUserHasActiveSubscription } from '@/lib/subscription';
 import WatchTvClient from './WatchTvClient';
 
 interface PageProps {
@@ -22,6 +23,13 @@ export default async function WatchTvPage({ params, searchParams }: PageProps) {
 
   if (!session?.user?.id) {
     redirect(`/auth/login?callbackUrl=/watch/tv/${id}`);
+  }
+
+  // Check subscription: try DB first, fall back to JWT session token
+  const hasSubscription = await fetchUserHasActiveSubscription(session.user.id)
+    || session.user.hasActiveSubscription === true;
+  if (!hasSubscription) {
+    redirect(`/subscriptions?from=/watch/tv/${id}`);
   }
 
   const showId = Number(id);

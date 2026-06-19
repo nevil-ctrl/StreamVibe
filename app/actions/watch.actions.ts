@@ -14,6 +14,7 @@ import {
   toggleWatchlist,
 } from '@/services/watch-history.service';
 import { canRecordWatchHistory } from '@/lib/consent/server';
+import { fetchUserHasActiveSubscription } from '@/lib/subscription';
 
 export async function startWatchingMovie(movie: {
   id: number;
@@ -23,6 +24,13 @@ export async function startWatchingMovie(movie: {
   const session = await auth();
   if (!session?.user?.id) {
     redirect(`/auth/login?callbackUrl=/watch/movie/${movie.id}`);
+  }
+
+  // Check if user has active subscription (with JWT session token fallback)
+  const hasSubscription = await fetchUserHasActiveSubscription(session.user.id)
+    || session.user.hasActiveSubscription === true;
+  if (!hasSubscription) {
+    redirect(`/subscriptions?from=/movies/${movie.id}`);
   }
 
   if (await canRecordWatchHistory()) {
@@ -44,6 +52,13 @@ export async function startWatchingShow(show: {
   const session = await auth();
   if (!session?.user?.id) {
     redirect(`/auth/login?callbackUrl=/shows/${show.id}`);
+  }
+
+  // Check if user has active subscription (with JWT session token fallback)
+  const hasSubscription = await fetchUserHasActiveSubscription(session.user.id)
+    || session.user.hasActiveSubscription === true;
+  if (!hasSubscription) {
+    redirect(`/subscriptions?from=/shows/${show.id}`);
   }
 
   if (await canRecordWatchHistory()) {

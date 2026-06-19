@@ -42,7 +42,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://image.tmdb.org https://*.tmdb.org https://lh3.googleusercontent.com https://utfs.io",
               "frame-src 'self' https://www.youtube.com",
-              "connect-src 'self' https://api.themoviedb.org https://*.tmdb.org https://us.i.posthog.com https://us-assets.i.posthog.com",
+              "connect-src 'self' https://api.themoviedb.org https://*.tmdb.org https://us.i.posthog.com https://us-assets.i.posthog.com https://uploadthing.com https://*.uploadthing.com",
               "media-src 'self' blob:",
               "worker-src 'self' blob:",
             ].join('; '),

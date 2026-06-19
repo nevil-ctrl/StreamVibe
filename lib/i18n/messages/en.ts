@@ -191,6 +191,8 @@ export const en = {
     passwordMinLength: 'Password must be at least 6 characters',
     passwordChanged: 'Password changed successfully',
     passwordChangeError: 'Failed to change password',
+    fileTooLarge: 'File is too large (max 2MB)',
+    invalidFileType: 'Invalid file type. Only images are allowed',
     error: 'Error',
   },
   auth: {

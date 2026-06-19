@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { getMovieDetail } from '@/services/media-detail.service';
+import { fetchUserHasActiveSubscription } from '@/lib/subscription';
 import WatchMovieClient from './WatchMovieClient';
 
 interface PageProps {
@@ -16,6 +17,13 @@ export default async function WatchMoviePage({ params, searchParams }: PageProps
 
   if (!session?.user?.id) {
     redirect(`/auth/login?callbackUrl=/watch/movie/${id}`);
+  }
+
+  // Check subscription: try DB first, fall back to JWT session token
+  const hasSubscription = await fetchUserHasActiveSubscription(session.user.id)
+    || session.user.hasActiveSubscription === true;
+  if (!hasSubscription) {
+    redirect(`/subscriptions?from=/watch/movie/${id}`);
   }
 
   const movieId = Number(id);
