@@ -64,21 +64,21 @@
 
   @keyframes scrollRight {
     from {
-      transform: translateX(0%);
+      transform: translate3d(0%, 0, 0);
     }
 
     to {
-      transform: translateX(-30%);
+      transform: translate3d(-30%, 0, 0);
     }
   }
 
   @keyframes scrollLeft {
     from {
-      transform: translateX(-30%);
+      transform: translate3d(-30%, 0, 0);
     }
 
     to {
-      transform: translateX(0%);
+      transform: translate3d(0%, 0, 0);
     }
   }
 }

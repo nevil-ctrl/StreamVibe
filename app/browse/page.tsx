@@ -456,8 +456,8 @@ function HorizontalTrack({
               onClick={() =>
                 router.push(
                   type === 'movie'
-                    ? `/watch/movie/${item.id}`
-                    : `/watch/tv/${item.id}`,
+                    ? `/movies/${item.id}`
+                    : `/shows/${item.id}`,
                 )
               }
               style={{

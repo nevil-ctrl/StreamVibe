@@ -23,8 +23,9 @@ function PosterRow({
     <div
       className={`flex w-max gap-4 ${
         direction === 'right' ? 'animate-scroll-right' : 'animate-scroll-left'
-      }`}>
-      {[...items, ...items, ...items, ...items].map((movie, i) => (
+      }`}
+      style={{ willChange: 'transform' }}>
+      {[...items, ...items, ...items].map((movie, i) => (
         <div
           key={i}
           className="relative shrink-0 overflow-hidden rounded-xl w-[180px] h-[260px] bg-(--black-15) border border-(--black-20) shadow-md">

@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
-import { updateProfile, updatePassword, updateAvatar } from './actions';
+import { updateProfile, updatePassword, updateAvatar, requestPhoneUpdate, confirmPhoneUpdate } from './actions';
 import {
   User,
   Lock,
@@ -22,6 +22,7 @@ interface UserData {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   image: string | null;
   hasPassword: boolean;
   createdAt: string;
@@ -54,6 +55,35 @@ export default function SettingsClient({ user }: { user: UserData }) {
   const [avatarMsg, setAvatarMsg] = useState<MsgState>(null);
   const [profileMsg, setProfileMsg] = useState<MsgState>(null);
   const [passwordMsg, setPasswordMsg] = useState<MsgState>(null);
+  const [phoneMsg, setPhoneMsg] = useState<MsgState>(null);
+  const [isPhonePending, startPhoneTransition] = useTransition();
+  const [phoneStep, setPhoneStep] = useState<'input' | 'verify'>('input');
+  const [phoneInput, setPhoneInput] = useState(user.phone || '');
+  const [verificationCode, setVerificationCode] = useState('');
+
+  const handlePhoneSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    startPhoneTransition(async () => {
+      if (phoneStep === 'input') {
+        const res = await requestPhoneUpdate(phoneInput);
+        if (res.success) {
+          setPhoneStep('verify');
+          setPhoneMsg({ type: 'success', text: 'Код отправлен на вашу почту' });
+        } else {
+          setPhoneMsg({ type: 'error', text: res.message || 'Ошибка' });
+        }
+      } else {
+        const res = await confirmPhoneUpdate(verificationCode);
+        if (res.success) {
+          setPhoneStep('input');
+          setVerificationCode('');
+          setPhoneMsg({ type: 'success', text: 'Телефон успешно обновлен' });
+        } else {
+          setPhoneMsg({ type: 'error', text: res.message || 'Ошибка кода' });
+        }
+      }
+    });
+  };
 
   const { startUpload, isUploading } = useUploadThing('avatarUploader', {
     onClientUploadComplete: async (res) => {
@@ -232,6 +262,65 @@ export default function SettingsClient({ user }: { user: UserData }) {
               className="bg-[#E50000] hover:bg-[#cc0000] text-white px-6 py-2.5 rounded-xl font-medium transition disabled:opacity-50">
               {isPending ? t('settings.saving') : t('settings.save')}
             </button>
+          </form>
+        </div>
+
+        <div className="bg-[#111] rounded-2xl border border-[#222] overflow-hidden">
+          <div className="flex items-center gap-3 px-6 py-4 border-b border-[#222]">
+            <User className="w-5 h-5 text-[#E50000]" />
+            <h2 className="font-semibold">Изменить номер телефона</h2>
+          </div>
+          <form onSubmit={handlePhoneSubmit} className="p-6 space-y-4">
+            {phoneStep === 'input' ? (
+              <div>
+                <label className="block text-sm text-[#666] mb-2">
+                  Новый номер телефона
+                </label>
+                <input
+                  type="text"
+                  value={phoneInput}
+                  onChange={(e) => setPhoneInput(e.target.value)}
+                  placeholder="+1234567890"
+                  className="w-full bg-[#0A0A0A] border border-[#2a2a2a] text-white p-3 rounded-xl focus:border-[#E50000] outline-none transition placeholder:text-[#444]"
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm text-[#666] mb-2">
+                  Код из email
+                </label>
+                <input
+                  type="text"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value)}
+                  placeholder="123456"
+                  className="w-full bg-[#0A0A0A] border border-[#2a2a2a] text-white p-3 rounded-xl focus:border-[#E50000] outline-none transition placeholder:text-[#444]"
+                />
+              </div>
+            )}
+            <StatusMsg msg={phoneMsg} />
+            <button
+              type="submit"
+              disabled={isPhonePending}
+              className="bg-[#E50000] hover:bg-[#cc0000] text-white px-6 py-2.5 rounded-xl font-medium transition disabled:opacity-50">
+              {isPhonePending
+                ? t('settings.saving')
+                : phoneStep === 'input'
+                  ? 'Отправить код на почту'
+                  : 'Подтвердить код'}
+            </button>
+            {phoneStep === 'verify' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setPhoneStep('input');
+                  setPhoneMsg(null);
+                  setVerificationCode('');
+                }}
+                className="ml-4 text-sm text-[#666] hover:text-white transition">
+                Отмена
+              </button>
+            )}
           </form>
         </div>
 

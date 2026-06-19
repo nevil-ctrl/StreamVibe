@@ -11,6 +11,7 @@ model User {
   name          String?
   email         String          @unique
   emailVerified DateTime?
+  phone         String?
   password      String?
   image         String?
   role          Role            @default(USER)
@@ -312,6 +313,16 @@ enum AdminAction {
 model PasswordResetToken {
   id        String   @id @default(cuid())
   email     String
+  token     String   @unique
+  expiresAt DateTime
+
+  @@index([email])
+}
+
+model PhoneUpdateToken {
+  id        String   @id @default(cuid())
+  email     String
+  phone     String
   token     String   @unique
   expiresAt DateTime
 
