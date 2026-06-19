@@ -42,7 +42,13 @@ export default async function ShowPage({ params }: PageProps) {
   const session = await auth();
 
   const [show, local, watchEntry, userOwnReview] = await Promise.all([
-    getShowDetail(showId).catch(() => null),
+    getShowDetail(showId).catch((e) => {
+      console.error('TMDB error:', e);
+      if (e instanceof Error && e.message.includes('status 404')) {
+        return null;
+      }
+      throw e;
+    }),
     getLocalShow(id).catch(() => null),
     session?.user?.id ? getWatchEntry(session.user.id, { showId: id }) : null,
     session?.user?.id
@@ -88,9 +94,9 @@ export default async function ShowPage({ params }: PageProps) {
       />
 
       {/* Адаптивная трехколоночная сетка */}
-      <div className="mx-auto grid max-w-[1600px] gap-6 px-4 py-8 md:px-12 md:gap-10 lg:grid-cols-3">
+      <div className="mx-auto grid max-w-[1600px] gap-6 md:gap-8 px-4 py-6 md:px-12 md:py-10 lg:grid-cols-3">
         {/* Левая часть (Аккордеон сезонов, описание, каст, комменты) */}
-        <div className="flex flex-col gap-6 lg:col-span-2 md:gap-8">
+        <div className="flex flex-col gap-6 md:gap-8 lg:col-span-2">
           <SeasonsAccordion
             showId={show.id}
             showName={show.name}

@@ -24,7 +24,7 @@ export default function CastCarousel({ cast }: CastCarouselProps) {
   if (items.length === 0) return null;
 
   return (
-    <section className="rounded-2xl border border-[#262628] bg-[#1A1A1A] p-6 md:p-8">
+    <section className="rounded-2xl border border-[#262628] bg-[#1A1A1A] p-5 md:p-8">
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-xl font-bold text-white">Cast</h2>
         <div className="flex items-center gap-2">

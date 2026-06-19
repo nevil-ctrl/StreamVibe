@@ -76,8 +76,8 @@ export default function DetailHero({
   };
 
   return (
-    <section className="relative w-full px-4 pt-4 md:px-12 md:pt-6">
-      <div className="relative mx-auto w-full max-w-[1600px] h-[550px] sm:h-[600px] md:h-[55vh] md:min-h-[420px] md:max-h-[65vh] overflow-hidden rounded-2xl border border-[#262628] bg-[#1A1A1A]">
+    <section className="relative w-full md:px-12 md:pt-6">
+      <div className="relative mx-auto w-full max-w-[1600px] h-[80vh] min-h-[500px] sm:h-[600px] md:h-[55vh] md:min-h-[420px] md:max-h-[65vh] overflow-hidden md:rounded-2xl border-b border-[#262628] md:border bg-[#1A1A1A]">
         <div className="absolute inset-0 w-full h-full">
           {backdrop ? (
             <Image

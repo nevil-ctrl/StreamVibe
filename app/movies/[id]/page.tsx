@@ -43,7 +43,12 @@ export default async function MoviePage({ params }: PageProps) {
 const [movie, local, watchEntry, userOwnReview] = await Promise.all([
   getMovieDetail(movieId).catch((e) => {
     console.error('TMDB error:', e);
-    return null;
+    // If TMDB explicitly says 404, we let it be null to trigger notFound()
+    if (e instanceof Error && e.message.includes('status 404')) {
+      return null;
+    }
+    // Otherwise, throw it so the Error Boundary (500) catches it and allows retry
+    throw e;
   }),
   getLocalMovie(id).catch((e) => {
     console.error('Local error:', e);
@@ -80,8 +85,8 @@ const [movie, local, watchEntry, userOwnReview] = await Promise.all([
         initialInWatchlist={initialInWatchlist}
       />
 
-      <div className="mx-auto grid max-w-[1600px] gap-8 px-4 py-8 md:px-12 md:py-10 lg:grid-cols-3">
-        <div className="flex flex-col gap-8 lg:col-span-2">
+      <div className="mx-auto grid max-w-[1600px] gap-6 md:gap-8 px-4 py-6 md:px-12 md:py-10 lg:grid-cols-3">
+        <div className="flex flex-col gap-6 md:gap-8 lg:col-span-2">
           <DescriptionBlock overview={movie.overview} />
           
           <div className="block lg:hidden">

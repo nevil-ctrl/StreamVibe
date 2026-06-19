@@ -115,12 +115,22 @@ export default function SeasonsAccordion({
                         return (
                           <div
                             key={ep.id}
-                            className="flex gap-4 rounded-xl border border-[#262628] bg-[#1A1A1A] p-3 transition hover:border-[#E50000]/40">
-                            <span className="w-6 shrink-0 pt-1 text-sm font-medium text-[#666666]">
+                            className="flex flex-col md:flex-row gap-3 md:gap-4 rounded-xl border border-[#262628] bg-[#1A1A1A] p-3 transition hover:border-[#E50000]/40">
+                            
+                            <div className="flex items-center justify-between md:hidden mb-1">
+                              <span className="text-sm font-medium text-[#666666]">
+                                Эпизод {String(ep.episode_number).padStart(2, '0')}
+                              </span>
+                              <span className="text-xs text-[#999999]">
+                                {formatRuntime(ep.runtime)}
+                              </span>
+                            </div>
+
+                            <span className="hidden md:block w-6 shrink-0 pt-1 text-sm font-medium text-[#666666]">
                               {String(ep.episode_number).padStart(2, '0')}
                             </span>
 
-                            <div className="relative h-[72px] w-[128px] shrink-0 overflow-hidden rounded-lg bg-[#262628]">
+                            <div className="relative h-[160px] md:h-[72px] w-full md:w-[128px] shrink-0 overflow-hidden rounded-lg bg-[#262628]">
                               {still ? (
                                 <Image
                                   src={still}
@@ -160,7 +170,7 @@ export default function SeasonsAccordion({
                                 <p className="truncate text-sm font-medium text-white">
                                   {ep.name}
                                 </p>
-                                <span className="text-xs text-[#999999]">
+                                <span className="hidden md:block text-xs text-[#999999]">
                                   {formatRuntime(ep.runtime)}
                                 </span>
                               </div>

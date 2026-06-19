@@ -293,8 +293,8 @@ function HeroSlider({
               onClick={() =>
                 router.push(
                   type === 'movie'
-                    ? `/watch/movie/${current.id}`
-                    : `/watch/tv/${current.id}`,
+                    ? `/movies/${current.id}`
+                    : `/shows/${current.id}`,
                 )
               }
               className="flex items-center gap-2 px-5 md:px-7 py-2.5 md:py-3 bg-[#E50000] hover:bg-red-700 font-semibold rounded-lg text-[14px] md:text-[15px] transition text-white cursor-pointer shadow-lg shadow-[#E50000]/20">
