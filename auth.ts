@@ -45,21 +45,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            image: true,
-            password: true,
-            role: true,
-            isBanned: true,
-            banExpiresAt: true,
-            emailVerified: true,
-            ...subscriptionSelect,
-          },
-        });
+        const user = await withRetry(
+          () =>
+            prisma.user.findUnique({
+              where: { email: credentials.email as string },
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                image: true,
+                password: true,
+                role: true,
+                isBanned: true,
+                banExpiresAt: true,
+                emailVerified: true,
+                ...subscriptionSelect,
+              },
+            }),
+          3,
+        );
 
         if (!user?.password) return null;
 

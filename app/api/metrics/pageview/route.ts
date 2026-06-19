@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { prisma } from '@/lib/prisma';
+import { prisma, withRetry } from '@/lib/prisma';
 import { canRecordPageView } from '@/lib/consent/server';
 
 export const dynamic = 'force-dynamic';
@@ -25,14 +25,16 @@ export async function POST(req: Request) {
     });
     const userId = (token?.id as string | undefined) ?? token?.sub ?? null;
 
-    void prisma.pageView
-      .create({
-        data: {
-          path,
-          userId,
-        },
-      })
-      .catch(console.error);
+    void withRetry(
+      () =>
+        prisma.pageView.create({
+          data: {
+            path,
+            userId,
+          },
+        }),
+      2,
+    ).catch((err) => console.error('Failed to log pageview after retries:', err));
 
     return NextResponse.json({ success: true });
   } catch (err) {

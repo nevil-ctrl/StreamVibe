@@ -10,14 +10,15 @@ const globalForPrisma = globalThis as unknown as {
 function normalizeDatabaseUrl(url: string): string {
   let normalized = url.replace(/@localhost\b/gi, '@127.0.0.1');
 
-  // Auto-switch to Neon pooler endpoint for much faster connections.
-  // Neon's pooler keeps connections warm, avoiding 5-15s cold-start delays.
+  // Neon pooler auto-switching disabled as the pooler endpoint is unreachable in this environment.
+  /*
   if (/\.neon\.tech/i.test(normalized) && !/-pooler\./i.test(normalized)) {
     normalized = normalized.replace(
       /(@[^.]+)(\..*\.neon\.tech)/i,
       '$1-pooler$2',
     );
   }
+  */
 
   return normalized;
 }

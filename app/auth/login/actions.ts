@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from '@/lib/prisma';
+import { prisma, withRetry } from '@/lib/prisma';
 import { generateVerificationToken } from '@/services/auth-token.service';
 import { sendVerificationEmail } from '@/services/mail.service';
 
@@ -9,15 +9,19 @@ import { sendVerificationEmail } from '@/services/mail.service';
  */
 export async function checkAccountStatus(email: string) {
   try {
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        emailVerified: true,
-        isBanned: true,
-        banExpiresAt: true,
-      },
-    });
+    const user = await withRetry(
+      () =>
+        prisma.user.findUnique({
+          where: { email },
+          select: {
+            id: true,
+            emailVerified: true,
+            isBanned: true,
+            banExpiresAt: true,
+          },
+        }),
+      3,
+    );
 
     if (!user) {
       return { exists: false };
@@ -41,9 +45,13 @@ export async function checkAccountStatus(email: string) {
  */
 export async function resendVerificationLink(email: string) {
   try {
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await withRetry(
+      () =>
+        prisma.user.findUnique({
+          where: { email },
+        }),
+      3,
+    );
 
     if (!user) {
       return { success: false, message: 'Пользователь не найден' };
