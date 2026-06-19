@@ -2,13 +2,17 @@
   "name": "stream-vibe",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.20.0"
+  },
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "cross-env NODE_OPTIONS=--dns-result-order=ipv4first next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "cross-env NODE_OPTIONS=--dns-result-order=ipv4first next start",
     "lint": "next lint",
     "db:push": "dotenv -e .env -- prisma db push",
+    "db:migrate": "dotenv -e .env -- prisma migrate deploy",
     "db:gen": "dotenv -e .env -- prisma generate",
     "db:studio": "dotenv -e .env -- prisma studio"
   },

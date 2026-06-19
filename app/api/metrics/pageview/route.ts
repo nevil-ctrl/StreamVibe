@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/auth';
 import { canRecordPageView } from '@/lib/consent/server';
 
 export const dynamic = 'force-dynamic';
@@ -16,20 +16,23 @@ export async function POST(req: Request) {
       const body = await req.json();
       path = body.path || '/';
     } catch {
-      // ignore
+      // ignore invalid JSON body
     }
 
-    const session = await auth();
-    const userId = session?.user?.id ?? null;
+    const token = await getToken({
+      req,
+      secret: process.env.AUTH_SECRET,
+    });
+    const userId = (token?.id as string | undefined) ?? token?.sub ?? null;
 
-    Promise.resolve().then(() => {
-      prisma.pageView.create({
+    void prisma.pageView
+      .create({
         data: {
           path,
           userId,
         },
-      }).catch(console.error);
-    });
+      })
+      .catch(console.error);
 
     return NextResponse.json({ success: true });
   } catch (err) {

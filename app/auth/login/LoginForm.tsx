@@ -125,7 +125,7 @@ export default function LoginForm({ movies }: LoginFormProps) {
               width={160}
               height={50}
               priority
-              style={{ height: 'auto' }}
+              style={{ width: 'auto', height: 'auto' }}
             />
           </Link>
         </div>

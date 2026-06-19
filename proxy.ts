@@ -2,22 +2,17 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
-// Пути которые не требуют auth проверки
-const PUBLIC_PATHS = ['/', '/browse', '/search', '/support', '/subscriptions'];
-
 const STATIC_EXTENSIONS =
   /\.(svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|map)$/i;
 
-export default async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   try {
     const { pathname } = req.nextUrl;
 
-    // 1. Статика — пропускаем без проверки токена
     if (STATIC_EXTENSIONS.test(pathname)) {
       return NextResponse.next();
     }
 
-    // 2. Публичные пути без авторизации — пропускаем
     const isPrivate =
       pathname.startsWith('/user') ||
       pathname.startsWith('/admin') ||
@@ -26,12 +21,10 @@ export default async function middleware(req: NextRequest) {
     const isAuthPage = pathname.startsWith('/auth');
     const isBannedPage = pathname.startsWith('/banned');
 
-    // Если не приватный и не auth страница — пропускаем
     if (!isPrivate && !isAuthPage) {
       return NextResponse.next();
     }
 
-    // 3. Используем getToken вместо auth(), чтобы избежать ошибки Prisma в Edge runtime
     const token = await getToken({ req, secret: process.env.AUTH_SECRET });
     const user = token ?? null;
 
@@ -57,11 +50,10 @@ export default async function middleware(req: NextRequest) {
       }
     }
 
-    // 4. Проверка подписки для /watch
     if (pathname.startsWith('/watch')) {
       const role = String(user?.role).toUpperCase();
       const isAdmin = role === 'ADMIN' || role === 'SUPERADMIN';
-      const hasSubscription = (user as any)?.hasActiveSubscription === true;
+      const hasSubscription = token?.hasActiveSubscription === true;
 
       if (!isAdmin && !hasSubscription) {
         return NextResponse.redirect(new URL('/subscriptions', req.url));
@@ -70,7 +62,17 @@ export default async function middleware(req: NextRequest) {
 
     return NextResponse.next();
   } catch (error) {
-    console.error('Middleware Error:', error);
+    console.error('Proxy Error:', error);
+    const { pathname } = req.nextUrl;
+    const isPrivate =
+      pathname.startsWith('/user') ||
+      pathname.startsWith('/admin') ||
+      pathname.startsWith('/watch');
+
+    if (isPrivate) {
+      return NextResponse.redirect(new URL('/auth/login', req.url));
+    }
+
     return NextResponse.next();
   }
 }

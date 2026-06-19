@@ -5,7 +5,10 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
 
 import { prisma } from './lib/prisma';
+import { hasActiveSubscription } from './lib/subscription';
 import { Role } from '@/types/role';
+
+const JWT_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 
 function isBanActive(isBanned: boolean, banExpiresAt: Date | null) {
   if (!isBanned) return false;
@@ -13,9 +16,13 @@ function isBanActive(isBanned: boolean, banExpiresAt: Date | null) {
   return banExpiresAt > new Date();
 }
 
+const subscriptionSelect = {
+  subscription: { select: { status: true, expiresAt: true } },
+} as const;
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  session: { strategy: 'jwt' },
+  session: { strategy: 'jwt', maxAge: 30 * 24 * 60 * 60 },
   trustHost: true,
   pages: {
     signIn: '/auth/login',
@@ -40,6 +47,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            image: true,
+            password: true,
+            role: true,
+            isBanned: true,
+            banExpiresAt: true,
+            emailVerified: true,
+            ...subscriptionSelect,
+          },
         });
 
         if (!user?.password) return null;
@@ -66,6 +85,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           role: user.role,
           isBanned: user.isBanned,
           banExpiresAt: user.banExpiresAt,
+          hasActiveSubscription: hasActiveSubscription(user.subscription),
         };
       },
     }),
@@ -74,7 +94,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user, account }) {
       if (!user?.id) return false;
-      if (account?.provider !== 'credentials') return true;
+      if (account?.provider === 'credentials') return true;
 
       const dbUser = await prisma.user.findUnique({
         where: { id: user.id },
@@ -89,7 +109,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     async jwt({ token, user }) {
-      // Первый вход — записываем данные из user
       if (user) {
         token.id = user.id;
         token.role = user.role;
@@ -97,28 +116,37 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.banExpiresAt = user.banExpiresAt ?? null;
         token.picture = user.image;
         token._lastRefresh = Date.now();
-        
-        // Fetch subscription immediately on first sign in
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id as string },
-          select: { subscription: { select: { status: true, expiresAt: true } } }
-        });
-        token.hasActiveSubscription = dbUser?.subscription?.status === 'ACTIVE' && dbUser.subscription.expiresAt > new Date();
+
+        if (typeof user.hasActiveSubscription === 'boolean') {
+          token.hasActiveSubscription = user.hasActiveSubscription;
+        } else {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: user.id as string },
+            select: subscriptionSelect,
+          });
+          token.hasActiveSubscription = hasActiveSubscription(
+            dbUser?.subscription ?? null,
+          );
+        }
 
         return token;
       }
 
-      // Обновляем раз в 5 минут
-      const REFRESH_INTERVAL = 5 * 60 * 1000;
       const lastRefresh = (token._lastRefresh as number) ?? 0;
-      if (Date.now() - lastRefresh < REFRESH_INTERVAL) return token;
+      if (Date.now() - lastRefresh < JWT_REFRESH_INTERVAL_MS) return token;
 
       const userId = (token.id as string) || token.sub;
       if (!userId) return token;
 
       const dbUser = await prisma.user.findUnique({
         where: { id: userId },
-        select: { role: true, isBanned: true, banExpiresAt: true, image: true, subscription: { select: { status: true, expiresAt: true } } },
+        select: {
+          role: true,
+          isBanned: true,
+          banExpiresAt: true,
+          image: true,
+          ...subscriptionSelect,
+        },
       });
       if (!dbUser) return token;
 
@@ -127,7 +155,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       token.isBanned = isBanActive(dbUser.isBanned, dbUser.banExpiresAt);
       token.banExpiresAt = dbUser.banExpiresAt ?? null;
       token.picture = dbUser.image;
-      token.hasActiveSubscription = dbUser.subscription?.status === 'ACTIVE' && dbUser.subscription.expiresAt > new Date();
+      token.hasActiveSubscription = hasActiveSubscription(dbUser.subscription);
       token._lastRefresh = Date.now();
 
       return token;
@@ -141,7 +169,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.isBanned = (token.isBanned as boolean) ?? false;
       session.user.banExpiresAt = (token.banExpiresAt as Date | null) ?? null;
       session.user.image = (token.picture as string) ?? null;
-      (session.user as any).hasActiveSubscription = (token.hasActiveSubscription as boolean) ?? false;
+      session.user.hasActiveSubscription =
+        (token.hasActiveSubscription as boolean) ?? false;
 
       return session;
     },

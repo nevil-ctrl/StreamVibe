@@ -10,6 +10,7 @@ declare module 'next-auth' {
       role: Role;
       isBanned: boolean;
       banExpiresAt: Date | null;
+      hasActiveSubscription: boolean;
     } & DefaultSession['user'];
   }
 
@@ -18,6 +19,7 @@ declare module 'next-auth' {
     role?: Role;
     isBanned?: boolean;
     banExpiresAt?: Date | null;
+    hasActiveSubscription?: boolean;
   }
 }
 
@@ -27,6 +29,8 @@ declare module 'next-auth/jwt' {
     role?: Role;
     isBanned?: boolean;
     banExpiresAt?: Date | null;
+    hasActiveSubscription?: boolean;
+    _lastRefresh?: number;
   }
 }
 

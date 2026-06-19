@@ -63,7 +63,7 @@ export default function VerifyEmailClient({
               width={160}
               height={50}
               priority
-              style={{ height: 'auto' }}
+              style={{ width: 'auto', height: 'auto' }}
             />
           </Link>
         </div>

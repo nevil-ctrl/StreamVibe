@@ -64,7 +64,7 @@ export default function RegisterForm({ movies }: { movies: Movie[] }) {
                 width={160}
                 height={50}
                 priority
-                style={{ height: 'auto' }}
+                style={{ width: 'auto', height: 'auto' }}
               />
             </Link>
           </div>
@@ -119,7 +119,7 @@ export default function RegisterForm({ movies }: { movies: Movie[] }) {
               width={160}
               height={50}
               priority
-              style={{ height: 'auto' }}
+              style={{ width: 'auto', height: 'auto' }}
             />
           </Link>
         </div>
