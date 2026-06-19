@@ -97,6 +97,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.banExpiresAt = user.banExpiresAt ?? null;
         token.picture = user.image;
         token._lastRefresh = Date.now();
+        
+        // Fetch subscription immediately on first sign in
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id as string },
+          select: { subscription: { select: { status: true, expiresAt: true } } }
+        });
+        token.hasActiveSubscription = dbUser?.subscription?.status === 'ACTIVE' && dbUser.subscription.expiresAt > new Date();
+
         return token;
       }
 
@@ -110,7 +118,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       const dbUser = await prisma.user.findUnique({
         where: { id: userId },
-        select: { role: true, isBanned: true, banExpiresAt: true, image: true },
+        select: { role: true, isBanned: true, banExpiresAt: true, image: true, subscription: { select: { status: true, expiresAt: true } } },
       });
       if (!dbUser) return token;
 
@@ -119,6 +127,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       token.isBanned = isBanActive(dbUser.isBanned, dbUser.banExpiresAt);
       token.banExpiresAt = dbUser.banExpiresAt ?? null;
       token.picture = dbUser.image;
+      token.hasActiveSubscription = dbUser.subscription?.status === 'ACTIVE' && dbUser.subscription.expiresAt > new Date();
       token._lastRefresh = Date.now();
 
       return token;
@@ -132,6 +141,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.isBanned = (token.isBanned as boolean) ?? false;
       session.user.banExpiresAt = (token.banExpiresAt as Date | null) ?? null;
       session.user.image = (token.picture as string) ?? null;
+      (session.user as any).hasActiveSubscription = (token.hasActiveSubscription as boolean) ?? false;
 
       return session;
     },

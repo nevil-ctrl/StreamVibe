@@ -22,7 +22,7 @@ export async function registerUser(_prevState: unknown, formData: FormData) {
         email,
         name,
         password: hashedPassword,
-        emailVerified: null, // Почта изначально не подтверждена
+        emailVerified: new Date(), // Auto-verify to allow immediate login
       },
     });
 
