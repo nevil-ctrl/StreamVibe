@@ -3,7 +3,9 @@
 Полная инструкция по запуску проекта локально: база данных PostgreSQL, Prisma, Stripe Webhooks и запуск Next.js.
 
 ---
+## 🌐 Live Demo
 
+👉 https://stream-vibe-gstl.vercel.app/
 # 📋 Requirements
 
 Перед началом убедитесь, что установлены:
