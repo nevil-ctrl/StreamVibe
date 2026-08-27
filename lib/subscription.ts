@@ -35,7 +35,7 @@ export async function fetchUserHasActiveSubscription(
     // On DB error, deny access (safer than allowing unverified)
     return false;
   }
-  }
+}
 
 export async function hasWatchAccess(userId: string, role?: string) {
   if (role === 'ADMIN' || role === 'SUPERADMIN') return true;
