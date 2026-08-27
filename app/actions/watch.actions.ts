@@ -14,7 +14,7 @@ import {
   toggleWatchlist,
 } from '@/services/watch-history.service';
 import { canRecordWatchHistory } from '@/lib/consent/server';
-import { fetchUserHasActiveSubscription } from '@/lib/subscription';
+import { hasWatchAccess } from '@/lib/subscription';
 
 export async function startWatchingMovie(movie: {
   id: number;
@@ -26,11 +26,8 @@ export async function startWatchingMovie(movie: {
     redirect(`/auth/login?callbackUrl=/watch/movie/${movie.id}`);
   }
 
-  // Check if user has active subscription (with JWT session token fallback)
-  const hasSubscription = await fetchUserHasActiveSubscription(session.user.id)
-    || session.user.hasActiveSubscription === true;
-  if (!hasSubscription) {
-    redirect(`/subscriptions?from=/movies/${movie.id}`);
+  if (!(await hasWatchAccess(session.user.id, session.user.role))) {
+    redirect('/subscriptions?required=watch');
   }
 
   if (await canRecordWatchHistory()) {
@@ -54,20 +51,13 @@ export async function startWatchingShow(show: {
     redirect(`/auth/login?callbackUrl=/shows/${show.id}`);
   }
 
-  // Check if user has active subscription (with JWT session token fallback)
-  const hasSubscription = await fetchUserHasActiveSubscription(session.user.id)
-    || session.user.hasActiveSubscription === true;
-  if (!hasSubscription) {
-    redirect(`/subscriptions?from=/shows/${show.id}`);
+  if (!(await hasWatchAccess(session.user.id, session.user.role))) {
+    redirect('/subscriptions?required=watch');
   }
 
   if (await canRecordWatchHistory()) {
     await ensureShowInDb(show);
-    await recordShowWatch(
-      session.user.id,
-      String(show.id),
-      show.episodeId,
-    );
+    await recordShowWatch(session.user.id, String(show.id), show.episodeId);
   }
 
   const params = new URLSearchParams();

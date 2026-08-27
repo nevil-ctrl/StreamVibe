@@ -32,11 +32,6 @@ const STATUS_MAP: Record<string, string> = {
   trending_tv: '/trending/tv/week',
   new_tv: '/tv/airing_today',
   must_tv: '/tv/on_the_air',
-  trending: '/trending/movie/week',
-  popular: '/movie/popular',
-  top_rated: '/movie/top_rated',
-  now_playing: '/movie/now_playing',
-  upcoming: '/movie/upcoming',
 };
 
 export default function GenrePage() {
@@ -145,8 +140,8 @@ function GenrePageContent() {
                 key={movie.id}
                 href={
                   type === 'movie'
-                    ? `/movies/${movie.id}`
-                    : `/shows/${movie.id}`
+                    ? `/watch/movie/${movie.id}`
+                    : `/watch/tv/${movie.id}`
                 }
                 className="group rounded-xl border border-[#262628] bg-[#1A1A1A] p-3 hover:border-[#E50000] transition flex flex-col">
                 <div className="relative aspect-2/3 overflow-hidden rounded-lg mb-3 bg-[#262628]">

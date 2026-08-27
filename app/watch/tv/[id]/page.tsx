@@ -3,7 +3,7 @@ import { auth } from '@/auth';
 import { getShowDetail } from '@/services/media-detail.service';
 import { parsePlaybackEpisodeId } from '@/lib/player-utils';
 import { parseEpisodeMeta } from '@/lib/watch-constants';
-import { fetchUserHasActiveSubscription } from '@/lib/subscription';
+import { hasWatchAccess } from '@/lib/subscription';
 import WatchTvClient from './WatchTvClient';
 
 interface PageProps {
@@ -25,11 +25,8 @@ export default async function WatchTvPage({ params, searchParams }: PageProps) {
     redirect(`/auth/login?callbackUrl=/watch/tv/${id}`);
   }
 
-  // Check subscription: try DB first, fall back to JWT session token
-  const hasSubscription = await fetchUserHasActiveSubscription(session.user.id)
-    || session.user.hasActiveSubscription === true;
-  if (!hasSubscription) {
-    redirect(`/subscriptions?from=/watch/tv/${id}`);
+  if (!(await hasWatchAccess(session.user.id, session.user.role))) {
+    redirect('/subscriptions?required=watch');
   }
 
   const showId = Number(id);
@@ -40,16 +37,14 @@ export default async function WatchTvPage({ params, searchParams }: PageProps) {
 
   const parsedEpisode = parsePlaybackEpisodeId(
     sp.episodeId
-      ? parseEpisodeMeta(sp.episodeId).episodeTmdbId ?? sp.episodeId
+      ? (parseEpisodeMeta(sp.episodeId).episodeTmdbId ?? sp.episodeId)
       : undefined,
   );
 
-  const season = sp.season
-    ? Number(sp.season)
-    : parsedEpisode.season ?? 1;
+  const season = sp.season ? Number(sp.season) : (parsedEpisode.season ?? 1);
   const episode = sp.episode
     ? Number(sp.episode)
-    : parsedEpisode.episode ?? 1;
+    : (parsedEpisode.episode ?? 1);
 
   const safeSeason = Number.isFinite(season) && season > 0 ? season : 1;
   const safeEpisode = Number.isFinite(episode) && episode > 0 ? episode : 1;

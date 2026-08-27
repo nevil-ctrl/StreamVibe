@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { getMovieDetail } from '@/services/media-detail.service';
-import { fetchUserHasActiveSubscription } from '@/lib/subscription';
+import { hasWatchAccess } from '@/lib/subscription';
 import WatchMovieClient from './WatchMovieClient';
 
 interface PageProps {
@@ -9,7 +9,10 @@ interface PageProps {
   searchParams: Promise<{ t?: string }>;
 }
 
-export default async function WatchMoviePage({ params, searchParams }: PageProps) {
+export default async function WatchMoviePage({
+  params,
+  searchParams,
+}: PageProps) {
   const session = await auth();
   const { id } = await params;
   const sp = await searchParams;
@@ -19,11 +22,8 @@ export default async function WatchMoviePage({ params, searchParams }: PageProps
     redirect(`/auth/login?callbackUrl=/watch/movie/${id}`);
   }
 
-  // Check subscription: try DB first, fall back to JWT session token
-  const hasSubscription = await fetchUserHasActiveSubscription(session.user.id)
-    || session.user.hasActiveSubscription === true;
-  if (!hasSubscription) {
-    redirect(`/subscriptions?from=/watch/movie/${id}`);
+  if (!(await hasWatchAccess(session.user.id, session.user.role))) {
+    redirect('/subscriptions?required=watch');
   }
 
   const movieId = Number(id);
@@ -32,7 +32,10 @@ export default async function WatchMoviePage({ params, searchParams }: PageProps
   const movie = await getMovieDetail(movieId).catch(() => null);
   if (!movie) notFound();
 
-  const movieRecord = movie as { imdb_id?: string | null; imdbId?: string | null };
+  const movieRecord = movie as {
+    imdb_id?: string | null;
+    imdbId?: string | null;
+  };
   const imdbId = movieRecord.imdb_id ?? movieRecord.imdbId ?? null;
 
   return (
