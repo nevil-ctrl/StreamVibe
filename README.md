@@ -1,45 +1,44 @@
-# 🚀 StreamVibe — Local Development Setup
+# 🎬 StreamVibe
 
-Полная инструкция по запуску проекта локально: база данных PostgreSQL, Prisma, Stripe Webhooks и запуск Next.js.
+StreamVibe — это современный стриминговый сервис и полноценный клон Netflix, построенный на базе Next.js, Prisma и Stripe. Проект включает в себя каталог фильмов, систему подписок, интеграцию с популярными видеоплеерами и адаптивный интерфейс для комфортного просмотра контента.
 
 ---
-## 🌐 Live Demo
 
-👉 https://stream-vibe-gstl.vercel.app/
-# 📋 Requirements
+## 🚀 Основные возможности (Features)
 
-Перед началом убедитесь, что установлены:
+- **Каталог фильмов и сериалов:** Интеграция с TMDB API для получения актуальной информации, постеров и рейтингов.
+- **Мультипровайдерный плеер:** Поддержка нескольких источников воспроизведения (`voidboost`, `moviesapi`, `superembed`, `kinobox`, `vidsrc`) для максимальной стабильности.
+- **Система подписок:** Полноценный цикл оплаты и управления тарифными планами через Stripe.
+- **Авторизация:** Безопасный вход в систему с помощью NextAuth.js.
+- **Уведомления:** Встроенная система email-оповещений на базе Resend.
+- **Современный стек:** Next.js (App Router), Tailwind CSS, Prisma ORM и база данных PostgreSQL.
 
-- **Node.js** `v18+`
-- **Docker Desktop**
+🌐 **Демо-версия проекта:** [stream-vibe-gstl.vercel.app](https://stream-vibe-gstl.vercel.app/)
+
+---
+
+## 📋 Требования для локального запуска
+
+Перед началом убедитесь, что у вас установлены:
+- **Node.js** версии `v18+`
+- **Docker Desktop** (для запуска базы данных)
 - **Git**
-- **Stripe CLI** _(stripe.exe уже находится в корне проекта и добавлен в `.gitignore`)_
+- **Stripe CLI** *(исполняемый файл `stripe.exe` уже находится в корне проекта)*
 
 ---
 
-# ⚙️ 1. Environment Setup
+## ⚙️ Быстрый старт (Local Setup)
 
-Создайте `.env` файл в корне проекта:
-
+### 1. Окружение и переменные
+Создайте файл `.env` в корне проекта и заполните его по примеру из `.env.example`:
 ```bash
 cp .env.example .env
 ```
 
-Заполните необходимые переменные окружения:
-
-- Stripe API Keys
-- Database URL
-- TMDB API Key
-- Resend API Key
-- Auth Secret
-- OAuth Providers (если используются)
-
-Пример:
-
+Пример заполнения конфигурации:
 ```env
 DATABASE_URL="postgresql://admin:password@localhost:5433/streamvibe"
-
-NEXTAUTH_SECRET=your_secret
+NEXTAUTH_SECRET=your_secret_key_here
 
 STRIPE_SECRET_KEY=sk_test_xxxxxxxxx
 STRIPE_PUBLISHABLE_KEY=pk_test_xxxxxxxxx
@@ -49,241 +48,54 @@ TMDB_API_KEY=xxxxxxxxx
 RESEND_API_KEY=re_xxxxxxxxx
 ```
 
----
-
-# 🐘 2. Database Setup (PostgreSQL + Prisma)
-
-## Запуск PostgreSQL через Docker
-
-Если используется `docker-compose.yml`, выполните:
-
+### 2. Запуск базы данных и миграции
+Запустите контейнер с PostgreSQL и разверните структуру таблиц:
 ```bash
+# Запуск контейнера в фоне
 docker-compose up -d
-```
 
-Проверить запущенные контейнеры:
-
-```bash
-docker ps
-```
-
-> PostgreSQL по умолчанию работает на порту `5433`.
-
----
-
-## Prisma Migration
-
-Создайте таблицы в базе данных:
-
-```bash
+# Создание таблиц и генерация Prisma Client
 npx prisma migrate dev
-```
-
----
-
-## Prisma Client Generation
-
-Сгенерируйте Prisma Client:
-
-```bash
 npx prisma generate
 ```
+*Панель управления базой данных (опционально): `npx prisma studio` (доступна на `http://localhost:5555`).*
 
----
-
-## Prisma Studio (Optional)
-
-Запуск визуальной панели управления БД:
-
+### 3. Настройка Stripe Webhooks
+Для корректной обработки тестовых платежей локально:
 ```bash
-npx prisma studio
-```
-
-Prisma Studio будет доступна:
-
-```txt
-http://localhost:5555
-```
-
----
-
-# 💳 3. Stripe Webhooks Setup
-
-Для локального тестирования оплаты необходимо запустить Stripe Webhook Listener.
-
-## Авторизация Stripe CLI
-
-Выполняется **один раз**.
-
-### Windows (Git Bash)
-
-```bash
+# 1. Авторизация в Stripe (выполняется один раз)
 ./stripe login
-```
 
-Откройте ссылку из терминала и подтвердите авторизацию в браузере.
-
----
-
-## Запуск Webhook Listener
-
-После авторизации выполните:
-
-```bash
+# 2. Запуск прослушивания вебхуков (не закрывайте этот терминал)
 ./stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
+*Скопируйте полученный в терминале `whsec_...` и вставьте его в переменную `STRIPE_WEBHOOK_SECRET` в вашем `.env`.*
 
-> ⚠️ Не закрывайте терминал. Он должен работать во время тестирования оплаты.
-
----
-
-## Обновление `.env`
-
-После запуска `stripe listen`
-
-```txt
-Your webhook signing secret is:
-
-whsec_xxxxxxxxxxxxxxxxxxxxx
-```
-
-Скопируйте ключ и вставьте в `.env`:
-
-```env
-STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxx
-```
-
----
-
-# ▶️ 4. Start Development Server
-
-Откройте **новый терминал** и запустите Next.js:
-
+### 4. Запуск приложения
+В новом окне терминала запустите сервер разработки Next.js:
 ```bash
 npm run dev
 ```
-
-Приложение будет доступно:
-
-```txt
-http://localhost:3000
-```
+Приложение будет доступно по адресу: **[http://localhost:3000](http://localhost:3000)**
 
 ---
 
-# 🔧 Что было исправлено
+## 🧪 Тестирование оплаты (Stripe Test)
 
-- Добавлены новые источники плеера для `WatchMovieClient` и страницы просмотра фильма:
-  - `voidboost`
-  - `moviesapi`
-- Сохранена работа существующих провайдеров:
-  - `superembed`
-  - `kinobox`
-  - `vidsrc`
-- Упрощено и унифицировано использование провайдеров между экраном детали фильма и экраном воспроизведения.
-
-Почему это важно:
-- Для фильма `Michael` основной плеер раньше мог зависать из-за проблем с конкретным iframe-источником.
-- Новые провайдеры дают более стабильные fallback-опции и быстрее загружаются.
+1. Перейдите на страницу тарифных планов и нажмите **«Оформить подписку»**.
+2. На тестовой платежной форме Stripe используйте следующую карту:
+   - **Номер:** `4242 4242 4242 4242`
+   - **Срок действия / CVC / ZIP:** Любые корректные данные из будущего.
+3. После успешной оплаты в терминале Stripe CLI должно отобразиться событие `checkout.session.completed` со статусом `200 OK`.
 
 ---
 
-# 🧪 5. Payment Testing
+## 🛠 Полезные команды
 
-1. Откройте страницу подписок.
-2. Нажмите **«Оформить подписку»**.
-3. Вы будете перенаправлены на тестовую страницу Stripe.
-4. Используйте тестовую карту:
-
-```txt
-4242 4242 4242 4242
-```
-
-Любые значения:
-
-- Expiration Date → в будущем
-- CVC → любой
-- ZIP Code → любой
-
----
-
-## Successful Payment Check
-
-После оплаты:
-
-- Stripe вернёт пользователя в приложение
-- В терминале `stripe listen` появится событие:
-
-```txt
-checkout.session.completed
-```
-
-Со статусом:
-
-```txt
-200 OK
-```
-
----
-
-# ✅ Features Included
-
-- PostgreSQL Database
-- Prisma ORM + Migrations
-- Stripe Payments
-- Stripe Webhooks
-- Subscription System
-- Notification System
-- NextAuth Authentication
-- TMDB Integration
-
----
-
-# 🛠 Useful Commands
-
-### Start Database
-
-```bash
-docker-compose up -d
-```
-
-### Stop Database
-
-```bash
-docker-compose down
-```
-
-### Run Prisma Migration
-
-```bash
-npx prisma migrate dev
-```
-
-### Generate Prisma Client
-
-```bash
-npx prisma generate
-```
-
-### Open Prisma Studio
-
-```bash
-npx prisma studio
-```
-
-## Stripe (Local Testing)
-
-```Login to Stripe CLI
-
-./stripe login
-
-Start Webhook Listener
-
-    ./stripe listen --forward-to localhost:3000/api/stripe/webhook
-```
-
-### Run Development Server
-
-```bash
-npm run dev
-```
+| Команда | Описание |
+| :--- | :--- |
+| `docker-compose up -d` | Запуск базы данных PostgreSQL |
+| `docker-compose down` | Остановка контейнера БД |
+| `npx prisma migrate dev` | Применение новых миграций базы данных |
+| `npx prisma studio` | Открытие веб-интерфейса для просмотра БД |
+| `npm run dev` | Запуск локального сервера разработки |
