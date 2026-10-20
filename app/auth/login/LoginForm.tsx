@@ -38,7 +38,7 @@ export default function LoginForm({ movies }: LoginFormProps) {
     urlError === 'AccessDenied'
       ? t('auth.accessDenied')
       : urlError
-        ? t('auth.invalidCredentials')
+        ? t('auth.somethingWrong')
         : '',
   );
   const [isUnverified, setIsUnverified] = useState(false);

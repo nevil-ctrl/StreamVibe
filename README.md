@@ -31,15 +31,18 @@ cp .env.example .env
 - Database URL
 - TMDB API Key
 - Resend API Key
-- Auth Secret
-- OAuth Providers (если используются)
+- `AUTH_SECRET`
+- `AUTH_GOOGLE_ID` и `AUTH_GOOGLE_SECRET` для входа через Google
 
 Пример:
 
 ```env
 DATABASE_URL="postgresql://admin:password@localhost:5433/streamvibe"
 
-NEXTAUTH_SECRET=your_secret
+NEXTAUTH_URL=http://localhost:3000
+AUTH_SECRET=your_auth_js_secret
+AUTH_GOOGLE_ID=your_google_client_id.apps.googleusercontent.com
+AUTH_GOOGLE_SECRET=your_google_client_secret
 
 STRIPE_SECRET_KEY=sk_test_xxxxxxxxx
 STRIPE_PUBLISHABLE_KEY=pk_test_xxxxxxxxx
@@ -48,6 +51,10 @@ STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxx
 TMDB_API_KEY=xxxxxxxxx
 RESEND_API_KEY=re_xxxxxxxxx
 ```
+
+В Google Cloud Console добавьте URI перенаправления
+`http://localhost:3000/api/auth/callback/google`, а для production — callback URI
+с доменом сайта.
 
 ---
 

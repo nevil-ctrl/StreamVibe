@@ -3,16 +3,19 @@
 import { prisma, withRetry } from '@/lib/prisma';
 import { generateVerificationToken } from '@/services/auth-token.service';
 import { sendVerificationEmail } from '@/services/mail.service';
+import { normalizeEmail } from '@/lib/normalize-email';
 
 /**
  * Проверяет статус аккаунта пользователя по его email (для вывода дружественных ошибок).
  */
 export async function checkAccountStatus(email: string) {
+  const normalizedEmail = normalizeEmail(email);
+
   try {
     const user = await withRetry(
       () =>
-        prisma.user.findUnique({
-          where: { email },
+        prisma.user.findFirst({
+          where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
           select: {
             id: true,
             emailVerified: true,
@@ -44,11 +47,13 @@ export async function checkAccountStatus(email: string) {
  * Отправляет повторную ссылку для подтверждения почты.
  */
 export async function resendVerificationLink(email: string) {
+  const normalizedEmail = normalizeEmail(email);
+
   try {
     const user = await withRetry(
       () =>
-        prisma.user.findUnique({
-          where: { email },
+        prisma.user.findFirst({
+          where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
         }),
       3,
     );
@@ -61,8 +66,11 @@ export async function resendVerificationLink(email: string) {
       return { success: false, message: 'Почта уже подтверждена' };
     }
 
-    const verificationToken = await generateVerificationToken(email);
-    const emailResult = await sendVerificationEmail(email, verificationToken.token);
+    const verificationToken = await generateVerificationToken(user.email);
+    const emailResult = await sendVerificationEmail(
+      user.email,
+      verificationToken.token,
+    );
 
     if (!emailResult.success) {
       return { success: false, message: 'Не удалось отправить письмо. Попробуйте позже.' };

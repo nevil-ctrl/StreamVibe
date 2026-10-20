@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 
 import { prisma, withRetry } from './lib/prisma';
 import { hasActiveSubscription } from './lib/subscription';
+import { normalizeEmail } from './lib/normalize-email';
 import { Role } from '@/types/role';
 
 const JWT_REFRESH_INTERVAL_MS = 30 * 60 * 1000;
@@ -34,6 +35,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.AUTH_GOOGLE_ID!,
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
       allowDangerousEmailAccountLinking: true,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          emailVerified: profile.email_verified ? new Date() : null,
+        };
+      },
     }),
 
     Credentials({
@@ -43,12 +53,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (
+          typeof credentials?.email !== 'string' ||
+          typeof credentials.password !== 'string'
+        ) {
+          return null;
+        }
+
+        const email = normalizeEmail(credentials.email);
+        if (!email || !credentials.password) return null;
 
         const user = await withRetry(
           () =>
-            prisma.user.findUnique({
-              where: { email: credentials.email as string },
+            prisma.user.findFirst({
+              where: { email: { equals: email, mode: 'insensitive' } },
               select: {
                 id: true,
                 email: true,
@@ -68,7 +86,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!user?.password) return null;
 
         const ok = await bcrypt.compare(
-          credentials.password as string,
+          credentials.password,
           user.password,
         );
         if (!ok) return null;
@@ -96,9 +114,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
 
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
       if (!user?.id) return false;
       if (account?.provider === 'credentials') return true;
+      if (account?.provider === 'google' && profile?.email_verified !== true) {
+        return false;
+      }
 
       const dbUser = await withRetry(
         () =>
